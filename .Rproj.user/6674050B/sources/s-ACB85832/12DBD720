@@ -1,0 +1,27 @@
+{
+    "id": "12DBD720",
+    "path": "~/Nextcloud/r_package_longitudinal/init_package.R",
+    "project_path": "init_package.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1656592323429.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "25,20",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1656592524,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1656592524974,
+    "read_only": false,
+    "read_only_alternatives": []
+}
