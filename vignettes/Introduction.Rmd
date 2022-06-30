@@ -1,0 +1,32 @@
+---
+title: "Introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(MetabAnalyse)
+```
+
+A vignette to understand the core concept of the library and its uses. 
+This library has been developed to assist biologists to study longitudnal metabolomics data without the need of skilled coding.
+
+Modules/set of analysis that are available:
+
+1) Data Preparation and Packing
+2) Study Characteristics
+3) Gaussian Graphical Models
+4) Regression
+5) Metabotype conservation index
+
+The flexibility of the package comes from the idea that it can be used t

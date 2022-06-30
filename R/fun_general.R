@@ -13,6 +13,11 @@ library(M3C)
 library(umap)
 library(ggplot2)
 library(RColorBrewer)
+library(tidyverse)
+library(GeneNet)
+library(longitudinal)
+library(tidyverse)
+library(glmnet)
 
 #' Function to get a palette of distinct colorblind friendly colors.
 #' @param n number of colors wanted in the palette
@@ -123,18 +128,18 @@ setMethod("convert_s4_to_s3", "metab_analyser", function(object) {
 		return(list(list_of_data=object@list_of_data, list_of_col_data=object@list_of_col_data, list_of_row_data=object@list_of_row_data, phenotype=object@phenotype))
 	})
 
-#' Function to split data wrt to needed timepoints. Converts S4 back to S3 as well for other analysis.
-#' Similar to split_acc_to_time however the timepoints can be manually chosen
-#' @param object An object of class metab_analyser
-#' @param timepoints A vector with timepoints of interest
-#' @return An S3 object(nested list) with the same architecture as that of class metab_analyser
-#' @export
-setGeneric("split_data_wrt_timepoints", function(object, timepoints) standardGeneric("split_data_wrt_timepoints"))
-setMethod("split_data_wrt_timepoints", "metab_analyser", function(object, timepoints) {
-		data <- split_acc_time(object)
-		data <- data[names(data) %in% timepoints]
-		return(list(list_of_data=data,list_of_row_data=object@list_of_row_data, list_of_col_data=object@list_of_col_data))
-	}) 
+# #' Function to split data wrt to needed timepoints. Converts S4 back to S3 as well for other analysis.
+# #' @description Similar to split_acc_to_time however the timepoints can be manually chosen
+# #' @param object An object of class metab_analyser
+# #' @param timepoints A vector with timepoints of interest
+# #' @return An S3 object(nested list) with the same architecture as that of class metab_analyser
+# #' @export
+# setGeneric("split_data_wrt_timepoints", function(object, timepoints) standardGeneric("split_data_wrt_timepoints"))
+# setMethod("split_data_wrt_timepoints", "metab_analyser", function(object, timepoints) {
+# 		data <- split_acc_time(object)
+# 		data <- data[names(data) %in% timepoints]
+# 		return(list(list_of_data=data,list_of_row_data=object@list_of_row_data, list_of_col_data=object@list_of_col_data))
+# 	}) 
 
 #' Function to prepare and preprocess S4 objects to use it for gaussian gaphical models. Also converts S4 to S3
 #' @param object An object of class metab_analyser
@@ -199,3 +204,101 @@ setMethod("get_samples_and_timepoints", "metab_analyser", function(object, which
 		return(newdata)
 	})
 
+#' Function to extract metadata of the metabolites
+#' @param object S4 object of class metab_analyse
+#' @param which_data choose the dataset from which metabolites will be extracted for metadata
+#' @param metab_groups choose the column that has metabolite groups
+#' @param metab_ids chodse the column that has metabolite names
+#' @return metadata dataframe with names, groups and class
+setGeneric("get_metadata_for_plotting", function(object, which_data, metab_groups, metab_ids) standardGeneric("get_metadata_for_plotting"))
+
+setMethod("get_metadata_for_plotting", "metab_analyser", function(object, which_data, metab_groups, metab_ids) {
+			col_data_names <- gsub("_data", "_col_data", which_data)
+    		row_data_names <- gsub("_data", "_row_data", which_data)
+    		list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+    		list_of_col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% col_data_names]
+    		list_of_row_data <- object@list_of_row_data[names(object@list_of_row_data) %in% row_data_names]
+			if(length(which_data) > 1) {
+				list_of_metadata <- list()
+				for(i in 1:length(metab_ids)) {
+					list_of_metadata[[i]] <- list_of_col_data[[i]][,c(metab_ids[i], metab_groups[i])]
+					class <- rep(which_data[i], each=length(list_of_metadata[[i]][,1]))
+					list_of_metadata[[i]][,3] <- class
+					colnames(list_of_metadata[[i]]) <- c("name", "group", "class")
+				}
+				metadata <- lapply(list_of_metadata, as.data.frame)
+				metadata <- do.call(rbind, metadata)
+			} else {
+				col_data <- list_of_col_data[[1]]
+				class <- rep(which_data, each=col_data[,1])
+				metadata <- col_data[ ,c(metab_ids, metab_groups)]
+				metadata <- cbind(metadata, class)
+				colnames(metadata) <- c("name", "group", "class")
+			}
+			return(metadata)
+	})  
+
+#lol <- get_metadata_for_plotting(object=object, which_data=c("lipid_data", "nmr_data"), metab_ids=c("metabolite", "id"), metab_groups=c("sub_pathway", "Group"))
+
+#' Function to add indices i.e. RID and timepoints to data matrix
+#' @description add ids to check for data with ease
+#' @param data data matrix with rownames as adni_ids
+#' @return data matrix with new added columns
+#' @export
+adni_add_index <- function(data){
+  out = data %>% 
+    dplyr::mutate(adni_id = .[] %>% rownames(),
+                  rid = .[] %>% rownames() %>% adni_read_id(to="RID") %>% as.numeric(),
+                  timepoint = .[] %>% rownames() %>% adni_read_id(to="timepoint") %>% as.numeric())
+  return(out)
+}
+
+#' Function to remove indices i.e. RID and timepoints from data matrix
+#' @description remove ids that are used to check for data with ease(see adni_add_index())
+#' @param data data matrix with rownames as adni_ids
+#' @return data matrix without index columns
+#' @export
+adni_rm_index <- function(data){
+  rm_col = intersect(names(data), c("adni_id","RID","rid","timepoint","tp","subject"))
+  if(length(rm_col)==0){
+    out=data
+  }else{
+    out = data %>% 
+      select(-c(rm_col))
+    
+  }
+  return(out)
+}
+
+#' Function to filter out significant edges from genenet ggm
+#' @descritption calculates independent test values for the data and enables us to extract significant edges 
+#' @param data data matrix with rownames as adni_ids
+#' @return data frame with manipulated eigenvalues that can be used to filter significant edges
+#' @export
+adni_independent_tests<-function(data){
+  cordat <- cor(data)
+  eigenvals <- eigen(cordat)$values
+  out <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
+  return(out)
+}
+
+#' Function to extract timepoints of ineterest for longitudnal analysis
+#' @description function to extract the timepoints that are of importance in longitudnal analysis similar to split_acc_to_time except is applied on data matrix rather than the object itself
+#' @param x.data data matrix of interest
+#' @param tp timepoints of interest
+#' @return data matrix with only timepoints of interest
+#' @export
+adni_filter_full_tp<-function(x.data, tp, by=c("timepoint")){
+  if(!all(by %in% names(x.data))) stop("adni_tp_overlap() could not match by")
+  my_rid <- x.data %>%     
+    dplyr::select(all_of(c("RID",by))) %>% 
+    dplyr::filter(get(by) %in% tp)%>% 
+    dplyr::group_by(RID) %>% 
+    dplyr::count(RID) %>% 
+    dplyr::filter(n == length(tp))
+  
+  out= x.data %>% 
+    dplyr::filter(timepoint %in% tp,
+                  RID %in% my_rid[["RID"]])
+  return(out)
+}

@@ -30,7 +30,7 @@ setMethod("distribution_plotter", "metab_analyser",function(object, colname, whi
 		phenotype <- phenotype[rownames(phenotype) %in% rownames(data),]
 		vec <- phenotype[, colname]
         palette_line <- get_palette(length(unique(vec)))
-		palette_timepoints <- get_palette(30)[c(16,2,3,6,7,8,10,13,19,20,23,27)]
+		palette_timepoints <- get_palette(30)[c(16,2,3,6,7,8,10,13,19,20,23,27,30)]
 		timepoints <- unlist(lapply(strsplit(rownames(phenotype), split="_"), function(x) return(x[2])))
 		levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
 		timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
@@ -38,16 +38,17 @@ setMethod("distribution_plotter", "metab_analyser",function(object, colname, whi
 		plot_data <- table(plot_data)
 		plot_data <- reshape2::melt(plot_data)
 		colnames(plot_data) <- c(colname, "Timepoints", "Frequency")
+		plot_data[,colname] <- as.factor(plot_data[,colname])
 		bar_plot <- ggplot(data=plot_data, aes_string(x=colname, y="Frequency", fill="Timepoints")) +
 					geom_bar(stat="identity") + scale_fill_manual(values=palette_timepoints)+ theme_minimal()
-		line_plot <- ggplot(plot_data, aes_string(x="Timepoints", y="Frequency", group=colname, color=colname)) + 
-					 geom_line() + geom_point() + scale_color_manual(values=palette_line) + theme_minimal()
+		line_plot <- ggplot(plot_data, aes_string(x="Timepoints", y="Frequency", group=colname)) + 
+					 geom_line(aes_string(color=colname)) + geom_point(aes_string(color=colname)) + scale_color_manual(values=palette_line) + theme_minimal()
 		return(list_of_plots=list(bar_plot=bar_plot, line_plot=line_plot, var_type=var_type))
 
 	} else {
 		phenotype <- phenotype[rownames(phenotype) %in% rownames(data),]
 		vec <- phenotype[,colname]
-		palette_timepoints <- get_palette(30)[c(16,2,3,6,7,8,10,13,19,20,23,27)]
+		palette_timepoints <- get_palette(30)[c(16,2,3,6,7,8,10,13,19,20,23,27,30)]
 		timepoints <- unlist(lapply(strsplit(rownames(phenotype), split="_"), function(x) return(x[2])))
 		plot_data <- as.data.frame(cbind(as.character(vec), timepoints))
 		plot_data[,1] <- as.numeric(plot_data[,1])
@@ -66,6 +67,7 @@ setMethod("distribution_plotter", "metab_analyser",function(object, colname, whi
 	}
 })
 
+#sex <- distribution_plotter(object=data, colname="PTGENDER", "")
 
 #' Function to Plot PCA for one dataset with samples as data points
 #' @param object An object of class metab_analyser
@@ -81,6 +83,7 @@ setMethod("pca_plotter_general", "metab_analyser", function(object, which_data, 
 	data <- as.data.frame(data[[1]])
 	data <- data[, which(apply(data,2,var) !=0)]
 	data <- data[which(apply(data,1,var) != 0), ]
+	data <- na.omit(data)
 	phenotype <- object@phenotype
 	phenotype <- phenotype[rownames(phenotype) %in% rownames(data),]
 	timepoints <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2])))
@@ -93,9 +96,10 @@ setMethod("pca_plotter_general", "metab_analyser", function(object, which_data, 
 
 	pca_individuals <- as.data.frame(pca_individuals$x[,1:2])
 	pca_individuals <- pca_individuals[order(match(rownames(pca_individuals), rownames(phenotype))), , drop = FALSE]
-	plot_data <- as.data.frame(cbind(phenotype[,cols_for_vis], pca_individuals, timepoints))
+	plot_data <- as.data.frame(cbind(pca_individuals, timepoints, phenotype[,cols_for_vis]))
+	colnames(plot_data)[1:2] <- c("PC1", "PC2")
 	
-	plot_individuals <- plot_ly(plot_data, x=~PC1,y=~PC2, color=~timepoints, colors=get_palette(30)[c(16,2,3,6,7,8,10,13,19,20,23,27)], type = 'scatter', 
+	plot_individuals <- plot_ly(plot_data, x=~PC1,y=~PC2, color=~timepoints, colors=get_palette(30)[c(16,2,3,6,7,8,10,13,19,20,23,27,30)], type = 'scatter', 
 															mode = 'markers', hoverinfo = 'text', 
 														text = get_text(data=plot_data, colnames=cols_for_vis))
 	
@@ -120,8 +124,10 @@ setMethod("tsne_plotter_general", "metab_analyser", function(object, which_data,
 	col_data_name <- gsub("_data", "_col_data", which_data)
 	data <- as.data.frame(data)
 	col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% col_data_name]
-	col_data <- col_data[[1]]
+	col_data <- as.data.frame(col_data[[1]])
 	groups_metabolites <- as.vector(col_data[ ,metab_groups])
+	data <- na.omit(data)
+	col_data <- col_data[col_data[,metab_ids] %in% colnames(data), ]
 	data <- data[ ,match(colnames(data), col_data[ ,metab_ids])]
 	phenotype <- phenotype[rownames(phenotype) %in% rownames(data),]
 	phenotype <- phenotype[match(rownames(phenotype), rownames(data)),]	
@@ -131,7 +137,7 @@ setMethod("tsne_plotter_general", "metab_analyser", function(object, which_data,
 	levels <- unique(sort(as.numeric(unlist(lapply(strsplit(timepoints, split="t", fixed=TRUE), function(x) return(x[2]))))))
 	tsne_data <- as.data.frame(cbind(as.data.frame(tsne_samples$data), phenotype[,cols_for_vis]))
 	tsne_data$timepoints <- factor(timepoints, levels=paste("t", levels, sep=""))
-	tsne_plot_samples <- plot_ly(tsne_data, x=~X1, y=~X2, color=~timepoints, colors=get_palette(30)[c(16,2,3,6,7,8,10,13,19,20,23,27)], type = 'scatter', 
+	tsne_plot_samples <- plot_ly(tsne_data, x=~X1, y=~X2, color=~timepoints, colors=get_palette(30)[c(16,2,3,6,7,8,10,13,19,20,23,27,30)], type = 'scatter', 
 															mode = 'markers', hoverinfo = 'text', 
 														text = get_text(data=tsne_data, colnames=cols_for_vis))
 	return(list(metabs=tsne_plot_metabs, samples=tsne_plot_samples))
@@ -160,8 +166,10 @@ setMethod("umap_plotter_general", "metab_analyser", function(object, which_data,
 	col_data_name <- gsub("_data", "_col_data", which_data)
 	data <- as.data.frame(data)
 	col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% col_data_name]
-	col_data <- col_data[[1]]
+	col_data <- as.data.frame(col_data[[1]])
 	groups_metabolites <- as.vector(col_data[ ,metab_groups])
+	data <- na.omit(data)
+	col_data <- col_data[col_data[,metab_ids] %in% colnames(data),]
 	data <- data[ ,match(colnames(data), col_data[ ,metab_ids])]
 	phenotype <- phenotype[rownames(phenotype) %in% rownames(data),]
 	phenotype <- phenotype[match(rownames(phenotype), rownames(data)),]
@@ -176,7 +184,7 @@ setMethod("umap_plotter_general", "metab_analyser", function(object, which_data,
 	plot_data <- as.data.frame(cbind(as.data.frame(umap_fit_samples$layout), phenotype[,cols_for_vis]))
 	plot_data$timepoints <- factor(timepoints, levels=paste("t", levels, sep=""))
 	colnames(plot_data)[1:2] <- c("UMAP1","UMAP2")
-	umap_plot_samples <- plot_ly(plot_data, x=~UMAP1, y=~UMAP2, color=~timepoints, colors=get_palette(30)[c(16,2,3,6,7,8,10,13,19,20,23,27)], type = 'scatter', 
+	umap_plot_samples <- plot_ly(plot_data, x=~UMAP1, y=~UMAP2, color=~timepoints, colors=get_palette(30)[c(16,2,3,6,7,8,10,13,19,20,23,27,30)], type = 'scatter', 
 															mode = 'markers', hoverinfo = 'text', 
 														text = get_text(data=plot_data, colnames=cols_for_vis))
 	return(list(metabs=umap_plot_metabs, samples=umap_plot_samples))
