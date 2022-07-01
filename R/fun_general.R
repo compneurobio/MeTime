@@ -147,13 +147,23 @@ setMethod("convert_s4_to_s3", "metab_analyser", function(object) {
 #' 										 2) multi - extracts common samples across the dataframes and returns an S3 nested list
 #' @return An S3 object(nested list) with the same architecture as that of class metab_analyser
 #' @export 
-setGeneric("prep_data_for_ggms", function(object, which_type) standardGeneric("prep_data_for_ggms"))
-setMethod("prep_data_for_ggms", "metab_analyser", function(object, which_type) {
+setGeneric("prep_data_for_ggms", function(object, which_type, mlp_or_temp) standardGeneric("prep_data_for_ggms"))
+setMethod("prep_data_for_ggms", "metab_analyser", function(object, which_type, mlp_or_temp) {
 		if(which_type %in% "multi") {
 			object@list_of_data <- common_sample_extractor(object)
-			object <- convert_s4_to_s3(object)
+			if(mlp_or_temp) {
+				object@list_of_data <- split_acc_time(object)
+				object <- convert_s4_to_s3(object)
+			} else {
+				object <- convert_s4_to_s3(object)
+			}
 		} else if(which_type %in% "single") {
-			object <- convert_s4_to_s3(object)
+			if(mlp_or_temp) {
+				object@list_of_data <- split_acc_time(object)
+				object <- convert_s4_to_s3(object)
+			} else {
+				object <- convert_s4_to_s3(object)
+			}
 		} else {
 			stop("Check the input for which_type: only allowed inputs and multi and single")
 		}
@@ -267,18 +277,6 @@ adni_rm_index <- function(data){
       select(-c(rm_col))
     
   }
-  return(out)
-}
-
-#' Function to filter out significant edges from genenet ggm
-#' @descritption calculates independent test values for the data and enables us to extract significant edges 
-#' @param data data matrix with rownames as adni_ids
-#' @return data frame with manipulated eigenvalues that can be used to filter significant edges
-#' @export
-adni_independent_tests<-function(data){
-  cordat <- cor(data)
-  eigenvals <- eigen(cordat)$values
-  out <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
   return(out)
 }
 
