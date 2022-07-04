@@ -16,7 +16,7 @@ An object of class metab_analyser
 }
 \description{
 This function loads all the files from the parent directory. It assumes a
-certain naming pattern as follows: "datatype_\link{NULL|col|row}_data.rds"
+certain naming pattern as follows: "datatype_NULL|col|row_data.rds"
 Any other naming pattern is not allowed. The function first writes
 all files into a list and each type of data is packed into its respective
 class i.e. col_data, row_data or data

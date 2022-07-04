@@ -157,6 +157,7 @@ automated_ggm_mlp <- function(object, which_data, rho, nfolds, timepoints) {
     } else {
         final_data_list <- object$list_of_data
     }
+    
 }
 
 #' Function to plot data from network and object after calculating a certain ggm
@@ -345,6 +346,7 @@ automated_temporal_network <- function(object, lag, rho, timepoints, which_data)
 }
 
 #' Function to perform regression on list of matrics either divided based on time(temporal net) or data type(Multibipartite Lasso)
+#' @description performs regression for both temporal and multibipartite GGMs
 #' @param list_of_mats list of matrices that are divided based on platform or timepoints
 #' @param alpha parameter for glmnet alpha=1 represents ridge regression and alpha=0 represents lasso regression and anything in between results in a mixed penalty regression
 #' @param nfolds nfolds parameter for glmnet
@@ -352,41 +354,43 @@ automated_temporal_network <- function(object, lag, rho, timepoints, which_data)
 #' @export
 get_betas <- function(list_of_mats, 
            alpha,
-           nfolds 
-           ) {
+           nfolds, 
+           type_of_data) {
   #creating a list to store the data from glmnet
   #code exactly similar to the usual MLP 
-  list_with_combos <- list() # list to store the regression information for each metabolte
-  count <- 1
-  for(i in 1:length(list_of_mats)) {
-    for(j in 1:length(list_of_mats)) {
-      if(i != j) {
-        x_mat <- as.matrix(list_of_mats[[i]])
-        y_mat <- as.matrix(list_of_mats[[j]])
-        fit_list <- list()
-        for(k in 1:ncol(y_mat)) {
-          fit_list[[k]] <- cv.glmnet(x=x_mat, y=y_mat[,k], alpha=alpha, nfolds=nfolds)
-          names(fit_list)[k] <- colnames(y_mat)[k]
+  if(type_of_data %in% "mblp") {
+      list_with_combos <- list() # list to store the regression information for each metabolte
+      count <- 1
+      for(i in 1:length(list_of_mats)) {
+        for(j in 1:length(list_of_mats)) {
+          if(i != j) {
+            x_mat <- as.matrix(list_of_mats[[i]])
+            y_mat <- as.matrix(list_of_mats[[j]])
+            fit_list <- list()
+            for(k in 1:ncol(y_mat)) {
+              fit_list[[k]] <- cv.glmnet(x=x_mat, y=y_mat[,k], alpha=alpha, nfolds=nfolds)
+              names(fit_list)[k] <- colnames(y_mat)[k]
+            }
+            list_with_combos[[count]] <- fit_list
+            names(list_with_combos)[count] <- paste(names(list_of_mats)[j], names(list_of_mats)[i], sep="-")
+            count <- count+1
+          } else {
+            fit_list <- list()
+            mat <- as.matrix(list_of_mats[[i]])
+            for(k in 1:ncol(mat)) {
+              y <- as.matrix(mat[,k])
+              x <- as.matrix(mat[,-k])
+              fit_list[[k]] <- cv.glmnet(x=x, y=y, alpha=alpha, nfolds=nfolds)
+              names(fit_list)[k] <- colnames(mat)[k]
+            } 
+          list_with_combos[[count]] <- fit_list
+          names(list_with_combos)[count] <- names(list_of_mats)[i]
+          count <- count +1
+          } 
         }
-        list_with_combos[[count]] <- fit_list
-        names(list_with_combos)[count] <- paste(names(list_of_mats)[j], names(list_of_mats)[i], sep="-")
-        count <- count+1
-      } else {
-        fit_list <- list()
-        mat <- as.matrix(list_of_mats[[i]])
-        for(k in 1:ncol(mat)) {
-          y <- as.matrix(mat[,k])
-          x <- as.matrix(mat[,-k])
-          fit_list[[k]] <- cv.glmnet(x=x, y=y, alpha=alpha, nfolds=nfolds)
-          names(fit_list)[k] <- colnames(mat)[k]
-        } 
-        list_with_combos[[count]] <- fit_list
-        names(list_with_combos)[count] <- names(list_of_mats)[i]
-        count <- count +1
-      }
-
-    }
-  }
+      } 
+  } else if()
+  
   return(list_with_combos)
 }
 
