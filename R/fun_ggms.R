@@ -157,7 +157,7 @@ automated_ggm_mlp <- function(object, which_data, rho, nfolds, timepoints) {
     } else {
         final_data_list <- object$list_of_data
     }
-    
+
 }
 
 #' Function to plot data from network and object after calculating a certain ggm
@@ -389,7 +389,9 @@ get_betas <- function(list_of_mats,
           } 
         }
       } 
-  } else if()
+  } else if(type_of_data %in% "temp") {
+
+  }
   
   return(list_with_combos)
 }

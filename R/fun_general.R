@@ -1,23 +1,24 @@
-library(dplyr)
-library(igraph)
-library(visNetwork)
-library(shiny)
-library(shinydashboard)
-library(shinydashboardPlus)
-library(dashboardthemes)
-library(factoextra)
-library(plyr)
-library(DT)
-library(plotly)
-library(M3C)
-library(umap)
-library(ggplot2)
-library(RColorBrewer)
-library(tidyverse)
-library(GeneNet)
-library(longitudinal)
-library(tidyverse)
-library(glmnet)
+# Loading all the packages needed 
+#'@import dplyr
+#'@import igraph
+#'@import visNetwork
+#'@import shiny
+#'@import shinydashboard
+#'@import shinydashboardPlus
+#'@import dashboardthemes
+#'@import factoextra
+#'@import plyr
+#'@import DT
+#'@import plotly
+#'@import M3C
+#'@import umap
+#'@import ggplot2 
+#'@import RColorBrewer
+#'@import tidyverse
+#'@import GeneNet
+#'@import longitudinal
+#'@import tidyverse
+#'@import glmnet
 
 #' Function to get a palette of distinct colorblind friendly colors.
 #' @param n number of colors wanted in the palette

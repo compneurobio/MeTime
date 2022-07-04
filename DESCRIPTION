@@ -16,3 +16,4 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Imports: dplyr, igraph, visNetwork, shiny, shinydashboard, shinydashboardPlus, dashboardthemes, factoextra, plyr, DT, plotly, M3C, umap, ggplot2, RColorBrewer, tidyverse, glmnet

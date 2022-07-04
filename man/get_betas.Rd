@@ -4,7 +4,7 @@
 \alias{get_betas}
 \title{Function to perform regression on list of matrics either divided based on time(temporal net) or data type(Multibipartite Lasso)}
 \usage{
-get_betas(list_of_mats, alpha, nfolds)
+get_betas(list_of_mats, alpha, nfolds, type_of_data)
 }
 \arguments{
 \item{list_of_mats}{list of matrices that are divided based on platform or timepoints}
@@ -17,5 +17,5 @@ get_betas(list_of_mats, alpha, nfolds)
 a list with different combinations used and each combination is a nested list with regression result data
 }
 \description{
-Function to perform regression on list of matrics either divided based on time(temporal net) or data type(Multibipartite Lasso)
+performs regression for both temporal and multibipartite GGMs
 }
