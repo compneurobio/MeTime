@@ -125,7 +125,7 @@ setGeneric("convert_s4_to_s3", function(object) standardGeneric("convert_s4_to_s
 
 setMethod("convert_s4_to_s3", "metab_analyser", function(object) {
 		#will add based on analysis - make it module wise or open for suggestions
-		return(list(list_of_data=object@list_of_data, list_of_col_data=object@list_of_col_data, list_of_row_data=object@list_of_row_data, phenotype=object@phenotype))
+		return(list(list_of_data=object@list_of_data, list_of_col_data=object@list_of_col_data, list_of_row_data=object@list_of_row_data, annotations=object@annotations))
 	})
 
 # #' Function to split data wrt to needed timepoints. Converts S4 back to S3 as well for other analysis.
@@ -178,7 +178,8 @@ setMethod("prep_data_for_ggms", "metab_analyser", function(object, which_type, m
 setGeneric("add_screening_vars", function(object, vars) standardGeneric("add_screening_vars"))
 
 setMethod("add_screening_vars", "metab_analyser", function(object, vars) {
-		phenotype <- object@phenotype
+		phenotype_name <- object@annotations$phenotype
+		phenotype <- object@list_of_data[[phenotype_name]]
 		screening <- phenotype[grep("-1|-2", rownames(phenotype)), ]
 		new_rows <- as.data.frame(screening[, vars])
 		new_rows <- na.omit(new_rows)

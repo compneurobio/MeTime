@@ -4,14 +4,18 @@
 \alias{automated_temporal_network}
 \title{An automated function to caluclate temporal network with lagged model}
 \usage{
-automated_temporal_network(object, lag, timepoints)
+automated_temporal_network(object, lag, rho, timepoints, which_data)
 }
 \arguments{
 \item{object}{object obtained after applying prep_data_for_ggms() on S4 object of class metab_analyser}
 
 \item{lag}{which lagged model to use. 1 means one-lagged model, similary 2,3,..etc}
 
-\item{timepoints}{timepoints of interest that are to be used to build networks}
+\item{rho}{parameter for regression coefficient}
+
+\item{timepoints}{timepoints of interest that are to be used to build networks(in the order of measurement)}
+
+\item{which_data}{dataset or datasets to be used}
 }
 \value{
 temporal network data with edgelist and regression values

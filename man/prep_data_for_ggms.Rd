@@ -4,7 +4,7 @@
 \alias{prep_data_for_ggms}
 \title{Function to prepare and preprocess S4 objects to use it for gaussian gaphical models. Also converts S4 to S3}
 \usage{
-prep_data_for_ggms(object, which_type)
+prep_data_for_ggms(object, which_type, mlp_or_temp)
 }
 \arguments{
 \item{object}{An object of class metab_analyser}

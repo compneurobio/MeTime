@@ -39,9 +39,9 @@ adni_ggm_convert_longitudinal <- function(data){
 #' @param threshold type of multiple hypothesis correction. Available are Bonferoni("bonferoni"), Benjamini-Hochberg("FDR") and independent tests method("li", also see Li et al ....)
 #' @return a dataframe with edges, partial correlation and associated p-values 
 #' @export
-adni_ggm_calc_ggm_dynamic <- function(data, threshhold=c("bonferoni", "FDR", "li")){
+adni_ggm_calc_ggm_dynamic <- function(data, threshhold=c("bonferoni", "FDR", "li")) {
   # check if longitudinal
-  if(!longitudinal::is.longitudinal(data)) stop("data is not a longitudinal object")
+  if(!longitudinal::is.longitudinal(data)) stop("data is not a longitudinal object") 
   
   met.ggm <- GeneNet::ggm.estimate.pcor(data, method="dynamic")     # retrieve GGM
   met.ggm.edges <- GeneNet::network.test.edges(met.ggm, plot=F)           # calculate edge statistics
@@ -51,20 +51,16 @@ adni_ggm_calc_ggm_dynamic <- function(data, threshhold=c("bonferoni", "FDR", "li
   fdr.thresh <- 0.05
     
   # cut at threshold
-  if(threshhold=="FDR"){
-    met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$qval < 0.05),]
-  }
-  else if(threshhold=="li"){
-    data <- data %>% as.matrix() %>% .[,] %>% as.data.frame()  
-    cordat <- cor(data)
-    eigenvals <- eigen(cordat)$values
-    li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
-    met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < 0.05/li.thresh),]
-}
-
-  }
-  else if(threshhold=="bonferoni"){
-    met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < p.thresh),]
+  if(threshhold=="FDR") {
+      met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$qval < 0.05),]
+  } else if(threshhold=="li"){
+      data <- data %>% as.matrix() %>% .[,] %>% as.data.frame()  
+      cordat <- cor(data)
+      eigenvals <- eigen(cordat)$values
+      li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
+      met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < 0.05/li.thresh),]
+  } else if(threshhold=="bonferoni"){
+      met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < p.thresh),]
   }
   
   ## Reinsert node (metabolite) names
@@ -78,7 +74,7 @@ adni_ggm_calc_ggm_dynamic <- function(data, threshhold=c("bonferoni", "FDR", "li
   met.ggm.edges.filtered$node2 <- node2list
   ## Filter edges for significant partial correlations that are also significant pairwise correlations
   edge2rem <- NULL
-  for(i in 1:nrow(met.ggm.edges.filtered)){
+  for(i in 1:nrow(met.ggm.edges.filtered)) {
     cor.nodes <- cor.test(data[,met.ggm.edges.filtered$node1[i]],data[,met.ggm.edges.filtered$node2[i]])
     # Print and store those that do not make it
     if(cor.nodes$p.value > p.thresh){
@@ -174,7 +170,9 @@ automated_ggm_mlp <- function(object, which_data, rho, nfolds, timepoints) {
 #Add vector option for colors and timepoint fold change network
 #check how many metabs are matching back to metadata 
 #add layout parameters
-ggm_visualizer <- function(network, type_of_plot, metadata, main, type_of_data, timepoints_fold, layout_by) {
+#look for the mbpl paper and temporal network paper
+#all functions with scripts and examples
+ggm_visualizer <- function(network, type_of_plot, metadata, main, type_of_data, timepoints_fold) {
       
       #sanitychecks
       stopifnot(colnames(metadata) %in% c("name","group","class"))
@@ -276,11 +274,10 @@ ggm_visualizer <- function(network, type_of_plot, metadata, main, type_of_data, 
           #initiating the graph based on type of data - single
           if(type_of_data %in% "single") {
               graph <- createNetworkFromDataFrames(node, edge, title=main, collection="DataFrame_type") %>%
-                        setNodeColorMapping("group", unique(node$group), get_palette(length(unique(node$group)), mapping.type="d") %>%
+                        setNodeColorMapping("group", unique(node$group), get_palette(length(unique(node$group))), mapping.type="d") %>%
                         setEdgeLineWidthMapping('weight', c(max(edge$weight), min(edge$weight)), c(10*max(edge$weight), 10*min(edge$weight))) %>%
                         setEdgeLineStyleMapping("interaction", c("positive", "negative"), c("SOLID","LONG_DASH")) %>%
                         setNodeCustomLinearGradient(c("#DDDDDD", "#888888"),anchors = c(10*min(node$score), 10*max(node$score)))
-
           #initiating the graph based on type of data - multi
           } else if(type_of_data %in% "multi") {
               #Adding shapes to showcase different kinds of data
@@ -296,11 +293,10 @@ ggm_visualizer <- function(network, type_of_plot, metadata, main, type_of_data, 
                         setNodeShapeMapping("class", unique(node$class), shapes[length(unique(node$class))]) %>%
                         setEdgeLineWidthMapping('weight', c(max(edge$weight), min(edge$weight)), c(10*max(edge$weight), 10*min(edge$weight))) %>%
                         setEdgeLineStyleMapping("interaction", c("positive", "negative"), c("SOLID","LONG_DASH")) %>%
-                        setNodeCustomLinearGradient(c("#DDDDDD", "#888888"),anchors = c(10*min(node$score), 10*max(node$score))) %>%
+                        setNodeCustomLinearGradient(c("#DDDDDD", "#888888"),anchors = c(10*min(node$score), 10*max(node$score)))
           } else {
                stop("Check the input for type_of_data. The type chosen is not available")
           }
-
       } else {
          stop("Check the input for type_of_plot. The type chosen is not available")
       }

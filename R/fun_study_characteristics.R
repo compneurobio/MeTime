@@ -6,6 +6,7 @@
 #' @param object An object of class metab_analyser
 #' @param colname Name of the variable whose distribution is of interest
 #' @param which_data Name of the dataset from which the samples will be extracted
+#'
 #' @return a list with either 1) density plot, mean table acc to timepoint and variable type or 
 #'								2) bar plot, line plot, and variable type
 #' @export
@@ -14,7 +15,8 @@ setGeneric("distribution_plotter", function(object, colname, which_data, strats)
 setMethod("distribution_plotter", "metab_analyser",function(object, colname, which_data, strats=NULL) {
 	data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 	data <- data[[1]]
-	phenotype <- object@phenotype
+	phenotype_name <- object@annotations$phenotype
+	phenotype <- object@list_of_data[[phenotype_name]]
 	var_type <- c()
 	vec <- phenotype[,colname]
 	vec <- na.omit(vec)
@@ -90,6 +92,7 @@ setMethod("distribution_plotter", "metab_analyser",function(object, colname, whi
 #' @param object An object of class metab_analyser
 #' @param cols_for_vis choose the colnames from phenotype data that you want to show in the text labels
 #' @param which_data Name of the dataset from which the samples will be extracted
+#' 
 #' @return an interactive pca plot with text that can be modified.
 #' @export
 setGeneric("pca_plotter_general", function(object, which_data, cols_for_vis) standardGeneric("pca_plotter_general") )
@@ -101,7 +104,8 @@ setMethod("pca_plotter_general", "metab_analyser", function(object, which_data, 
 	data <- data[, which(apply(data,2,var) !=0)]
 	data <- data[which(apply(data,1,var) != 0), ]
 	data <- na.omit(data)
-	phenotype <- object@phenotype
+	phenotype_name <- object@annotations$phenotype
+	phenotype <- object@list_of_data[[phenotype_name]]
 	phenotype <- phenotype[rownames(phenotype) %in% rownames(data),]
 	timepoints <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2])))
 	levels <- unique(sort(as.numeric(unlist(lapply(strsplit(timepoints, split="t", fixed=TRUE), function(x) return(x[2]))))))
@@ -129,6 +133,7 @@ setMethod("pca_plotter_general", "metab_analyser", function(object, which_data, 
 #' @param which_data Name of the dataset from which the samples will be extracted
 #' @param metab_ids name of the column with metabolite names in the col data matix
 #' @param metab_groups name of the column which has the pathway information of the metabolites
+#' 
 #' @return a list with two plot objects 1) samples - tSNE plot of the individuals(samples)
 #'										 2) metabs - tSNE plot of the metabolites(metabs)
 #' @export
@@ -137,10 +142,10 @@ setGeneric("tsne_plotter_general", function(object, which_data, metab_ids, metab
 setMethod("tsne_plotter_general", "metab_analyser", function(object, which_data, metab_ids, metab_groups, cols_for_vis) {
 	data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 	data <- data[[1]]
-	phenotype <- object@phenotype
-	col_data_name <- gsub("_data", "_col_data", which_data)
+	phenotype_name <- object@annotations$phenotype
+	phenotype <- object@list_of_data[[phenotype_name]]
 	data <- as.data.frame(data)
-	col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% col_data_name]
+	col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% which_data]
 	col_data <- as.data.frame(col_data[[1]])
 	groups_metabolites <- as.vector(col_data[ ,metab_groups])
 	data <- na.omit(data)
@@ -174,15 +179,15 @@ setMethod("tsne_plotter_general", "metab_analyser", function(object, which_data,
 #'										 2) metabs - UMAP plot of the metabolites(metabs)
 #' @export
 
-setGeneric("umap_plotter_general", function(object, which_data, metab_ids, metab_groups, cols_for_vis) standardGeneric("umap_plotter_general")) 
+setGeneric("umap_plotter_general", function(object, which_data, metab_ids, metab_groups, cols_for_vis, phenotype_index) standardGeneric("umap_plotter_general")) 
 
-setMethod("umap_plotter_general", "metab_analyser", function(object, which_data, metab_ids, metab_groups, cols_for_vis) {
+setMethod("umap_plotter_general", "metab_analyser", function(object, which_data, metab_ids, metab_groups, cols_for_vis, phenotype_index) {
 	data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 	data <- data[[1]]
-	phenotype <- object@phenotype
-	col_data_name <- gsub("_data", "_col_data", which_data)
+	phenotype_name <- object@annotations$phenotype
+	phenotype <- object@list_of_data[[phenotype_name]]
 	data <- as.data.frame(data)
-	col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% col_data_name]
+	col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% which_data]
 	col_data <- as.data.frame(col_data[[1]])
 	groups_metabolites <- as.vector(col_data[ ,metab_groups])
 	data <- na.omit(data)
@@ -215,20 +220,20 @@ setMethod("umap_plotter_general", "metab_analyser", function(object, which_data,
 #' @param which_data a character vector - Names of the dataset from which the samples will be extracted
 #' @param metab_ids a character vector - names of the column with metabolite names in the col data matix(please make sure they are in the same order as the above ones)
 #' @param metab_groups a character vector - names of the column which has the pathway information of the metabolites(please make sure they are in the same order as the above ones)
+#' @param phenotype_index index of the phenotype data. Can input either the name of the phenotype dataset or the index of the same
 #' @return a list with two plot objects 1) samples - PCA plot of the individuals(".$samples")
 #'										 2) metabs - PCA plot of the metabolites(".$metabs")
 #' @export
-setGeneric("pca_plotter_wrt_common", function(object, which_data, metab_groups, metab_ids, cols_for_vis) standardGeneric("pca_plotter_wrt_common"))
+setGeneric("pca_plotter_wrt_common", function(object, which_data, metab_groups, metab_ids, cols_for_vis, phenotype_index) standardGeneric("pca_plotter_wrt_common"))
 
-setMethod("pca_plotter_wrt_common", "metab_analyser", function(object, which_data, metab_groups, metab_ids, cols_for_vis) {
+setMethod("pca_plotter_wrt_common", "metab_analyser", function(object, which_data, metab_groups, metab_ids, cols_for_vis, phenotype_index) {
 		new_list_of_data <- common_sample_extractor(object)
 		new_list_of_data <- new_list_of_data[names(new_list_of_data) %in% which_data]
 		new_data_for_pca <- do.call(cbind, new_list_of_data)
 		new_data_for_pca <- na.omit(new_data_for_pca)
-		col_data_names <- gsub("_data", "_col_data", which_data)
 		new_data_for_pca <- as.data.frame(new_data_for_pca)
 		data <- object@list_of_col_data
-		col_data <- data[names(data) %in% col_data_names]
+		col_data <- data[names(data) %in% which_data]
 		data_list <- list()
 		for(i in 1:length(col_data)) {
 			names <- col_data[[i]][ ,metab_ids[i]]
@@ -241,7 +246,8 @@ setMethod("pca_plotter_wrt_common", "metab_analyser", function(object, which_dat
 		col_data <- as.data.frame(col_data)
 		colnames(new_data_for_pca) <- unlist(lapply(strsplit(colnames(new_data_for_pca), split="_data.", fixed=TRUE), function(x) return(x[2])))
 		new_data_for_pca <- new_data_for_pca[ ,match(colnames(new_data_for_pca), col_data$names)]
-		phenotype <- object@phenotype
+		phenotype_name <- object@annotations$phenotype
+		phenotype <- object@list_of_data[[phenotype_name]]
 		phenotype <- phenotype[rownames(phenotype) %in% rownames(new_data_for_pca),]
 		phenotype <- phenotype[match(rownames(phenotype), rownames(new_data_for_pca)),]
 		data <- new_data_for_pca
@@ -272,6 +278,7 @@ setMethod("pca_plotter_wrt_common", "metab_analyser", function(object, which_dat
 #' @param which_data a character vector - Names of the dataset from which the samples will be extracted
 #' @param metab_ids a character vector - names of the column with metabolite names in the col data matix(please make sure they are in the same order as the above ones)
 #' @param metab_groups a character vector - names of the column which has the pathway information of the metabolites(please make sure they are in the same order as the above ones)
+#' @param phenotype_index index of the phenotype data. Can input either the name of the phenotype dataset or the index of the same
 #' @return a list with two plot objects 1) samples - tSNE plot of the individuals(".$samples")
 #'										 2) metabs - tSNE plot of the metabolites(".$metabs")
 #' @export
@@ -283,10 +290,9 @@ setMethod("tsne_plotter_wrt_common", "metab_analyser", function(object, which_da
 	new_list_of_data <- new_list_of_data[names(new_list_of_data) %in% which_data]
 	new_data_for_tsne <- do.call(cbind, new_list_of_data)
 	new_data_for_tsne <- na.omit(new_data_for_tsne)
-	col_data_names <- gsub("_data", "_col_data", which_data)
 	new_data_for_tsne <- as.data.frame(new_data_for_tsne)
 	data <- object@list_of_col_data
-	col_data <- data[names(data) %in% col_data_names]
+	col_data <- data[names(data) %in% which_data]
 	data_list <- list()
 	for(i in 1:length(col_data)) {
 		names <- col_data[[i]][ ,metab_ids[i]]
@@ -299,7 +305,8 @@ setMethod("tsne_plotter_wrt_common", "metab_analyser", function(object, which_da
 	col_data <- as.data.frame(col_data)
 	colnames(new_data_for_tsne) <- unlist(lapply(strsplit(colnames(new_data_for_tsne), split="_data.", fixed=TRUE), function(x) return(x[2])))
 	new_data_for_tsne <- new_data_for_tsne[ ,match(colnames(new_data_for_tsne), col_data$names)]
-	phenotype <- object@phenotype
+	phenotype_name <- object@annotations$phenotype
+	phenotype <- object@list_of_data[[phenotype_name]]
 	phenotype <- phenotype[rownames(phenotype) %in% rownames(new_data_for_tsne),]
 	phenotype <- phenotype[match(rownames(phenotype), rownames(new_data_for_tsne)),]
 	data <- new_data_for_tsne
@@ -326,21 +333,21 @@ setMethod("tsne_plotter_wrt_common", "metab_analyser", function(object, which_da
 #' @param which_data a character vector - Names of the dataset from which the samples will be extracted
 #' @param metab_ids a character vector - names of the column with metabolite names in the col data matix(please make sure they are in the same order as the above ones)
 #' @param metab_groups a character vector - names of the column which has the pathway information of the metabolites(please make sure they are in the same order as the above ones)
+#' @param phenotype_index index of the phenotype data. Can input either the name of the phenotype dataset or the index of the same
 #' @return a list with two plot objects 1) samples - UMAP plot of the individuals(".$samples")
 #'										 2) metabs - UMAP plot of the metabolites(".$metabs")
 #' @export
 
-setGeneric("umap_plotter_wrt_common", function(object, which_data, metab_groups, metab_ids, cols_for_vis) standardGeneric("umap_plotter_wrt_common"))
+setGeneric("umap_plotter_wrt_common", function(object, which_data, metab_groups, metab_ids, cols_for_vis, phenotype_index) standardGeneric("umap_plotter_wrt_common"))
 
-setMethod("umap_plotter_wrt_common", "metab_analyser", function(object, which_data, metab_groups, metab_ids, cols_for_vis) {
+setMethod("umap_plotter_wrt_common", "metab_analyser", function(object, which_data, metab_groups, metab_ids, cols_for_vis, phenotype_index) {
 	new_list_of_data <- common_sample_extractor(object)
 	umap_data <- new_list_of_data[names(new_list_of_data) %in% which_data]
 	umap_data <- do.call(cbind, umap_data)
 	umap_data <- as.data.frame(na.omit(umap_data))
 	colnames(umap_data) <- unlist(lapply(strsplit(colnames(umap_data), split="_data.", fixed=TRUE), function(x) return(x[2])))
-	col_data_names <- gsub("_data", "_col_data", which_data)
 	data <- object@list_of_col_data
-	col_data <- data[names(data) %in% col_data_names]
+	col_data <- data[names(data) %in% which_data]
 	data_list <- list()
 	for(i in 1:length(col_data)) {
 		names <- col_data[[i]][ ,metab_ids[i]]
@@ -352,7 +359,8 @@ setMethod("umap_plotter_wrt_common", "metab_analyser", function(object, which_da
 	col_data <- do.call(rbind, data_list)
 	col_data <- as.data.frame(col_data)
 	umap_data <- umap_data[ ,match(colnames(umap_data), col_data$names)]
-	phenotype <- object@phenotype
+	phenotype_name <- object@annotations$phenotype
+	phenotype <- object@list_of_data[[phenotype_name]]
 	phenotype <- phenotype[rownames(phenotype) %in% rownames(umap_data),]
 	phenotype <- phenotype[match(rownames(phenotype), rownames(umap_data)),]
 	umap_fit_metabs <- umap::umap(t(umap_data))

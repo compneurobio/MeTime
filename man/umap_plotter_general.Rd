@@ -4,7 +4,14 @@
 \alias{umap_plotter_general}
 \title{Function to plot UMAP plots for one data set}
 \usage{
-umap_plotter_general(object, which_data, metab_ids, metab_groups, cols_for_vis)
+umap_plotter_general(
+  object,
+  which_data,
+  metab_ids,
+  metab_groups,
+  cols_for_vis,
+  phenotype_index
+)
 }
 \arguments{
 \item{object}{An object of class metab_analyser}

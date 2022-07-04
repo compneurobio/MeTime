@@ -4,18 +4,28 @@
 \alias{ggm_visualizer}
 \title{Function to plot data from network and object after calculating a certain ggm}
 \usage{
-ggm_visualizer(network, type, metadata)
+ggm_visualizer(
+  network,
+  type_of_plot,
+  metadata,
+  main,
+  type_of_data,
+  timepoints_fold
+)
 }
 \arguments{
-\item{network}{dataframe with information of the network}
+\item{network}{dataframe with information of the network colnames should be in this format node1, node2, corr_val and other columns}
 
-\item{type}{Type of visualization options = c("visNetwork", "Cytoscape", "networkD3")}
+\item{metadata}{dataframe with three columns and another optional column 1) metabs("name") and 2) Group("group") they belong to 3) and the class("class") they belong to
+see get_metadata_for_plotting() for more information. The optional column is for colors}
 
-\item{metadata}{dataframe with two columns 1) metabs and 2) Group they belong to}
+\item{type_of_data}{character defining the type of network applied to a single network or a multi dataset network. Available options = c("single","multi")}
+
+\item{type}{Type of visualization options = c("visNetwork", "Cytoscape")}
 }
 \value{
 network plot based on the type chosen by the user
 }
 \description{
-A function to plot ggms of different kinds namely visNetwork, cytoscape and networkD3
+A function to plot ggms of different kinds namely visNetwork and cytoscape. Make sure that cytoscape is running before running this function
 }

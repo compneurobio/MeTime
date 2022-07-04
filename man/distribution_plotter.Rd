@@ -4,7 +4,7 @@
 \alias{distribution_plotter}
 \title{Function for Plotting distributions of phenotypic variables}
 \usage{
-distribution_plotter(object, colname, which_data)
+distribution_plotter(object, colname, which_data, strats)
 }
 \arguments{
 \item{object}{An object of class metab_analyser}

@@ -4,10 +4,12 @@
 \alias{get_files_and_names}
 \title{Function to pack all the data into a single object of class "metab_analyser"}
 \usage{
-get_files_and_names(path)
+get_files_and_names(path, annotations_index)
 }
 \arguments{
 \item{path}{Path to the parent directory}
+
+\item{annotations_index}{a list to be filled as follows = list(phenotype="Name or index of the files", medication="Name or index of the files")}
 }
 \value{
 An object of class metab_analyser
@@ -17,5 +19,5 @@ This function loads all the files from the parent directory. It assumes a
 certain naming pattern as follows: "datatype_\link{NULL|col|row}_data.rds"
 Any other naming pattern is not allowed. The function first writes
 all files into a list and each type of data is packed into its respective
-class i.e. col_data, row_data or phenotype data
+class i.e. col_data, row_data or data
 }

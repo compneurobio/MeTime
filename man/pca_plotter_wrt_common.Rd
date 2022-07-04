@@ -9,7 +9,8 @@ pca_plotter_wrt_common(
   which_data,
   metab_groups,
   metab_ids,
-  cols_for_vis
+  cols_for_vis,
+  phenotype_index
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ pca_plotter_wrt_common(
 \item{metab_ids}{a character vector - names of the column with metabolite names in the col data matix(please make sure they are in the same order as the above ones)}
 
 \item{cols_for_vis}{choose the colnames from phenotype data that you want to show in the text labels}
+
+\item{phenotype_index}{index of the phenotype data. Can input either the name of the phenotype dataset or the index of the same}
 }
 \value{
 a list with two plot objects 1) samples - PCA plot of the individuals(".$samples")
