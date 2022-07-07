@@ -15,7 +15,7 @@ calc_boruta(object, which_x, which_y, verbose, output_loc, file_name)
 
 \item{verbose}{Information provided on steps being processed}
 
-\item{output_loc}{ṕath to the parent directory where in the out file wíll be stored}
+\item{output_loc}{path to the parent directory where in the out file wíll be stored}
 
 \item{file_name}{name of the out file}
 }

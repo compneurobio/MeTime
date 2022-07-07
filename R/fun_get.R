@@ -85,8 +85,10 @@ setMethod("get_samples_and_timepoints", "metab_analyser", function(object, which
 #' for the metabolites for visualization as a separate column. For samples the metadata is basically the columns of interest from the phenotype table 
 #' that can be used to see sample information in the interactive plot.
 #' @examples
-#' # metadata_list <- get_metadata_for_plotting(object=metab_analyser_object, which_data="name/s of datasets", metab_groups="colname/s of the group column in each dataset in order"
-#' #										metab_ids="colname/s of the metabolite_name column in each dataset in order", cols_for_vis_samples="colnames of phenotype data for samples", screeing_vars=TRUE/FALSE)
+#' # metadata_list <- get_metadata_for_plotting(object=metab_analyser_object, which_data="name/s of datasets", 
+#'											metab_groups="colname/s of the group column in each dataset in order"
+#' 											metab_ids="colname/s of the metabolite_name column in each dataset in order", 
+#'											cols_for_vis_samples="colnames of phenotype data for samples", screeing_vars=TRUE/FALSE)
 #' @param object S4 object of class metab_analyse
 #' @param which_data choose the dataset from which metabolites will be extracted for metadata
 #' @param metab_groups choose the column that has metabolite groups
@@ -207,7 +209,7 @@ setMethod("get_append_metab_object", "metab_analyser",function(object, data, col
 #' Function to pack all the data into a single object of class "metab_analyser" 
 #'
 #' @description This function loads all the files from the parent directory. It assumes a 
-#' certain naming pattern as follows: "datatype_[NULL|col|row]_data.rds" 
+#' certain naming pattern as follows: "datatype_[None|col|row]_data.rds" 
 #' Any other naming pattern is not allowed. The function first writes 
 #' all files into a list and each type of data is packed into its respective 
 #' class i.e. col_data, row_data or data

@@ -18,7 +18,7 @@ setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="lis
 #' @param object An object of class metab_analyser
 #' @param which_x Name of the dataset to be used for training
 #' @param which_y Name of the dataset to be used for testing
-#' @param output_loc ṕath to the parent directory where in the out file wíll be stored
+#' @param output_loc path to the parent directory where in the out file wíll be stored
 #' @param file_name name of the out file
 #' @param verbose Information provided on steps being processed
 #' @return List of conservation index results

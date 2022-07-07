@@ -37,6 +37,8 @@ for the metabolites for visualization as a separate column. For samples the meta
 that can be used to see sample information in the interactive plot.
 }
 \examples{
-# metadata_list <- get_metadata_for_plotting(object=metab_analyser_object, which_data="name/s of datasets", metab_groups="colname/s of the group column in each dataset in order"
-#										metab_ids="colname/s of the metabolite_name column in each dataset in order", cols_for_vis_samples="colnames of phenotype data for samples", screeing_vars=TRUE/FALSE)
+# metadata_list <- get_metadata_for_plotting(object=metab_analyser_object, which_data="name/s of datasets", 
+										metab_groups="colname/s of the group column in each dataset in order"
+											metab_ids="colname/s of the metabolite_name column in each dataset in order", 
+										cols_for_vis_samples="colnames of phenotype data for samples", screeing_vars=TRUE/FALSE)
 }
