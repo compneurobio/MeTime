@@ -17,5 +17,9 @@ calc_metabolite_conservation(object, which_data, verbose)
 List of conservation index results
 }
 \description{
-Function to calculate metabolite conservation index
+Method applied on the object metab_analyser to calculate the metabotype conservation index
+}
+\examples{
+#calculating metabolite_conservation_index 
+out <- calc_metabolite_conservation(object=metab_analyser_object, which_data="Name of the dataset")
 }

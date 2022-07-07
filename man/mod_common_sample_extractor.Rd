@@ -19,3 +19,7 @@ list_of_data with common samples across all time points
 A method applied on object of class metab_analyse to extract common samples across datasets. Also has an option to split the data according
 timepoints(modify_split_acc_time()).
 }
+\examples{
+# extracting common samples across all datasets
+new_list_of_data <- mod_common_sample_extractor(object=metab_analyser_object)
+}

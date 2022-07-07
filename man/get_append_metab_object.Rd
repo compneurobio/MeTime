@@ -4,16 +4,26 @@
 \alias{get_append_metab_object}
 \title{This function appends an object for MetabAnalyze with a new dataset.}
 \usage{
-get_append_metab_object(object, data, col_data, row_data, name = NULL)
+get_append_metab_object(object, data, col_data, row_data, name)
 }
 \arguments{
 \item{object}{S4 MetabAnalyze object}
 
-\item{data}{data.frame containing row_data: id column of row data has to match rownames of data}
+\item{data}{data.frame containing data}
+
+\item{col_data}{data.frame containing col_data: id column of col data has to match colnames of data}
+
+\item{row_data}{data.frame containing row_data: id column of row data has to match rownames of data}
+
+\item{name}{Name of the new dataset}
 }
 \value{
 An object of class metab_analyser
 }
 \description{
-This function appends an object for MetabAnalyze with a new dataset.
+function to apply on metab_analyse object to append a new dataset into the existing object
+}
+\examples{
+# append data frames into the metab_analyser object
+appended_object <- get_append_metab_object(object=metab_analyser_object, data=data, row_data=data, col_data=col_data, name="name of the new dataset")
 }

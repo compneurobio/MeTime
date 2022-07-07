@@ -2,8 +2,7 @@
 % Please edit documentation in R/fun_mod.R
 \name{mod_split_acc_to_time}
 \alias{mod_split_acc_to_time}
-\title{Function to split the list of dataframes into a nested list with each dataframe
-being split into into dataframes of different timepoints}
+\title{Function to split data acoording to time}
 \usage{
 mod_split_acc_to_time(object)
 }
@@ -16,4 +15,8 @@ list_of_data with each dataframe being broken into a list of dataframes with res
 \description{
 Function to split the list of dataframes into a nested list with each dataframe
 being split into into dataframes of different timepoints
+}
+\examples{
+#splitting data according to time
+new_data <- mod_split_acc_to_time(object=metab_analyser_object)
 }

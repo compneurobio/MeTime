@@ -13,8 +13,11 @@ setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="lis
 								 annotations="list")) 
 
 
-#' Function to split the list of dataframes into a nested list with each dataframe 
+#' Function to split data acoording to time
+#' @description Function to split the list of dataframes into a nested list with each dataframe 
 #' being split into into dataframes of different timepoints
+#' @examples #splitting data according to time
+#' new_data <- mod_split_acc_to_time(object=metab_analyser_object)
 #' @param object An object of class metab_analyser
 #' @return list_of_data with each dataframe being broken into a list of dataframes with respect to the timepoint they belong to
 #' @export
@@ -42,6 +45,8 @@ setMethod("mod_split_acc_to_time", "metab_analyser", function(object) {
 #' Function to get only common samples from the dataframes in list_of_data 
 #' @description A method applied on object of class metab_analyse to extract common samples across datasets. Also has an option to split the data according 
 #' timepoints(modify_split_acc_time()).
+#' @examples # extracting common samples across all datasets
+#' new_list_of_data <- mod_common_sample_extractor(object=metab_analyser_object)
 #' @param object An object of class metab_anaylser
 #' @param time_splitter A boolean input: True leads to splitting of the data wrt time, 
 #'	 					False returns all the dataframes as they are with common rows
@@ -67,6 +72,8 @@ setMethod("mod_common_sample_extractor", "metab_analyser",function(object, time_
 
 #' Function to Convert S4 object of class metab_analyser to an S3 object with same architecture
 #' @description converter function to be applied onto metab_analyse object to convert into a standard list of S3 type.
+#' @examples # convert S4 object to a list
+#' s3_list <- mod_convert_s4_to_s3(object=metab_analyser_object)
 #' @param object An object of class metab_analyser
 #' @return An S3 object of the same data as metab_analyser in other words all slots are now converted into nested lists
 #' @export
@@ -80,10 +87,12 @@ setMethod("mod_convert_s4_to_s3", "metab_analyser", function(object) {
 
 #' Function to prepare and preprocess S4 objects to use it for gaussian gaphical models. Also converts S4 to S3
 #' @description function to be applied onto metab_analyse object to convert into a standard list of S3 type based on the type of GGM analysis to be performed.
-#' 
+#' @examples # prepping data for genenet ggm for single dataset
+#' object <- mod_prep_data_for_ggms(object, which_type="single", mlp_or_temp=FALSE)
 #' @param object An object of class metab_analyser
 #' @param which_type two choices either: 1) single -  converts S4 to S3 and returns the nested list
 #' 										 2) multi - extracts common samples across the dataframes and returns an S3 nested list
+#' @param mlp_or_temp boolean. If true preps data for multibipartite lasso or temporal networks
 #' @return An S3 object(nested list) with the same architecture as that of class metab_analyser
 #' @export 
 setGeneric("mod_prep_data_for_ggms", function(object, which_type, mlp_or_temp) standardGeneric("mod_prep_data_for_ggms"))
@@ -111,6 +120,8 @@ setMethod("mod_prep_data_for_ggms", "metab_analyser", function(object, which_typ
 
 #' Function to apply log transformation
 #' @description Function to log transform data
+#' @examples # example to apply log transformation
+#' object <- mod_logtrans(object, which_data="name of the dataset", base=2)
 #' @param object An object of class metab_analyser
 #' @param which_data Name of the dataset to be used
 #' @param base base of log to be used
@@ -126,6 +137,8 @@ setMethod("mod_logtrans", "metab_analyser",function(object, which_data, base=2) 
 
 #' Function to scale the data
 #' @description Functions for scaling
+#' @examples # example to apply scaling
+#' object <- mod_zscore(object, which_data="name of the dataset")
 #' @param object An object of class metab_analyser
 #' @param which_data Name of the dataset to be used
 #' @return An object of class metab_analyser with processed data
@@ -143,6 +156,9 @@ setMethod("mod_zscore", "metab_analyser", function(object, which_data) {
 
 
 #' Functions for selecting time points
+#' @description a method applied onto class metab_analyser in order to extract timepoints of interest from a dataset
+#' @examples #example to use this function
+#' object <- mod_filter_tp(object, timepoints=c(0,12,24), full=TRUE, which_data="Name of the dataset")
 #' @param object An object of class metab_analyser
 #' @param timepoints time points to be selected
 #' @param which_data Name of the dataset to be used

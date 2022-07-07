@@ -19,5 +19,9 @@ mod_filter_tp(object, timepoints, full, which_data)
 An object of class metab_analyser with processed data
 }
 \description{
-Functions for selecting time points
+a method applied onto class metab_analyser in order to extract timepoints of interest from a dataset
+}
+\examples{
+#example to use this function
+object <- mod_filter_tp(object, timepoints=c(0,12,24), full=TRUE, which_data="Name of the dataset")
 }

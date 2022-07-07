@@ -16,6 +16,8 @@ setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="lis
 #' Function to add measurements taken at screening time for samples to be added to all timepoints
 #' @description A method applied on the s4 object of class "metab_analyser" to add all those datapoints that were measured only during screening
 #' to all the respective samples at all timepoints
+#' @examples # adding APOEGrp, PTGENDER to all data points
+#' new_with_apoegrp_sex <- add_screening_vars(object=metab_analyser_object, vars=c("APOEGrp","PTGENDER"))
 #' @param object An object of class metab_analyser
 #' @param vars A character naming the vars of interest
 #' @return phenotype data which can be replaced into the original object or use it separately with a different object

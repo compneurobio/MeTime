@@ -1,5 +1,7 @@
 #' Get a palette of "n" distinct colorblind friendly colors 
 #' @description Function to get a palette of distinct colorblind friendly colors, the distinctiveness is determined by the difference in their hue values.
+#' @examples
+#' # colors=get_palette(n=10)
 #' @param n number of colors wanted in the palette
 #' @return a color palette vector with colors in the form of hex codes
 #' @export 
@@ -27,6 +29,8 @@ get_palette <- function(n) {
 #' Function to Obtain textual information for visualization in interactive plots
 #' @description a standard function to be applied on data matrices or dataframes with the colnames of interest such that the information from
 #' columns is visualized in the interactive plot
+#' @examples
+#' # text = get_text(data=data.frame, colnames=c("names","of","columns", "of", "interest"))
 #' @param data a dataframe with plotting data along with other variables for visualization
 #' @param colnames a character vector with the names of the variables that you want to see on the plot
 #' @return a vector with strings that can be parsed into plot_ly text.
@@ -52,6 +56,8 @@ get_text <- function(data, colnames) {
 #' Function to know the number of timepoints and the total number of samples available at that point
 #' @description A method applied onto s4 object of class "metab_analyser" so as to obtain the number of unique samples available
 #' at each timepoint. 
+#' @examples
+#' # newdata <- get_samples_and_timepoints(object=metab_analyser_object, which_data="Name of dataset of interest")
 #' @param object An object of class metab_analyser
 #' @param which_data Name of the dataset in context
 #' @return A data table with timepoints and number of samples at each timepoint
@@ -78,6 +84,9 @@ setMethod("get_samples_and_timepoints", "metab_analyser", function(object, which
 #' Metadata includes their ontology that is the pathway they belong to and also the class or the dataset type. can also add colors
 #' for the metabolites for visualization as a separate column. For samples the metadata is basically the columns of interest from the phenotype table 
 #' that can be used to see sample information in the interactive plot.
+#' @examples
+#' # metadata_list <- get_metadata_for_plotting(object=metab_analyser_object, which_data="name/s of datasets", metab_groups="colname/s of the group column in each dataset in order"
+#' #										metab_ids="colname/s of the metabolite_name column in each dataset in order", cols_for_vis_samples="colnames of phenotype data for samples", screeing_vars=TRUE/FALSE)
 #' @param object S4 object of class metab_analyse
 #' @param which_data choose the dataset from which metabolites will be extracted for metadata
 #' @param metab_groups choose the column that has metabolite groups
@@ -129,8 +138,10 @@ setMethod("get_metadata_for_plotting", "metab_analyser", function(object, which_
 
 #' Function to pack all the data into a single object of class "metab_analyser" 
 #'
-#' This function creates an object for MetabAnalyze from a dataset.
-#'
+#' @description This function creates an object for MetabAnalyze from a dataset.
+#' @examples
+#' # new_metab_analyser_object <- get_make_metab_object(data=data_frame, col_data=col_data_frame, row_data=row_data, name="name of the new dataset", 
+#'                                annotations_index=list(phenotype="name of phenotype", medication="name of medication"))
 #' @param data data.frame containing data 
 #' @param col_data data.frame containing col_data: id column of col data has to match colnames of data
 #' @param row_data data.frame containing row_data: id column of row data has to match rownames of data
@@ -152,25 +163,35 @@ get_make_metab_object <- function(data, col_data, row_data, annotations_index, n
   
   list_of_row_data <- list()
   list_of_row_data[[name]] <- row_data
-  
-  metab_object <- new("metab_analyser", 
+  if(!is.null(annotations_index)) {
+  	metab_object <- new("metab_analyser", 
                       list_of_data=list_of_data, 
                       list_of_col_data=list_of_col_data, 
                       list_of_row_data=list_of_row_data,
                       annotations=annotations_index)
+  } else {
+  	metab_object <- new("metab_analyser", 
+                      list_of_data=list_of_data, 
+                      list_of_col_data=list_of_col_data, 
+                      list_of_row_data=list_of_row_data)
+  }
+  
   return(metab_object)
 }
 
 #' This function appends an object for MetabAnalyze with a new dataset.
-#'
+#' @description function to apply on metab_analyse object to append a new dataset into the existing object
+#' @examples # append data frames into the metab_analyser object
+#' appended_object <- get_append_metab_object(object=metab_analyser_object, data=data, row_data=data, col_data=col_data, name="name of the new dataset")
 #' @param object S4 MetabAnalyze object
 #' @param data data.frame containing data 
-#' @param data data.frame containing col_data: id column of col data has to match colnames of data
-#' @param data data.frame containing row_data: id column of row data has to match rownames of data
+#' @param col_data data.frame containing col_data: id column of col data has to match colnames of data
+#' @param row_data data.frame containing row_data: id column of row data has to match rownames of data
+#' @param name Name of the new dataset
 #' @return An object of class metab_analyser
 #' @export
-
-get_append_metab_object <- function(object, data, col_data, row_data, name=NULL) {
+setGeneric("get_append_metab_object", function(object, data, col_data, row_data, name) standardGeneric("get_append_metab_object"))
+setMethod("get_append_metab_object", "metab_analyser",function(object, data, col_data, row_data, name=NULL) {
   if(is.null(name)) name <- "set1"
   if(!all(rownames(data) %in% row_data$id) & !all(colnames(data) %in% col_data$id)) stop("id of col or row data do not match dataframe")
   if(!all(c("id","rid","timepoint") %in% names(row_data))) stop("id, subject or timepoint column missing")
@@ -181,7 +202,7 @@ get_append_metab_object <- function(object, data, col_data, row_data, name=NULL)
   
 
   return(object)
-}
+})
 
 #' Function to pack all the data into a single object of class "metab_analyser" 
 #'
@@ -191,6 +212,12 @@ get_append_metab_object <- function(object, data, col_data, row_data, name=NULL)
 #' all files into a list and each type of data is packed into its respective 
 #' class i.e. col_data, row_data or data
 #'
+#' @examples
+
+#' # Input in the parent directory from which the data files are to be extracted along with annotations_index to specify phenotype and medication data
+
+#' get_files_and_names(path=/path/to/parent/directory, annotations_index=list(phenotype="Name of phenotype file", medication="name of phenotype file"))
+
 #' @param path Path to the parent directory
 #' @param annotations_index a list to be filled as follows = list(phenotype="Name or index of the files", medication="Name or index of the files")
 #' @return An object of class metab_analyser
@@ -237,21 +264,3 @@ get_files_and_names <- function(path, annotations_index) {
 #' @export 
 setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
 								 annotations="list")) 
-
-#' This function that extracts data from the MetabAnalyze object as a list
-#'
-#' @param object S4 MetabAnalyze object
-#' @param which_data which data should we extract
-#' @return list of data
-#' @export
-
-get_data_as_list <- function(object, which_data) {
-  stopifnot(which_data %in% names(object@list_of_data))
-  
-  out <- list(
-    data <- object@list_of_data[[which_data]],
-    col_data <- object@list_of_col_data[[which_data]],
-    row_data <- object@list_of_row_data[[which_data]]
-  )
-  return(out)
-}

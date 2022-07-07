@@ -18,3 +18,6 @@ A data table with timepoints and number of samples at each timepoint
 A method applied onto s4 object of class "metab_analyser" so as to obtain the number of unique samples available
 at each timepoint.
 }
+\examples{
+# newdata <- get_samples_and_timepoints(object=metab_analyser_object, which_data="Name of dataset of interest")
+}

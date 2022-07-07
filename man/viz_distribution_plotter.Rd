@@ -18,5 +18,9 @@ a list with either 1) density plot, mean table acc to timepoint and variable typ
 2) bar plot, line plot, and variable type
 }
 \description{
-Function for Plotting distributions of phenotypic variables
+A method to be applied onto s4 object so as to obtain distributions of various phenotypic variables
+}
+\examples{
+# extracting distribuiton of Age from dataset1
+plot <- viz_distribution_plotter(object, colname="Age", which_data="dataset1", strats="additional columns for facet wrapping")
 }

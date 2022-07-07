@@ -14,6 +14,9 @@ setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="lis
 
 
 #' Function for Plotting distributions of phenotypic variables 
+#' @description A method to be applied onto s4 object so as to obtain distributions of various phenotypic variables
+#' @examples # extracting distribuiton of Age from dataset1
+#' plot <- viz_distribution_plotter(object, colname="Age", which_data="dataset1", strats="additional columns for facet wrapping")
 #' @param object An object of class metab_analyser
 #' @param colname Name of the variable whose distribution is of interest
 #' @param which_data Name of the dataset from which the samples will be extracted
@@ -129,5 +132,14 @@ viz_dimensionality_reduction <- function(data_list, metadata_list, axes_labels, 
 		return(list(metabs=plot_metabs, samples=plot_samples))
 	}
 }
-
+ 
 #viz_conversation_index()
+
+#Create an S4 class for plotting
+#analysis - needs ids or names, col_id data, row_data, col_data
+
+#setClass("metab_plot", slots=c(data_list="list", metadata_list="list", parameter_list="list"))
+
+#set slots in parameter_list and keep it as an inheritance
+
+#make_plot_object function to be written

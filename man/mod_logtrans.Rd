@@ -19,3 +19,7 @@ An object of class metab_analyser with processed data
 \description{
 Function to log transform data
 }
+\examples{
+# example to apply log transformation
+object <- mod_logtrans(object, which_data="name of the dataset", base=2)
+}

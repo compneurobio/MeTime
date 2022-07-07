@@ -15,3 +15,7 @@ An S3 object of the same data as metab_analyser in other words all slots are now
 \description{
 converter function to be applied onto metab_analyse object to convert into a standard list of S3 type.
 }
+\examples{
+# convert S4 object to a list
+s3_list <- mod_convert_s4_to_s3(object=metab_analyser_object)
+}

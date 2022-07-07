@@ -15,3 +15,6 @@ a color palette vector with colors in the form of hex codes
 \description{
 Function to get a palette of distinct colorblind friendly colors, the distinctiveness is determined by the difference in their hue values.
 }
+\examples{
+# colors=get_palette(n=10)
+}

@@ -11,10 +11,16 @@ mod_prep_data_for_ggms(object, which_type, mlp_or_temp)
 
 \item{which_type}{two choices either: 1) single -  converts S4 to S3 and returns the nested list
 2) multi - extracts common samples across the dataframes and returns an S3 nested list}
+
+\item{mlp_or_temp}{boolean. If true preps data for multibipartite lasso or temporal networks}
 }
 \value{
 An S3 object(nested list) with the same architecture as that of class metab_analyser
 }
 \description{
 function to be applied onto metab_analyse object to convert into a standard list of S3 type based on the type of GGM analysis to be performed.
+}
+\examples{
+# prepping data for genenet ggm for single dataset
+object <- mod_prep_data_for_ggms(object, which_type="single", mlp_or_temp=FALSE)
 }

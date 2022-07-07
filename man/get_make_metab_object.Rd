@@ -23,3 +23,7 @@ An object of class metab_analyser
 \description{
 This function creates an object for MetabAnalyze from a dataset.
 }
+\examples{
+# new_metab_analyser_object <- get_make_metab_object(data=data_frame, col_data=col_data_frame, row_data=row_data, name="name of the new dataset", 
+                               annotations_index=list(phenotype="name of phenotype", medication="name of medication"))
+}

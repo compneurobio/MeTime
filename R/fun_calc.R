@@ -13,9 +13,13 @@ setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="lis
                  annotations="list")) 
 
 
-#' Function to calculate metabotype conservation index
+#' Function to calculate dependent variables
+#' @description An S4 method to be applied on the metab_analyser object so as to calculate dependent variables
 #' @param object An object of class metab_analyser
-#' @param which_data Name of the dataset to be used
+#' @param which_x Name of the dataset to be used for training
+#' @param which_y Name of the dataset to be used for testing
+#' @param output_loc ṕath to the parent directory where in the out file wíll be stored
+#' @param file_name name of the out file
 #' @param verbose Information provided on steps being processed
 #' @return List of conservation index results
 #' @export
@@ -56,6 +60,9 @@ setMethod("calc_boruta", "metab_analyser", function(object, which_x,which_y, ver
 
 
 #' Function to calculate metabotype conservation index
+#' @description Method applied on the object metab_analyser to calculate the metabotype conservation index
+#' @examples #calculating metabotype_conservation_index 
+#' out <- calc_metabotype_conservation(object=metab_analyser_object, which_data="Name of the dataset")
 #' @param object An object of class metab_analyser
 #' @param which_data Name of the dataset to be used
 #' @param verbose Information provided on steps being processed
@@ -147,6 +154,9 @@ setMethod("calc_metabotype_conservation", "metab_analyser", function(object, whi
 
 
 #' Function to calculate metabolite conservation index
+#' @description Method applied on the object metab_analyser to calculate the metabotype conservation index
+#' @examples #calculating metabolite_conservation_index 
+#' out <- calc_metabolite_conservation(object=metab_analyser_object, which_data="Name of the dataset")
 #' @param object An object of class metab_analyser
 #' @param which_data Name of the dataset to be used
 #' @param verbose Information provided on steps being processed
@@ -244,6 +254,13 @@ setMethod("calc_metabolite_conservation", "metab_analyser", function(object, whi
 
 #' Function to calculate dimensionality reduction methods such as tsne, umap and pca.
 #' @description A method to apply on s4 object of class metab_analyse in order to obtain information after dimensionality reduction on a dataset/s
+#' @examples
+#' #calculate PCA
+#' pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="PCA")
+#' #calculate UMAP
+#' pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="UMAP")
+#' #calculate tSNE
+#' pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="tSNE")
 #' @param object An object of class metab_analyse
 #' @param which_data a character vector - Names of the dataset from which the samples will be extracted
 #' @param type type of the dimensionality reduction method to be applied. Accepted inputs are "UMAP", "tSNE", "PCA"

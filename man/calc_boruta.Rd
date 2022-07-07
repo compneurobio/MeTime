@@ -2,20 +2,26 @@
 % Please edit documentation in R/fun_calc.R
 \name{calc_boruta}
 \alias{calc_boruta}
-\title{Function to calculate metabotype conservation index}
+\title{Function to calculate dependent variables}
 \usage{
 calc_boruta(object, which_x, which_y, verbose, output_loc, file_name)
 }
 \arguments{
 \item{object}{An object of class metab_analyser}
 
+\item{which_x}{Name of the dataset to be used for training}
+
+\item{which_y}{Name of the dataset to be used for testing}
+
 \item{verbose}{Information provided on steps being processed}
 
-\item{which_data}{Name of the dataset to be used}
+\item{output_loc}{ṕath to the parent directory where in the out file wíll be stored}
+
+\item{file_name}{name of the out file}
 }
 \value{
 List of conservation index results
 }
 \description{
-Function to calculate metabotype conservation index
+An S4 method to be applied on the metab_analyser object so as to calculate dependent variables
 }

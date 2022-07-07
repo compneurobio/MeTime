@@ -20,3 +20,11 @@ a list with two dataframes containing the dimensionality reduction information 1
 \description{
 A method to apply on s4 object of class metab_analyse in order to obtain information after dimensionality reduction on a dataset/s
 }
+\examples{
+#calculate PCA
+pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="PCA")
+#calculate UMAP
+pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="UMAP")
+#calculate tSNE
+pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="tSNE")
+}

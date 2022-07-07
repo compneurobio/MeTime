@@ -17,3 +17,7 @@ An object of class metab_analyser with processed data
 \description{
 Functions for scaling
 }
+\examples{
+# example to apply scaling
+object <- mod_zscore(object, which_data="name of the dataset")
+}

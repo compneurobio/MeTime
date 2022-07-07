@@ -18,3 +18,6 @@ a vector with strings that can be parsed into plot_ly text.
 a standard function to be applied on data matrices or dataframes with the colnames of interest such that the information from
 columns is visualized in the interactive plot
 }
+\examples{
+# text = get_text(data=data.frame, colnames=c("names","of","columns", "of", "interest"))
+}

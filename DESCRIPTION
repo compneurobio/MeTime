@@ -2,8 +2,10 @@ Package: MeTime
 Title: What the Package Does (One Line, Title Case)
 Version: 1.0.0
 Authors@R: 
-    person("Bharadwa", "Marella", , "bharadwaj.marella@helmholtz-muenchen.de", role = c("aut", "cre"))
-    person("Patrick", "Dreher", "patrick.dreher@helmholtz-muenchen.de", role=c("aut"))
+    c(
+    person(given="Bharadwaj", family="Marella", email="bharadwaj.marella@helmholtz-muenchen.de", role = c("aut", "cre")),
+    person(given="Patrick", family="Dreher", email="patrick.dreher@helmholtz-muenchen.de", role=c("aut"))
+    )
 Description: What the package does (one paragraph).
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license

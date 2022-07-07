@@ -18,3 +18,7 @@ phenotype data which can be replaced into the original object or use it separate
 A method applied on the s4 object of class "metab_analyser" to add all those datapoints that were measured only during screening
 to all the respective samples at all timepoints
 }
+\examples{
+# adding APOEGrp, PTGENDER to all data points
+new_with_apoegrp_sex <- add_screening_vars(object=metab_analyser_object, vars=c("APOEGrp","PTGENDER"))
+}
