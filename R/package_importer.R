@@ -12,3 +12,11 @@ usethis::use_package("longitudinal", type="depends")
 usethis::use_package("glmnet", type="depends")
 usethis::use_package("Boruta", type="depends")
 
+#' Setting new structure definition for the metime_analyser object
+#' @description function to see the structure of metime_analyser object
+#' @param object S4 object of class metime_analyser
+#' @examples structure(object)
+#' @return structure of the S4 object
+#' @export
+setGeneric("structure", function(object) standardGeneric("structure"))
+setMethod("structure", "metime_analyser", function(object) return(str(object, max.level = 3)))
