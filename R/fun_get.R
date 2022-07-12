@@ -209,7 +209,7 @@ setMethod("get_append_metab_object", "metab_analyser",function(object, data, col
 #' Function to pack all the data into a single object of class "metab_analyser" 
 #'
 #' @description This function loads all the files from the parent directory. It assumes a 
-#' certain naming pattern as follows: "datatype_[None|col|row]_data.rds" 
+#' certain naming pattern as follows: "datatype_None|col|row_data.rds" 
 #' Any other naming pattern is not allowed. The function first writes 
 #' all files into a list and each type of data is packed into its respective 
 #' class i.e. col_data, row_data or data
@@ -266,3 +266,42 @@ get_files_and_names <- function(path, annotations_index) {
 #' @export 
 setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
 								 annotations="list")) 
+
+
+
+#' Function to make a plottable object for viz functions
+#' @description function to generate metab_plotter object from plot data and metadata
+#' @param data_list list of plotable data
+#' @param metadata_list list of metadata for each plot in data list
+#' @param plot_type type of the plot you want to build. eg: "box", "dot" etc
+#' @param aesthetics aesthetics for the plot object
+get_make_plotter_object <- function(data_list, metadata_list, plot_type, aesthetics) {
+			data_list <- lapply(data_list, function(x) return(x[sort(rownames(x)), ]))
+			plot_data <- list()
+			empty_plots <- list()
+			count <- 1
+			for(i in 1:length(data_list)) {
+					plot_data[[count]] <- cbind(data_list[[i]], metadata_list[[i]])
+					empty_plots[[count]] <- ggplot(plot_data[[count]])
+					count <- count + 1
+			}
+			if(plot_type %in% "dot") {
+					empty_plots <- lapply(empty_plots, function(x) return(x + geom_point()))
+			} else if(plot_type %in% "heatmaps") {
+					empty_plots <- lapply(empty_plots, function(x) return(x + geom_tile()))
+			}
+			object <- new("metab_plotter", plot_data=plot_data, plot_parameters=empty_plots)
+			return(object)
+}
+#'add aesthetics to plot and so on in this style 
+#'lol <- aes(x=x, y=y)
+#'empty_plot$mappings <- lol
+
+#' creating metab_plotter class that converts calculations and metadata as a plotable object to parse into viz_dot_plotter, viz_heatmap_plotter etc
+#' Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
+#' 				  - plot_parameters: ggplot() object with predefined aesthetics 
+#'                - aesthetics: list to define aesthetics. Eg: aesthetics=list(x="colname.x", y="colname.y", color="color", shape="shape")
+#'                - the example above will be predefined in all the methods that creates this object. 
+#' @rdname metab_plotter
+#' @export
+setClass("metab_plotter", slots=list(plot_data="list", plot_parameters="list", aesthetics="list"))

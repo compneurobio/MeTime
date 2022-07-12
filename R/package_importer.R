@@ -1,16 +1,14 @@
-#' @import tidyverse
-#' @import igraph
-#' @import visNetwork
-#' @import plyr
-#' @import DT
-#' @import M3C
-#' @import umap
-#' @import ggplot2 
-#' @import plotly
-#' @import RColorBrewer
-#' @import tidyverse
-#' @import GeneNet
-#' @import longitudinal
-#' @import glmnet
-#' @import Boruta
+usethis::use_package("tidyverse", type="depends")
+usethis::use_package("igraph", type="depends")
+usethis::use_package("plyr", type="depends")
+usethis::use_package("DT", type="depends")
+usethis::use_package("M3C", type="depends")
+usethis::use_package("umap", type="depends")
+usethis::use_package("ggplot2", type="depends")
+usethis::use_package("plotly", type="depends")
+usethis::use_package("RColorBrewer", type="depends")
+usethis::use_package("GeneNet", type="depends")
+usethis::use_package("longitudinal", type="depends")
+usethis::use_package("glmnet", type="depends")
+usethis::use_package("Boruta", type="depends")
 

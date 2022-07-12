@@ -13,6 +13,18 @@ setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="lis
 								 annotations="list")) 
 
 
+#' creating metab_plotter class that converts calculations and metadata as a plotable object to parse into viz_dot_plotter, viz_heatmap_plotter etc
+#' Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
+#' 				  - plot_parameters: ggplot() object with predefined aesthetics 
+#'                - aesthetics: list to define aesthetics. Eg: aesthetics=list(x="colname.x", y="colname.y", color="color", shape="shape")
+#'                - the example above will be predefined in all the methods that creates this object. 
+#' @rdname metab_plotter
+#' @export
+setClass("metab_plotter", slots=list(plot_data="list", plot_parameters="list", aesthetics="list"))
+
+
+
+
 #' Function for Plotting distributions of phenotypic variables 
 #' @description A method to be applied onto s4 object so as to obtain distributions of various phenotypic variables
 #' @examples # extracting distribuiton of Age from dataset1
