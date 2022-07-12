@@ -54,17 +54,17 @@ get_text <- function(data, colnames) {
 	} 
 
 #' Function to know the number of timepoints and the total number of samples available at that point
-#' @description A method applied onto s4 object of class "metab_analyser" so as to obtain the number of unique samples available
+#' @description A method applied onto s4 object of class "metime_analyser" so as to obtain the number of unique samples available
 #' at each timepoint. 
 #' @examples
-#' # newdata <- get_samples_and_timepoints(object=metab_analyser_object, which_data="Name of dataset of interest")
-#' @param object An object of class metab_analyser
+#' # newdata <- get_samples_and_timepoints(object=metime_analyser_object, which_data="Name of dataset of interest")
+#' @param object An object of class metime_analyser
 #' @param which_data Name of the dataset in context
 #' @return A data table with timepoints and number of samples at each timepoint
 #' @export
 setGeneric("get_samples_and_timepoints", function(object, which_data) standardGeneric("get_samples_and_timepoints"))
 
-setMethod("get_samples_and_timepoints", "metab_analyser", function(object, which_data){
+setMethod("get_samples_and_timepoints", "metime_analyser", function(object, which_data){
 		data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 		data <- data[[1]]
 		unique_timepoints <- unique(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2]))))
@@ -80,16 +80,16 @@ setMethod("get_samples_and_timepoints", "metab_analyser", function(object, which
 	})
 
 #' Function to extract metadata of the metabolites and samples for visualization(both dimensionality reduction and GGMs)
-#' @description A method applied onto s4 object of class "metab_analyser" so as to obtain metadata of the metabolites and samples.
+#' @description A method applied onto s4 object of class "metime_analyser" so as to obtain metadata of the metabolites and samples.
 #' Metadata includes their ontology that is the pathway they belong to and also the class or the dataset type. can also add colors
 #' for the metabolites for visualization as a separate column. For samples the metadata is basically the columns of interest from the phenotype table 
 #' that can be used to see sample information in the interactive plot.
 #' @examples
-#' # metadata_list <- get_metadata_for_plotting(object=metab_analyser_object, which_data="name/s of datasets", 
+#' # metadata_list <- get_metadata_for_plotting(object=metime_analyser_object, which_data="name/s of datasets", 
 #'											metab_groups="colname/s of the group column in each dataset in order"
 #' 											metab_ids="colname/s of the metabolite_name column in each dataset in order", 
 #'											cols_for_vis_samples="colnames of phenotype data for samples", screeing_vars=TRUE/FALSE)
-#' @param object S4 object of class metab_analyse
+#' @param object S4 object of class metime_analyser
 #' @param which_data choose the dataset from which metabolites will be extracted for metadata
 #' @param metab_groups choose the column that has metabolite groups
 #' @param metab_ids chodse the column that has metabolite names
@@ -99,7 +99,7 @@ setMethod("get_samples_and_timepoints", "metab_analyser", function(object, which
 #' @return metadata dataframe with names, groups and class
 setGeneric("get_metadata_for_plotting", function(object, which_data, metab_groups, metab_ids, cols_for_vis_samples, screening_vars) standardGeneric("get_metadata_for_plotting"))
 
-setMethod("get_metadata_for_plotting", "metab_analyser", function(object, which_data, metab_groups, metab_ids, cols_for_vis_samples, screening_vars=NULL) {
+setMethod("get_metadata_for_plotting", "metime_analyser", function(object, which_data, metab_groups, metab_ids, cols_for_vis_samples, screening_vars=NULL) {
     	#Extracting metadata for metabolites and samples simultaneously
     	list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
     	list_of_col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% which_data]
@@ -138,18 +138,18 @@ setMethod("get_metadata_for_plotting", "metab_analyser", function(object, which_
 	})  
 
 
-#' Function to pack all the data into a single object of class "metab_analyser" 
+#' Function to pack all the data into a single object of class "metime_analyser" 
 #'
-#' @description This function creates an object for MetabAnalyze from a dataset.
+#' @description This function creates an object of class metime_analyser from a dataset.
 #' @examples
-#' # new_metab_analyser_object <- get_make_metab_object(data=data_frame, col_data=col_data_frame, row_data=row_data, name="name of the new dataset", 
+#' # new_metime_analyser_object <- get_make_metab_object(data=data_frame, col_data=col_data_frame, row_data=row_data, name="name of the new dataset", 
 #'                                annotations_index=list(phenotype="name of phenotype", medication="name of medication"))
 #' @param data data.frame containing data 
 #' @param col_data data.frame containing col_data: id column of col data has to match colnames of data
 #' @param row_data data.frame containing row_data: id column of row data has to match rownames of data
 #' @param annotations_index a list to be filled as follows = list(phenotype="Name or index of the file/list", medication="Name or index of the files/list")
 #' @param name character. Name you want to assign to the new dataset that is being added on
-#' @return An object of class metab_analyser
+#' @return An object of class metime_analyser
 #' @export
 
 get_make_metab_object <- function(data, col_data, row_data, annotations_index, name=NULL) {
@@ -166,13 +166,13 @@ get_make_metab_object <- function(data, col_data, row_data, annotations_index, n
   list_of_row_data <- list()
   list_of_row_data[[name]] <- row_data
   if(!is.null(annotations_index)) {
-  	metab_object <- new("metab_analyser", 
+  	metab_object <- new("metime_analyser", 
                       list_of_data=list_of_data, 
                       list_of_col_data=list_of_col_data, 
                       list_of_row_data=list_of_row_data,
                       annotations=annotations_index)
   } else {
-  	metab_object <- new("metab_analyser", 
+  	metab_object <- new("metime_analyser", 
                       list_of_data=list_of_data, 
                       list_of_col_data=list_of_col_data, 
                       list_of_row_data=list_of_row_data)
@@ -181,19 +181,19 @@ get_make_metab_object <- function(data, col_data, row_data, annotations_index, n
   return(metab_object)
 }
 
-#' This function appends an object for MetabAnalyze with a new dataset.
-#' @description function to apply on metab_analyse object to append a new dataset into the existing object
-#' @examples # append data frames into the metab_analyser object
-#' appended_object <- get_append_metab_object(object=metab_analyser_object, data=data, row_data=data, col_data=col_data, name="name of the new dataset")
-#' @param object S4 MetabAnalyze object
+#' This function appends an object of class metime_analyser with a new dataset.
+#' @description function to apply on metime_analyse object to append a new dataset into the existing object
+#' @examples # append data frames into the metime_analyser object
+#' appended_object <- get_append_metab_object(object=metime_analyser_object, data=data, row_data=data, col_data=col_data, name="name of the new dataset")
+#' @param object S4 object of class metime_analyser
 #' @param data data.frame containing data 
 #' @param col_data data.frame containing col_data: id column of col data has to match colnames of data
 #' @param row_data data.frame containing row_data: id column of row data has to match rownames of data
 #' @param name Name of the new dataset
-#' @return An object of class metab_analyser
+#' @return An object of class metime_analyser
 #' @export
 setGeneric("get_append_metab_object", function(object, data, col_data, row_data, name) standardGeneric("get_append_metab_object"))
-setMethod("get_append_metab_object", "metab_analyser",function(object, data, col_data, row_data, name=NULL) {
+setMethod("get_append_metab_object", "metime_analyser",function(object, data, col_data, row_data, name=NULL) {
   if(is.null(name)) name <- "set1"
   if(!all(rownames(data) %in% row_data$id) & !all(colnames(data) %in% col_data$id)) stop("id of col or row data do not match dataframe")
   if(!all(c("id","rid","timepoint") %in% names(row_data))) stop("id, subject or timepoint column missing")
@@ -206,7 +206,7 @@ setMethod("get_append_metab_object", "metab_analyser",function(object, data, col
   return(object)
 })
 
-#' Function to pack all the data into a single object of class "metab_analyser" 
+#' Function to pack all the data into a single object of class "metime_analyser" 
 #'
 #' @description This function loads all the files from the parent directory. It assumes a 
 #' certain naming pattern as follows: "datatype_None|col|row_data.rds" 
@@ -222,7 +222,7 @@ setMethod("get_append_metab_object", "metab_analyser",function(object, data, col
 
 #' @param path Path to the parent directory
 #' @param annotations_index a list to be filled as follows = list(phenotype="Name or index of the files", medication="Name or index of the files")
-#' @return An object of class metab_analyser
+#' @return An object of class metime_analyser
 #' @export
 
 get_files_and_names <- function(path, annotations_index) {
@@ -247,30 +247,30 @@ get_files_and_names <- function(path, annotations_index) {
 	names(list_of_col_data) <- gsub("_col_data", "_data", names(list_of_col_data))
 	names(list_of_row_data) <- names_list[row_data_index]
 	names(list_of_row_data) <- gsub("_row_data", "_data", names(list_of_row_data))
-	metab_object <- new("metab_analyser", list_of_data=list_of_data, list_of_col_data=list_of_col_data, 
+	metab_object <- new("metime_analyser", list_of_data=list_of_data, list_of_col_data=list_of_col_data, 
 										list_of_row_data=list_of_row_data,
 										annotations=annotations_index)
 	return(metab_object)
 }
 
-#creating reference metab-analyser class that creates an object with full data
+#creating reference metime-analyser class that creates an object with full data
 
-#' Constructor to generate an object of class metab_analyser. 
+#' Constructor to generate an object of class metime_analyser. 
 #' contains slots - list_of_data: For the list of all data matrices.
 #'				  - list_of_col_data: list of all the col data files in the same order.
 #' 				  - list_of_row_data: list of all the row data files in the same order.
 #' 				  - annotations: list with phenotype and medication. Each of which is character that represents 
 #'									the name of the aforementioned dataset types.  	
 #' 	
-#' @rdname metab_analyser
+#' @rdname metime_analyser
 #' @export 
-setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
+setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
 								 annotations="list")) 
 
 
 
 #' Function to make a plottable object for viz functions
-#' @description function to generate metab_plotter object from plot data and metadata
+#' @description function to generate metime_plotter object from plot data and metadata
 #' @param data_list list of plotable data
 #' @param metadata_list list of metadata for each plot in data list
 #' @param plot_type type of the plot you want to build. eg: "box", "dot" etc
@@ -290,18 +290,19 @@ get_make_plotter_object <- function(data_list, metadata_list, plot_type, aesthet
 			} else if(plot_type %in% "heatmaps") {
 					empty_plots <- lapply(empty_plots, function(x) return(x + geom_tile()))
 			}
-			object <- new("metab_plotter", plot_data=plot_data, plot_parameters=empty_plots)
+			object <- new("metime_plotter", plot_data=plot_data, plot_parameters=empty_plots)
 			return(object)
 }
 #'add aesthetics to plot and so on in this style 
 #'lol <- aes(x=x, y=y)
 #'empty_plot$mappings <- lol
 
-#' creating metab_plotter class that converts calculations and metadata as a plotable object to parse into viz_dot_plotter, viz_heatmap_plotter etc
+#' creating metime_plotter class that converts calculations and metadata as a plotable object to parse into viz_dot_plotter, viz_heatmap_plotter etc
 #' Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
 #' 				  - plot_parameters: ggplot() object with predefined aesthetics 
 #'                - aesthetics: list to define aesthetics. Eg: aesthetics=list(x="colname.x", y="colname.y", color="color", shape="shape")
 #'                - the example above will be predefined in all the methods that creates this object. 
-#' @rdname metab_plotter
+#' @rdname metime_plotter
 #' @export
-setClass("metab_plotter", slots=list(plot_data="list", plot_parameters="list", aesthetics="list"))
+setClass("metime_plotter", slots=list(plot_data="list", plot_parameters="list", aesthetics="list"))
+

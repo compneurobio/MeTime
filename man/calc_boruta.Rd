@@ -7,7 +7,7 @@
 calc_boruta(object, which_x, which_y, verbose, output_loc, file_name)
 }
 \arguments{
-\item{object}{An object of class metab_analyser}
+\item{object}{An object of class metime_analyser}
 
 \item{which_x}{Name of the dataset to be used for training}
 
@@ -23,5 +23,5 @@ calc_boruta(object, which_x, which_y, verbose, output_loc, file_name)
 List of conservation index results
 }
 \description{
-An S4 method to be applied on the metab_analyser object so as to calculate dependent variables
+An S4 method to be applied on the metime_analyser object so as to calculate dependent variables
 }

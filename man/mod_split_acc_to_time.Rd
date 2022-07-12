@@ -7,7 +7,7 @@
 mod_split_acc_to_time(object)
 }
 \arguments{
-\item{object}{An object of class metab_analyser}
+\item{object}{An object of class metime_analyser}
 }
 \value{
 list_of_data with each dataframe being broken into a list of dataframes with respect to the timepoint they belong to
@@ -18,5 +18,5 @@ being split into into dataframes of different timepoints
 }
 \examples{
 #splitting data according to time
-new_data <- mod_split_acc_to_time(object=metab_analyser_object)
+new_data <- mod_split_acc_to_time(object=metime_analyser_object)
 }

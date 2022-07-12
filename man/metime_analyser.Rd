@@ -2,44 +2,44 @@
 % Please edit documentation in R/fun_add.R, R/fun_calc.R, R/fun_get.R,
 %   R/fun_mod.R, R/fun_viz.R
 \docType{class}
-\name{metab_analyser-class}
-\alias{metab_analyser-class}
-\title{Constructor to generate an object of class metab_analyser.
+\name{metime_analyser-class}
+\alias{metime_analyser-class}
+\title{Constructor to generate an object of class metime_analyser.
 contains slots - list_of_data: For the list of all data matrices.
 - list_of_col_data: list of all the col data files in the same order.
 - list_of_row_data: list of all the row data files in the same order.
 - annotations: list with phenotype and medication. Each of which is character that represents
 the name of the aforementioned dataset types.}
 \description{
-Constructor to generate an object of class metab_analyser.
+Constructor to generate an object of class metime_analyser.
 contains slots - list_of_data: For the list of all data matrices.
 - list_of_col_data: list of all the col data files in the same order.
 - list_of_row_data: list of all the row data files in the same order.
 - annotations: list with phenotype and medication. Each of which is character that represents
 the name of the aforementioned dataset types.
 
-Constructor to generate an object of class metab_analyser.
+Constructor to generate an object of class metime_analyser.
 contains slots - list_of_data: For the list of all data matrices.
 - list_of_col_data: list of all the col data files in the same order.
 - list_of_row_data: list of all the row data files in the same order.
 - annotations: list with phenotype and medication. Each of which is character that represents
 the name of the aforementioned dataset types.
 
-Constructor to generate an object of class metab_analyser.
+Constructor to generate an object of class metime_analyser.
 contains slots - list_of_data: For the list of all data matrices.
 - list_of_col_data: list of all the col data files in the same order.
 - list_of_row_data: list of all the row data files in the same order.
 - annotations: list with phenotype and medication. Each of which is character that represents
 the name of the aforementioned dataset types.
 
-Constructor to generate an object of class metab_analyser.
+Constructor to generate an object of class metime_analyser.
 contains slots - list_of_data: For the list of all data matrices.
 - list_of_col_data: list of all the col data files in the same order.
 - list_of_row_data: list of all the row data files in the same order.
 - annotations: list with phenotype and medication. Each of which is character that represents
 the name of the aforementioned dataset types.
 
-Constructor to generate an object of class metab_analyser.
+Constructor to generate an object of class metime_analyser.
 contains slots - list_of_data: For the list of all data matrices.
 - list_of_col_data: list of all the col data files in the same order.
 - list_of_row_data: list of all the row data files in the same order.

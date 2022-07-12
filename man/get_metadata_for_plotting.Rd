@@ -14,7 +14,7 @@ get_metadata_for_plotting(
 )
 }
 \arguments{
-\item{object}{S4 object of class metab_analyse}
+\item{object}{S4 object of class metime_analyser}
 
 \item{which_data}{choose the dataset from which metabolites will be extracted for metadata}
 
@@ -31,13 +31,13 @@ is set to NULL if nothing is added to it}
 metadata dataframe with names, groups and class
 }
 \description{
-A method applied onto s4 object of class "metab_analyser" so as to obtain metadata of the metabolites and samples.
+A method applied onto s4 object of class "metime_analyser" so as to obtain metadata of the metabolites and samples.
 Metadata includes their ontology that is the pathway they belong to and also the class or the dataset type. can also add colors
 for the metabolites for visualization as a separate column. For samples the metadata is basically the columns of interest from the phenotype table
 that can be used to see sample information in the interactive plot.
 }
 \examples{
-# metadata_list <- get_metadata_for_plotting(object=metab_analyser_object, which_data="name/s of datasets", 
+# metadata_list <- get_metadata_for_plotting(object=metime_analyser_object, which_data="name/s of datasets", 
 										metab_groups="colname/s of the group column in each dataset in order"
 											metab_ids="colname/s of the metabolite_name column in each dataset in order", 
 										cols_for_vis_samples="colnames of phenotype data for samples", screeing_vars=TRUE/FALSE)

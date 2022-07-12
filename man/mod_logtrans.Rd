@@ -7,14 +7,14 @@
 mod_logtrans(object, which_data, base)
 }
 \arguments{
-\item{object}{An object of class metab_analyser}
+\item{object}{An object of class metime_analyser}
 
 \item{which_data}{Name of the dataset to be used}
 
 \item{base}{base of log to be used}
 }
 \value{
-An object of class metab_analyser with processed data
+An object of class metime_analyser with processed data
 }
 \description{
 Function to log transform data

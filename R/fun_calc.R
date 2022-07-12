@@ -1,21 +1,21 @@
-#creating reference metab-analyser class that creates an object with full data
+#creating reference metime-analyser class that creates an object with full data
 
-#' Constructor to generate an object of class metab_analyser. 
+#' Constructor to generate an object of class metime_analyser. 
 #' contains slots - list_of_data: For the list of all data matrices.
 #'          - list_of_col_data: list of all the col data files in the same order.
 #'          - list_of_row_data: list of all the row data files in the same order.
 #'          - annotations: list with phenotype and medication. Each of which is character that represents 
 #'                  the name of the aforementioned dataset types.   
 #'  
-#' @rdname metab_analyser
+#' @rdname metime_analyser
 #' @export 
-setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
+setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
                  annotations="list")) 
 
 
 #' Function to calculate dependent variables
-#' @description An S4 method to be applied on the metab_analyser object so as to calculate dependent variables
-#' @param object An object of class metab_analyser
+#' @description An S4 method to be applied on the metime_analyser object so as to calculate dependent variables
+#' @param object An object of class metime_analyser
 #' @param which_x Name of the dataset to be used for training
 #' @param which_y Name of the dataset to be used for testing
 #' @param output_loc path to the parent directory where in the out file wíll be stored
@@ -26,7 +26,7 @@ setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="lis
 #' 
 #' 
 setGeneric("calc_boruta", function(object, which_x, which_y, verbose, output_loc, file_name) standardGeneric("calc_boruta"))
-setMethod("calc_boruta", "metab_analyser", function(object, which_x,which_y, verbose=F, output_loc=getwd(), file_name="boruta") {
+setMethod("calc_boruta", "metime_analyser", function(object, which_x,which_y, verbose=F, output_loc=getwd(), file_name="boruta") {
   
   # validate arguments
   #stopifnot(length(which_x)==1, length(which_y)==1, all(c(which_x,which_y) %in% object@list_of_data))
@@ -60,17 +60,17 @@ setMethod("calc_boruta", "metab_analyser", function(object, which_x,which_y, ver
 
 
 #' Function to calculate metabotype conservation index
-#' @description Method applied on the object metab_analyser to calculate the metabotype conservation index
+#' @description Method applied on the object metime_analyser to calculate the metabotype conservation index
 #' @examples #calculating metabotype_conservation_index 
-#' out <- calc_metabotype_conservation(object=metab_analyser_object, which_data="Name of the dataset")
-#' @param object An object of class metab_analyser
+#' out <- calc_metabotype_conservation(object=metime_analyser_object, which_data="Name of the dataset")
+#' @param object An object of class metime_analyser
 #' @param which_data Name of the dataset to be used
 #' @param verbose Information provided on steps being processed
 #' @return List of conservation index results
 #' @export
 
 setGeneric("calc_metabotype_conservation", function(object, which_data, verbose) standardGeneric("calc_metabotype_conservation"))
-setMethod("calc_metabotype_conservation", "metab_analyser", function(object, which_data, verbose=F) {
+setMethod("calc_metabotype_conservation", "metime_analyser", function(object, which_data, verbose=F) {
   #define data to be processed
   #data_position <- which(names(object@list_of_data) %in% which_data)
   out=list()
@@ -154,10 +154,10 @@ setMethod("calc_metabotype_conservation", "metab_analyser", function(object, whi
 
 
 #' Function to calculate metabolite conservation index
-#' @description Method applied on the object metab_analyser to calculate the metabotype conservation index
+#' @description Method applied on the object metime_analyser to calculate the metabotype conservation index
 #' @examples #calculating metabolite_conservation_index 
-#' out <- calc_metabolite_conservation(object=metab_analyser_object, which_data="Name of the dataset")
-#' @param object An object of class metab_analyser
+#' out <- calc_metabolite_conservation(object=metime_analyser_object, which_data="Name of the dataset")
+#' @param object An object of class metime_analyser
 #' @param which_data Name of the dataset to be used
 #' @param verbose Information provided on steps being processed
 #' @return List of conservation index results
@@ -165,7 +165,7 @@ setMethod("calc_metabotype_conservation", "metab_analyser", function(object, whi
 #' 
 #' 
 setGeneric("calc_metabolite_conservation", function(object, which_data, verbose) standardGeneric("calc_metabolite_conservation"))
-setMethod("calc_metabolite_conservation", "metab_analyser", function(object, which_data, verbose=F) {
+setMethod("calc_metabolite_conservation", "metime_analyser", function(object, which_data, verbose=F) {
   #define data to be processed
   #data_position <- which(names(object@list_of_data) %in% which_data)
   out=list()
@@ -253,15 +253,15 @@ setMethod("calc_metabolite_conservation", "metab_analyser", function(object, whi
 
 
 #' Function to calculate dimensionality reduction methods such as tsne, umap and pca.
-#' @description A method to apply on s4 object of class metab_analyse in order to obtain information after dimensionality reduction on a dataset/s
+#' @description A method to apply on s4 object of class metime_analyse in order to obtain information after dimensionality reduction on a dataset/s
 #' @examples
 #' #calculate PCA
-#' pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="PCA")
+#' pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="PCA")
 #' #calculate UMAP
-#' pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="UMAP")
+#' pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="UMAP")
 #' #calculate tSNE
-#' pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="tSNE")
-#' @param object An object of class metab_analyse
+#' pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="tSNE")
+#' @param object An object of class metime_analyser
 #' @param which_data a character vector - Names of the dataset from which the samples will be extracted
 #' @param type type of the dimensionality reduction method to be applied. Accepted inputs are "UMAP", "tSNE", "PCA"
 #' 
@@ -269,7 +269,7 @@ setMethod("calc_metabolite_conservation", "metab_analyser", function(object, whi
 #'                     2) metabs - data of the metabolites(".$metabs")
 setGeneric("calc_dimensionality_reduction", function(object, which_data, type) standardGeneric("calc_dimensionality_reduction"))
 
-setMethod("calc_dimensionality_reduction", "metab_analyser", function(object, which_data, type) {
+setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, which_data, type) {
       if(length(which_data) > 1) {
         object@list_of_data <- mod_common_sample_extractor(object@list_of_data)
         data <- object@list_of_data[names(object@list_of_data) %in% which_data]
@@ -306,15 +306,15 @@ setMethod("calc_dimensionality_reduction", "metab_analyser", function(object, wh
 #' @description calculate pairwise correlations
 #' This function creates a dataframe for plotting from a dataset.
 #' @examples # Example to calculate correlations
-#' dist <- calc_correlation(object=metab_analyser_object, which_data="name of the dataset", 
+#' dist <- calc_correlation(object=metime_analyser_object, which_data="name of the dataset", 
 #'           method="pearson")
-#' @param object S4 Object of class metab_analyser
+#' @param object S4 Object of class metime_analyser
 #' @param which_data specify datasets to calculate on. One or more possible
 #' @param method default setting: method="pearson", Alternative "spearman" also possible
 #' @return data.frame with pairwise results
 #' @export
 setGeneric("calc_correlation", function(object, which_data, method) standardGeneric("calc_correlation"))
-setMethod("calc_correlation", "metab_analyser", function(object, which_data, method="pearson"){
+setMethod("calc_correlation", "metime_analyser", function(object, which_data, method="pearson"){
   stopifnot(all(which_data %in% names(object@list_of_data)))
   flattenCorrMatrix <- function(cormat, pmat) {
     ut <- upper.tri(cormat)
@@ -347,9 +347,9 @@ setMethod("calc_correlation", "metab_analyser", function(object, which_data, met
 #' @description calculate pairwise distances
 #' This function creates a dataframe for plotting from a dataset.
 #' @examples # Example to calculate pairwise distances
-#' dist <- calc_pairwise_distance(object=metab_analyser_object, which_data="name of the dataset", 
+#' dist <- calc_pairwise_distance(object=metime_analyser_object, which_data="name of the dataset", 
 #'           method="euclidean")
-#' @param object S4 Object with 
+#' @param object S4 Object of class metime_analyser
 #' @param which_data specify datasets to calculate on. One or more possible
 #' @param method default setting: method="euclidean", Alternative "maximum","minimum",
 #' "manhattan","canberra","minkowski" are also possible
@@ -357,7 +357,7 @@ setMethod("calc_correlation", "metab_analyser", function(object, which_data, met
 #' @export
 
 setGeneric("calc_pairwise_distance", function(object, which_data, method) standardGeneric("calc_pairwise_distance"))
-setMethod("calc_pairwise_distance", "metab_analyser", function(object, which_data, method="euclidean"){
+setMethod("calc_pairwise_distance", "metime_analyser", function(object, which_data, method="euclidean"){
   stopifnot(all(which_data %in% names(object@list_of_data)))
   
   flattenCorrMatrix <- function(cormat) {

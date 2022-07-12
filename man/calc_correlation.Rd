@@ -7,7 +7,7 @@
 calc_correlation(object, which_data, method)
 }
 \arguments{
-\item{object}{S4 Object of class metab_analyser}
+\item{object}{S4 Object of class metime_analyser}
 
 \item{which_data}{specify datasets to calculate on. One or more possible}
 
@@ -22,6 +22,6 @@ This function creates a dataframe for plotting from a dataset.
 }
 \examples{
 # Example to calculate correlations
-dist <- calc_correlation(object=metab_analyser_object, which_data="name of the dataset", 
+dist <- calc_correlation(object=metime_analyser_object, which_data="name of the dataset", 
           method="pearson")
 }

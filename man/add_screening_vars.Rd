@@ -7,7 +7,7 @@
 add_screening_vars(object, vars)
 }
 \arguments{
-\item{object}{An object of class metab_analyser}
+\item{object}{An object of class metime_analyser}
 
 \item{vars}{A character naming the vars of interest}
 }
@@ -15,10 +15,10 @@ add_screening_vars(object, vars)
 phenotype data which can be replaced into the original object or use it separately with a different object
 }
 \description{
-A method applied on the s4 object of class "metab_analyser" to add all those datapoints that were measured only during screening
+A method applied on the s4 object of class "metime_analyser" to add all those datapoints that were measured only during screening
 to all the respective samples at all timepoints
 }
 \examples{
 # adding APOEGrp, PTGENDER to all data points
-new_with_apoegrp_sex <- add_screening_vars(object=metab_analyser_object, vars=c("APOEGrp","PTGENDER"))
+new_with_apoegrp_sex <- add_screening_vars(object=metime_analyser_object, vars=c("APOEGrp","PTGENDER"))
 }

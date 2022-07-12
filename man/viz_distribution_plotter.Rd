@@ -7,7 +7,7 @@
 viz_distribution_plotter(object, colname, which_data, strats)
 }
 \arguments{
-\item{object}{An object of class metab_analyser}
+\item{object}{An object of class metime_analyser}
 
 \item{colname}{Name of the variable whose distribution is of interest}
 

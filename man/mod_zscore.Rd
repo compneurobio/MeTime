@@ -7,12 +7,12 @@
 mod_zscore(object, which_data)
 }
 \arguments{
-\item{object}{An object of class metab_analyser}
+\item{object}{An object of class metime_analyser}
 
 \item{which_data}{Name of the dataset to be used}
 }
 \value{
-An object of class metab_analyser with processed data
+An object of class metime_analyser with processed data
 }
 \description{
 Functions for scaling

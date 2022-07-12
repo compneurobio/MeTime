@@ -2,12 +2,12 @@
 % Please edit documentation in R/fun_get.R
 \name{get_append_metab_object}
 \alias{get_append_metab_object}
-\title{This function appends an object for MetabAnalyze with a new dataset.}
+\title{This function appends an object of class metime_analyser with a new dataset.}
 \usage{
 get_append_metab_object(object, data, col_data, row_data, name)
 }
 \arguments{
-\item{object}{S4 MetabAnalyze object}
+\item{object}{S4 object of class metime_analyser}
 
 \item{data}{data.frame containing data}
 
@@ -18,12 +18,12 @@ get_append_metab_object(object, data, col_data, row_data, name)
 \item{name}{Name of the new dataset}
 }
 \value{
-An object of class metab_analyser
+An object of class metime_analyser
 }
 \description{
-function to apply on metab_analyse object to append a new dataset into the existing object
+function to apply on metime_analyse object to append a new dataset into the existing object
 }
 \examples{
-# append data frames into the metab_analyser object
-appended_object <- get_append_metab_object(object=metab_analyser_object, data=data, row_data=data, col_data=col_data, name="name of the new dataset")
+# append data frames into the metime_analyser object
+appended_object <- get_append_metab_object(object=metime_analyser_object, data=data, row_data=data, col_data=col_data, name="name of the new dataset")
 }

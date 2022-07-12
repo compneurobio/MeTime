@@ -1,27 +1,26 @@
-#creating reference metab-analyser class that creates an object with full data
+#creating reference metime-analyser class that creates an object with full data
 
-#' Constructor to generate an object of class metab_analyser. 
+#' Constructor to generate an object of class metime_analyser. 
 #' contains slots - list_of_data: For the list of all data matrices.
 #'				  - list_of_col_data: list of all the col data files in the same order.
 #' 				  - list_of_row_data: list of all the row data files in the same order.
 #' 				  - annotations: list with phenotype and medication. Each of which is character that represents 
 #'									the name of the aforementioned dataset types.  	
 #' 	
-#' @rdname metab_analyser
+#' @rdname metime_analyser
 #' @export 
-setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
+setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
 								 annotations="list")) 
 
 
-#' creating metab_plotter class that converts calculations and metadata as a plotable object to parse into viz_dot_plotter, viz_heatmap_plotter etc
+#' creating metime_plotter class that converts calculations and metadata as a plotable object to parse into viz_dot_plotter, viz_heatmap_plotter etc
 #' Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
 #' 				  - plot_parameters: ggplot() object with predefined aesthetics 
 #'                - aesthetics: list to define aesthetics. Eg: aesthetics=list(x="colname.x", y="colname.y", color="color", shape="shape")
 #'                - the example above will be predefined in all the methods that creates this object. 
-#' @rdname metab_plotter
+#' @rdname metime_plotter
 #' @export
-setClass("metab_plotter", slots=list(plot_data="list", plot_parameters="list", aesthetics="list"))
-
+setClass("metime_plotter", slots=list(plot_data="list", plot_parameters="list", aesthetics="list"))
 
 
 
@@ -29,7 +28,7 @@ setClass("metab_plotter", slots=list(plot_data="list", plot_parameters="list", a
 #' @description A method to be applied onto s4 object so as to obtain distributions of various phenotypic variables
 #' @examples # extracting distribuiton of Age from dataset1
 #' plot <- viz_distribution_plotter(object, colname="Age", which_data="dataset1", strats="additional columns for facet wrapping")
-#' @param object An object of class metab_analyser
+#' @param object An object of class metime_analyser
 #' @param colname Name of the variable whose distribution is of interest
 #' @param which_data Name of the dataset from which the samples will be extracted
 #'
@@ -38,7 +37,7 @@ setClass("metab_plotter", slots=list(plot_data="list", plot_parameters="list", a
 #' @export
 setGeneric("viz_distribution_plotter", function(object, colname, which_data, strats) standardGeneric("viz_distribution_plotter") )
 
-setMethod("viz_distribution_plotter", "metab_analyser",function(object, colname, which_data, strats=NULL) {
+setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname, which_data, strats=NULL) {
 	data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 	data <- data[[1]]
 	phenotype_name <- object@annotations$phenotype
@@ -114,8 +113,8 @@ setMethod("viz_distribution_plotter", "metab_analyser",function(object, colname,
 
 #' Function to dot plot any kind of dot_plotter including for dimensionality reduction
 #' @description General function to be implemented on data_list that is obtained after applying a dimensionality reduction method
-#' @param data_list list obtained after applying calc_dimensionality_reduction() on metab_analyse object
-#' @param metadata_list list obtained after applying get_metadata_for_plotting() on metab_analyse object
+#' @param data_list list obtained after applying calc_dimensionality_reduction() on metime_analyse object
+#' @param metadata_list list obtained after applying get_metadata_for_plotting() on metime_analyse object
 #' @param axes_labels character vector to specify the labels of the axes in the order x and y.
 #' @param title_metabs character to specify the title of the plot of metabolites
 #' @param title_metabs character to specify the title of the plot of metabolites

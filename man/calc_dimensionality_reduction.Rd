@@ -7,7 +7,7 @@
 calc_dimensionality_reduction(object, which_data, type)
 }
 \arguments{
-\item{object}{An object of class metab_analyse}
+\item{object}{An object of class metime_analyser}
 
 \item{which_data}{a character vector - Names of the dataset from which the samples will be extracted}
 
@@ -18,13 +18,13 @@ a list with two dataframes containing the dimensionality reduction information 1
 2) metabs - data of the metabolites(".$metabs")
 }
 \description{
-A method to apply on s4 object of class metab_analyse in order to obtain information after dimensionality reduction on a dataset/s
+A method to apply on s4 object of class metime_analyse in order to obtain information after dimensionality reduction on a dataset/s
 }
 \examples{
 #calculate PCA
-pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="PCA")
+pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="PCA")
 #calculate UMAP
-pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="UMAP")
+pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="UMAP")
 #calculate tSNE
-pca <- calc_dimensionality_reduction(object=metab_analyser_object, which_data="name/s of the dataset/s", type="tSNE")
+pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="tSNE")
 }

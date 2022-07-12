@@ -16,5 +16,5 @@ get_make_plotter_object(data_list, metadata_list, plot_type, aesthetics)
 \item{aesthetics}{aesthetics for the plot object}
 }
 \description{
-function to generate metab_plotter object from plot data and metadata
+function to generate metime_plotter object from plot data and metadata
 }

@@ -7,7 +7,7 @@
 mod_filter_tp(object, timepoints, full, which_data)
 }
 \arguments{
-\item{object}{An object of class metab_analyser}
+\item{object}{An object of class metime_analyser}
 
 \item{timepoints}{time points to be selected}
 
@@ -16,10 +16,10 @@ mod_filter_tp(object, timepoints, full, which_data)
 \item{which_data}{Name of the dataset to be used}
 }
 \value{
-An object of class metab_analyser with processed data
+An object of class metime_analyser with processed data
 }
 \description{
-a method applied onto class metab_analyser in order to extract timepoints of interest from a dataset
+a method applied onto class metime_analyser in order to extract timepoints of interest from a dataset
 }
 \examples{
 #example to use this function

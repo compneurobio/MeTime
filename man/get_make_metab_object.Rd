@@ -2,7 +2,7 @@
 % Please edit documentation in R/fun_get.R
 \name{get_make_metab_object}
 \alias{get_make_metab_object}
-\title{Function to pack all the data into a single object of class "metab_analyser"}
+\title{Function to pack all the data into a single object of class "metime_analyser"}
 \usage{
 get_make_metab_object(data, col_data, row_data, annotations_index, name = NULL)
 }
@@ -18,12 +18,12 @@ get_make_metab_object(data, col_data, row_data, annotations_index, name = NULL)
 \item{name}{character. Name you want to assign to the new dataset that is being added on}
 }
 \value{
-An object of class metab_analyser
+An object of class metime_analyser
 }
 \description{
-This function creates an object for MetabAnalyze from a dataset.
+This function creates an object of class metime_analyser from a dataset.
 }
 \examples{
-# new_metab_analyser_object <- get_make_metab_object(data=data_frame, col_data=col_data_frame, row_data=row_data, name="name of the new dataset", 
+# new_metime_analyser_object <- get_make_metab_object(data=data_frame, col_data=col_data_frame, row_data=row_data, name="name of the new dataset", 
                                annotations_index=list(phenotype="name of phenotype", medication="name of medication"))
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/fun_get.R
 \name{get_files_and_names}
 \alias{get_files_and_names}
-\title{Function to pack all the data into a single object of class "metab_analyser"}
+\title{Function to pack all the data into a single object of class "metime_analyser"}
 \usage{
 get_files_and_names(path, annotations_index)
 }
@@ -12,7 +12,7 @@ get_files_and_names(path, annotations_index)
 \item{annotations_index}{a list to be filled as follows = list(phenotype="Name or index of the files", medication="Name or index of the files")}
 }
 \value{
-An object of class metab_analyser
+An object of class metime_analyser
 }
 \description{
 This function loads all the files from the parent directory. It assumes a

@@ -7,7 +7,7 @@
 calc_pairwise_distance(object, which_data, method)
 }
 \arguments{
-\item{object}{S4 Object with}
+\item{object}{S4 Object of class metime_analyser}
 
 \item{which_data}{specify datasets to calculate on. One or more possible}
 
@@ -23,6 +23,6 @@ This function creates a dataframe for plotting from a dataset.
 }
 \examples{
 # Example to calculate pairwise distances
-dist <- calc_pairwise_distance(object=metab_analyser_object, which_data="name of the dataset", 
+dist <- calc_pairwise_distance(object=metime_analyser_object, which_data="name of the dataset", 
           method="euclidean")
 }

@@ -7,7 +7,7 @@
 get_samples_and_timepoints(object, which_data)
 }
 \arguments{
-\item{object}{An object of class metab_analyser}
+\item{object}{An object of class metime_analyser}
 
 \item{which_data}{Name of the dataset in context}
 }
@@ -15,9 +15,9 @@ get_samples_and_timepoints(object, which_data)
 A data table with timepoints and number of samples at each timepoint
 }
 \description{
-A method applied onto s4 object of class "metab_analyser" so as to obtain the number of unique samples available
+A method applied onto s4 object of class "metime_analyser" so as to obtain the number of unique samples available
 at each timepoint.
 }
 \examples{
-# newdata <- get_samples_and_timepoints(object=metab_analyser_object, which_data="Name of dataset of interest")
+# newdata <- get_samples_and_timepoints(object=metime_analyser_object, which_data="Name of dataset of interest")
 }

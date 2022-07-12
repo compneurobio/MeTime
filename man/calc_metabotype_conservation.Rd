@@ -7,7 +7,7 @@
 calc_metabotype_conservation(object, which_data, verbose)
 }
 \arguments{
-\item{object}{An object of class metab_analyser}
+\item{object}{An object of class metime_analyser}
 
 \item{which_data}{Name of the dataset to be used}
 
@@ -17,9 +17,9 @@ calc_metabotype_conservation(object, which_data, verbose)
 List of conservation index results
 }
 \description{
-Method applied on the object metab_analyser to calculate the metabotype conservation index
+Method applied on the object metime_analyser to calculate the metabotype conservation index
 }
 \examples{
 #calculating metabotype_conservation_index 
-out <- calc_metabotype_conservation(object=metab_analyser_object, which_data="Name of the dataset")
+out <- calc_metabotype_conservation(object=metime_analyser_object, which_data="Name of the dataset")
 }

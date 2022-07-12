@@ -13,9 +13,9 @@ viz_dimensionality_reduction(
 )
 }
 \arguments{
-\item{data_list}{list obtained after applying calc_dimensionality_reduction() on metab_analyse object}
+\item{data_list}{list obtained after applying calc_dimensionality_reduction() on metime_analyse object}
 
-\item{metadata_list}{list obtained after applying get_metadata_for_plotting() on metab_analyse object}
+\item{metadata_list}{list obtained after applying get_metadata_for_plotting() on metime_analyse object}
 
 \item{axes_labels}{character vector to specify the labels of the axes in the order x and y.}
 

@@ -1,30 +1,30 @@
 
-#creating reference metab-analyser class that creates an object with full data
+#creating reference metime-analyser class that creates an object with full data
 
-#' Constructor to generate an object of class metab_analyser. 
+#' Constructor to generate an object of class metime_analyser. 
 #' contains slots - list_of_data: For the list of all data matrices.
 #'				  - list_of_col_data: list of all the col data files in the same order.
 #' 				  - list_of_row_data: list of all the row data files in the same order.
 #' 				  - annotations: list with phenotype and medication. Each of which is character that represents 
 #'									the name of the aforementioned dataset types.  	
 #' 	
-#' @rdname metab_analyser
+#' @rdname metime_analyser
 #' @export 
-setClass("metab_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
+setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
 								 annotations="list")) 
 
 #' Function to add measurements taken at screening time for samples to be added to all timepoints
-#' @description A method applied on the s4 object of class "metab_analyser" to add all those datapoints that were measured only during screening
+#' @description A method applied on the s4 object of class "metime_analyser" to add all those datapoints that were measured only during screening
 #' to all the respective samples at all timepoints
 #' @examples # adding APOEGrp, PTGENDER to all data points
-#' new_with_apoegrp_sex <- add_screening_vars(object=metab_analyser_object, vars=c("APOEGrp","PTGENDER"))
-#' @param object An object of class metab_analyser
+#' new_with_apoegrp_sex <- add_screening_vars(object=metime_analyser_object, vars=c("APOEGrp","PTGENDER"))
+#' @param object An object of class metime_analyser
 #' @param vars A character naming the vars of interest
 #' @return phenotype data which can be replaced into the original object or use it separately with a different object
 #' @export
 setGeneric("add_screening_vars", function(object, vars) standardGeneric("add_screening_vars"))
 
-setMethod("add_screening_vars", "metab_analyser", function(object, vars) {
+setMethod("add_screening_vars", "metime_analyser", function(object, vars) {
 		phenotype_name <- object@annotations$phenotype
 		phenotype <- object@list_of_data[[phenotype_name]]
 		screening <- phenotype[grep("-1|-2", rownames(phenotype)), ]
