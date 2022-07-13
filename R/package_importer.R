@@ -28,3 +28,5 @@ setMethod("structure", "metime_analyser", function(object) return(str(object, ma
 #' @return structure of the S4 object
 #' @export
 setMethod("show", "metime_analyser", function(object) return(str(object, max.level=3)))
+
+

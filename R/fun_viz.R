@@ -149,8 +149,17 @@ viz_dimensionality_reduction <- function(data_list, metadata_list, axes_labels, 
 #Create an S4 class for plotting
 #analysis - needs ids or names, col_id data, row_data, col_data
 
-#setClass("metab_plot", slots=c(data_list="list", metadata_list="list", parameter_list="list"))
-
 #set slots in parameter_list and keep it as an inheritance
 
 #make_plot_object function to be written
+
+#' Setting up standard wrapper for all plot functions
+#' @description plot function for metime_plotter object with different inputs to specialize plots. Used for all calc outputs.
+#' @param object S4 object of class metime_plotter
+#' @param type type of plots currently available are "dot", "line", "heatmap"
+setGeneric("viz_plotter", function(object, type) standardGeneric("viz_plotter"))
+setMethod("viz_plotter", "metime_plotter", function(object, type) {
+
+	})
+
+

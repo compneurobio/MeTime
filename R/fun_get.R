@@ -273,8 +273,8 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' @description function to generate metime_plotter object from plot data and metadata
 #' @param data_list list of plotable data
 #' @param metadata_list list of metadata for each plot in data list
-#' @param plot_type type of the plot you want to build. eg: "box", "dot" etc
-#' @param aesthetics aesthetics for the plot object
+#' @param plot_type type of the plot you want to build. eg: "box", "dot" etc. Its a character vector
+#' @param aesthetics aesthetics for the plot object. example aesthetics=list(x=,y=,color=,shape=)
 get_make_plotter_object <- function(data_list, metadata_list, plot_type, aesthetics) {
 			data_list <- lapply(data_list, function(x) return(x[sort(rownames(x)), ]))
 			plot_data <- list()
@@ -286,10 +286,10 @@ get_make_plotter_object <- function(data_list, metadata_list, plot_type, aesthet
 					count <- count + 1
 			}
 			if(plot_type %in% "dot") {
-					empty_plots <- lapply(empty_plots, function(x) return(x + geom_point()))
+					empty_plots <- lapply(empty_plots, function(x) return(x + geom_point())) 
 			} else if(plot_type %in% "heatmaps") {
 					empty_plots <- lapply(empty_plots, function(x) return(x + geom_tile()))
-			}
+			} else if()
 			object <- new("metime_plotter", plot_data=plot_data, plot_parameters=empty_plots)
 			return(object)
 }
