@@ -44,7 +44,7 @@ setMethod("mod_split_acc_to_time", "metime_analyser", function(object) {
 
 #' Function to get only common samples from the dataframes in list_of_data 
 #' @description A method applied on object of class metime_analyse to extract common samples across datasets. Also has an option to split the data according 
-#' timepoints(modify_split_acc_time()).
+#' timepoints(mod_split_acc_time()).
 #' @examples # extracting common samples across all datasets
 #' new_list_of_data <- mod_common_sample_extractor(object=metime_analyser_object)
 #' @param object An object of class metime_anaylser
@@ -52,9 +52,9 @@ setMethod("mod_split_acc_to_time", "metime_analyser", function(object) {
 #'	 					False returns all the dataframes as they are with common rows
 #' @return list_of_data with common samples across all time points
 #' @export
-setGeneric("mod_common_sample_extractor", function(object, time_splitter=FALSE) standardGeneric("mod_common_sample_extractor") )
+setGeneric("mod_extract_common_samples", function(object, time_splitter=FALSE) standardGeneric("mod_extract_common_samples") )
 
-setMethod("mod_common_sample_extractor", "metime_analyser",function(object, time_splitter=FALSE) {
+setMethod("mod_extract_common_samples", "metime_analyser",function(object, time_splitter=FALSE) {
 		list_of_data <- object@list_of_data
 		list_of_names <- lapply(list_of_data, function(x) {
 					return(rownames(x))
@@ -127,8 +127,8 @@ setMethod("mod_prep_data_for_ggms", "metime_analyser", function(object, which_ty
 #' @param base base of log to be used
 #' @return An object of class metime_analyser with processed data
 #' @export
-setGeneric("mod_logtrans", function(object, which_data, base) standardGeneric("mod_logtrans"))
-setMethod("mod_logtrans", "metime_analyser",function(object, which_data, base=2) {
+setGeneric("mod_trans_log", function(object, which_data, base) standardGeneric("mod_trans_log"))
+setMethod("mod_trans_log", "metime_analyser",function(object, which_data, base=2) {
   #define data to be processed
   data_position <- which(names(object@list_of_data) %in% which_data)
   object@list_of_data[data_position] = lapply(object@list_of_data[data_position] , log, base=base)
@@ -143,8 +143,8 @@ setMethod("mod_logtrans", "metime_analyser",function(object, which_data, base=2)
 #' @param which_data Name of the dataset to be used
 #' @return An object of class metime_analyser with processed data
 #' @export
-setGeneric("mod_zscore", function(object, which_data) standardGeneric("mod_zscore"))
-setMethod("mod_zscore", "metime_analyser", function(object, which_data) {
+setGeneric("mod_trans_zscore", function(object, which_data) standardGeneric("mod_trans_zscore"))
+setMethod("mod_trans_zscore", "metime_analyser", function(object, which_data) {
   #define data to be processed
   data_position <- which(names(object@list_of_data) %in% which_data)
   data_rownames <- rownames(object@list_of_data[data_position])

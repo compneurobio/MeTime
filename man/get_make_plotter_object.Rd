@@ -4,16 +4,14 @@
 \alias{get_make_plotter_object}
 \title{Function to make a plottable object for viz functions}
 \usage{
-get_make_plotter_object(data_list, metadata_list, plot_type, aesthetics)
+get_make_plotter_object(data_list, metadata_list, plot_type)
 }
 \arguments{
 \item{data_list}{list of plotable data}
 
-\item{metadata_list}{list of metadata for each plot in data list}
+\item{metadata_list}{list of metadata for each plot in data list. See get_metadata_for_plotting()}
 
-\item{plot_type}{type of the plot you want to build. eg: "box", "dot" etc}
-
-\item{aesthetics}{aesthetics for the plot object}
+\item{plot_type}{type of the plot you want to build. eg: "box", "dot" etc. Its a character vector}
 }
 \description{
 function to generate metime_plotter object from plot data and metadata

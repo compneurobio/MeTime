@@ -20,7 +20,7 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #'                - the example above will be predefined in all the methods that creates this object. 
 #' @rdname metime_plotter
 #' @export
-setClass("metime_plotter", slots=list(plot_data="list", plot_parameters="list", aesthetics="list"))
+setClass("metime_plotter", slots=list(plot_data="list", plot_parameters="list"))
 
 
 
@@ -156,10 +156,24 @@ viz_dimensionality_reduction <- function(data_list, metadata_list, axes_labels, 
 #' Setting up standard wrapper for all plot functions
 #' @description plot function for metime_plotter object with different inputs to specialize plots. Used for all calc outputs.
 #' @param object S4 object of class metime_plotter
-#' @param type type of plots currently available are "dot", "line", "heatmap"
-setGeneric("viz_plotter", function(object, type) standardGeneric("viz_plotter"))
-setMethod("viz_plotter", "metime_plotter", function(object, type) {
-
+#' @param aesthetics list for aesthetics. eg: list(list(x="colname",y="colname",color="colname", shape="colname"), list(...)) for "dot" plot and "netowrk"
+#' plot, for heatmap: list(x="colname", y="colname", fill="colname")
+setGeneric("viz_plotter", function(object, aesthetics) standardGeneric("viz_plotter"))
+setMethod("viz_plotter", "metime_plotter", function(object, aesthetics) {
+			plots <- list()
+			for(i in 1:length(object@plot_data)) {
+				if(object@plot_parameters$type[i] %in% "dot") {
+					plots[[i]] <- object@plot_parameters$plot[[i]] + 
+						geom_point(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape))
+					plots[[i]] <- ggplotly(plots[[i]])
+				} else if(object@plot_parameters$type[i] %in% "heatmap") {
+					plots[[i]] <- object@plot_parameters$plot[[i]] + 
+						geom_tile(aes_string(x=aesthectics[[i]]$x, y=aesthetics[[i]]$y, fill=aesthetics[[i]]$fill))
+					plots[[i]] <- ggplotly(plots[[i]])
+				} else {
+					print("currently other types are not available")
+				}
+			}
+			return(plots)
 	})
-
 

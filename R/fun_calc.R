@@ -25,8 +25,8 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' @export
 #' 
 #' 
-setGeneric("calc_boruta", function(object, which_x, which_y, verbose, output_loc, file_name) standardGeneric("calc_boruta"))
-setMethod("calc_boruta", "metime_analyser", function(object, which_x,which_y, verbose=F, output_loc=getwd(), file_name="boruta") {
+setGeneric("calc_featureselection_boruta", function(object, which_x, which_y, verbose, output_loc, file_name) standardGeneric("calc_featureselection_boruta"))
+setMethod("calc_featureselection_boruta", "metime_analyser", function(object, which_x,which_y, verbose=F, output_loc=getwd(), file_name="boruta") {
   
   # validate arguments
   #stopifnot(length(which_x)==1, length(which_y)==1, all(c(which_x,which_y) %in% object@list_of_data))
@@ -69,8 +69,8 @@ setMethod("calc_boruta", "metime_analyser", function(object, which_x,which_y, ve
 #' @return List of conservation index results
 #' @export
 
-setGeneric("calc_metabotype_conservation", function(object, which_data, verbose) standardGeneric("calc_metabotype_conservation"))
-setMethod("calc_metabotype_conservation", "metime_analyser", function(object, which_data, verbose=F) {
+setGeneric("calc_conservation_metabotype", function(object, which_data, verbose) standardGeneric("calc_conservation_metabotype"))
+setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, verbose=F) {
   #define data to be processed
   #data_position <- which(names(object@list_of_data) %in% which_data)
   out=list()
@@ -164,8 +164,8 @@ setMethod("calc_metabotype_conservation", "metime_analyser", function(object, wh
 #' @export
 #' 
 #' 
-setGeneric("calc_metabolite_conservation", function(object, which_data, verbose) standardGeneric("calc_metabolite_conservation"))
-setMethod("calc_metabolite_conservation", "metime_analyser", function(object, which_data, verbose=F) {
+setGeneric("calc_conservation_metabolite", function(object, which_data, verbose) standardGeneric("calc_conservation_metabolite"))
+setMethod("calc_conservation_metabolite", "metime_analyser", function(object, which_data, verbose=F) {
   #define data to be processed
   #data_position <- which(names(object@list_of_data) %in% which_data)
   out=list()
@@ -313,8 +313,8 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
 #' @param method default setting: method="pearson", Alternative "spearman" also possible
 #' @return data.frame with pairwise results
 #' @export
-setGeneric("calc_correlation", function(object, which_data, method) standardGeneric("calc_correlation"))
-setMethod("calc_correlation", "metime_analyser", function(object, which_data, method="pearson"){
+setGeneric("calc_correlation_pairwise", function(object, which_data, method) standardGeneric("calc_correlation_pairwise"))
+setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which_data, method="pearson"){
   stopifnot(all(which_data %in% names(object@list_of_data)))
   flattenCorrMatrix <- function(cormat, pmat) {
     ut <- upper.tri(cormat)
@@ -356,8 +356,8 @@ setMethod("calc_correlation", "metime_analyser", function(object, which_data, me
 #' @return data.frame with pairwise results
 #' @export
 
-setGeneric("calc_pairwise_distance", function(object, which_data, method) standardGeneric("calc_pairwise_distance"))
-setMethod("calc_pairwise_distance", "metime_analyser", function(object, which_data, method="euclidean"){
+setGeneric("calc_distance_pairwise", function(object, which_data, method) standardGeneric("calc_distance_pairwise"))
+setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_data, method="euclidean"){
   stopifnot(all(which_data %in% names(object@list_of_data)))
   
   flattenCorrMatrix <- function(cormat) {

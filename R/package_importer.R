@@ -30,3 +30,18 @@ setMethod("structure", "metime_analyser", function(object) return(str(object, ma
 setMethod("show", "metime_analyser", function(object) return(str(object, max.level=3)))
 
 
+#' Setting new print definition for the metime_plotter object
+#' @description function to see the structure of metime_plotter object
+#' @param object S4 object of class metime_plotter
+#' @examples structure(object)
+#' @return structure of the S4 object
+#' @export
+setMethod("show", "metime_plotter", function(object) return(str(object, max.level=4)))
+
+#' Setting new structure definition for the metime_plotter object
+#' @description function to see the structure of metime_plotter object
+#' @param object S4 object of class metime_plotter
+#' @examples structure(object)
+#' @return structure of the S4 object
+#' @export
+setMethod("structure", "metime_plotter", function(object) return(str(object, max.level = 3)))

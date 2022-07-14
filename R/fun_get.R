@@ -35,7 +35,7 @@ get_palette <- function(n) {
 #' @param colnames a character vector with the names of the variables that you want to see on the plot
 #' @return a vector with strings that can be parsed into plot_ly text.
 #' @export
-get_text <- function(data, colnames) {	
+get_text_for_plot <- function(data, colnames) {	
 		strings_vector <- c()
 		count <- 1
 		text <- c()
@@ -99,7 +99,7 @@ setMethod("get_samples_and_timepoints", "metime_analyser", function(object, whic
 #' @return metadata dataframe with names, groups and class
 setGeneric("get_metadata_for_plotting", function(object, which_data, metab_groups, metab_ids, cols_for_vis_samples, screening_vars) standardGeneric("get_metadata_for_plotting"))
 
-setMethod("get_metadata_for_plotting", "metime_analyser", function(object, which_data, metab_groups, metab_ids, cols_for_vis_samples, screening_vars=NULL) {
+setMethod("get_metadata_for_plotting", "metime_analyser", function(object, which_data, metab_groups, metab_ids, cols_for_vis_samples, screening_vars) {
     	#Extracting metadata for metabolites and samples simultaneously
     	list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
     	list_of_col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% which_data]
@@ -124,12 +124,12 @@ setMethod("get_metadata_for_plotting", "metime_analyser", function(object, which
 				metadata_samples <- as.data.frame(list_of_data[[object@annotations$phenotype]][,cols_for_vis_samples])
 			} else {
 				col_data <- list_of_col_data[[1]]
-				class <- rep(which_data, each=col_data[,1])
+				class <- rep(which_data, each=length(col_data[,1]))
 				metadata_metabs <- col_data[ ,c(metab_ids, metab_groups)]
 				metadata_metabs <- cbind(metadata_metabs, class)
 				colnames(metadata_metabs) <- c("name", "group", "class")
 				metadata_metabs <- as.data.frame(metadata_metabs)
-				metadata_metabs <- metadata_metabs[sort(metadata_metabs$name), ]
+				metadata_metabs <- metadata_metabs[order(metadata_metabs$name), ]
 				data <- as.data.frame(object@list_of_data[names(object@list_of_data) %in% which_data][[1]])
 				phenotype <- object@list_of_data[[object@annotations$phenotype]]
 				metadata_samples <- phenotype[rownames(phenotype) %in% rownames(data), cols_for_vis_samples] 
@@ -152,10 +152,10 @@ setMethod("get_metadata_for_plotting", "metime_analyser", function(object, which
 #' @return An object of class metime_analyser
 #' @export
 
-get_make_metab_object <- function(data, col_data, row_data, annotations_index, name=NULL) {
+get_make_analyser_object <- function(data, col_data, row_data, annotations_index, name=NULL) {
   if(is.null(name)) name <- "set1"
   if(!all(rownames(data) %in% row_data$id) & !all(colnames(data) %in% col_data$id)) stop("id of col or row data do not match dataframe")
-  if(!all(c("id","rid","timepoint") %in% names(row_data))) stop("id, subject or timepoint column missing")
+  if(!all(c("id","subject","timepoint") %in% names(row_data))) stop("id, subject or timepoint column missing")
   
   list_of_data <- list()
   list_of_data[[name]] <- data
@@ -192,11 +192,11 @@ get_make_metab_object <- function(data, col_data, row_data, annotations_index, n
 #' @param name Name of the new dataset
 #' @return An object of class metime_analyser
 #' @export
-setGeneric("get_append_metab_object", function(object, data, col_data, row_data, name) standardGeneric("get_append_metab_object"))
-setMethod("get_append_metab_object", "metime_analyser",function(object, data, col_data, row_data, name=NULL) {
+setGeneric("get_append_analyser_object", function(object, data, col_data, row_data, name) standardGeneric("get_append_analyser_object"))
+setMethod("get_append_analyser_object", "metime_analyser",function(object, data, col_data, row_data, name=NULL) {
   if(is.null(name)) name <- "set1"
   if(!all(rownames(data) %in% row_data$id) & !all(colnames(data) %in% col_data$id)) stop("id of col or row data do not match dataframe")
-  if(!all(c("id","rid","timepoint") %in% names(row_data))) stop("id, subject or timepoint column missing")
+  if(!all(c("id","subject","timepoint") %in% names(row_data))) stop("id, subject or timepoint column missing")
   
   object@list_of_data[[name]] <- data
   object@list_of_col_data[[name]] <- col_data
@@ -272,10 +272,9 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' Function to make a plottable object for viz functions
 #' @description function to generate metime_plotter object from plot data and metadata
 #' @param data_list list of plotable data
-#' @param metadata_list list of metadata for each plot in data list
+#' @param metadata_list list of metadata for each plot in data list. See get_metadata_for_plotting()
 #' @param plot_type type of the plot you want to build. eg: "box", "dot" etc. Its a character vector
-#' @param aesthetics aesthetics for the plot object. example aesthetics=list(x=,y=,color=,shape=)
-get_make_plotter_object <- function(data_list, metadata_list, plot_type, aesthetics) {
+get_make_plotter_object <- function(data_list, metadata_list, plot_type) {
 			data_list <- lapply(data_list, function(x) return(x[sort(rownames(x)), ]))
 			plot_data <- list()
 			empty_plots <- list()
@@ -285,24 +284,22 @@ get_make_plotter_object <- function(data_list, metadata_list, plot_type, aesthet
 					empty_plots[[count]] <- ggplot(plot_data[[count]])
 					count <- count + 1
 			}
-			if(plot_type %in% "dot") {
-					empty_plots <- lapply(empty_plots, function(x) return(x + geom_point())) 
-			} else if(plot_type %in% "heatmaps") {
-					empty_plots <- lapply(empty_plots, function(x) return(x + geom_tile()))
-			} else if()
-			object <- new("metime_plotter", plot_data=plot_data, plot_parameters=empty_plots)
+			object <- new("metime_plotter", plot_data=plot_data, plot_parameters=list(plot=empty_plots,type=plot_type))
 			return(object)
 }
 #'add aesthetics to plot and so on in this style 
 #'lol <- aes(x=x, y=y)
 #'empty_plot$mappings <- lol
 
-#' creating metime_plotter class that converts calculations and metadata as a plotable object to parse into viz_dot_plotter, viz_heatmap_plotter etc
+#' creating metime_plotter class that converts calculations and metadata as a plotable object to parse 
+#' into viz_plotter
 #' Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
 #' 				  - plot_parameters: ggplot() object with predefined aesthetics 
 #'                - aesthetics: list to define aesthetics. Eg: aesthetics=list(x="colname.x", y="colname.y", color="color", shape="shape")
 #'                - the example above will be predefined in all the methods that creates this object. 
 #' @rdname metime_plotter
 #' @export
-setClass("metime_plotter", slots=list(plot_data="list", plot_parameters="list", aesthetics="list"))
+setClass("metime_plotter", slots=list(plot_data="list", plot_parameters="list"))
 
+##Think of a check function for both classes separately
+#duplicated ids - check timpoint and subject 
