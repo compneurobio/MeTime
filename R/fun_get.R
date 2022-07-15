@@ -79,65 +79,6 @@ setMethod("get_samples_and_timepoints", "metime_analyser", function(object, whic
 		return(newdata)
 	})
 
-#' Function to extract metadata of the metabolites and samples for visualization(both dimensionality reduction and GGMs)
-#' @description A method applied onto s4 object of class "metime_analyser" so as to obtain metadata of the metabolites and samples.
-#' Metadata includes their ontology that is the pathway they belong to and also the class or the dataset type. can also add colors
-#' for the metabolites for visualization as a separate column. For samples the metadata is basically the columns of interest from the phenotype table 
-#' that can be used to see sample information in the interactive plot.
-#' @examples
-#' # metadata_list <- get_metadata_for_plotting(object=metime_analyser_object, which_data="name/s of datasets", 
-#'											metab_groups="colname/s of the group column in each dataset in order"
-#' 											metab_ids="colname/s of the metabolite_name column in each dataset in order", 
-#'											cols_for_vis_samples="colnames of phenotype data for samples", screeing_vars=TRUE/FALSE)
-#' @param object S4 object of class metime_analyser
-#' @param which_data choose the dataset from which metabolites will be extracted for metadata
-#' @param metab_groups choose the column that has metabolite groups
-#' @param metab_ids chodse the column that has metabolite names
-#' @param cols_for_vis_samples character vector representing the name of the columns in phenotype data
-#' @param screening_vars character vector representing the measurements obtained at baseline to be added to all timepoints for visualization.
-#' is set to NULL if nothing is added to it
-#' @return metadata dataframe with names, groups and class
-#' @export
-setGeneric("get_metadata_for_plotting", function(object, which_data, metab_groups, metab_ids, cols_for_vis_samples, screening_vars) standardGeneric("get_metadata_for_plotting"))
-
-setMethod("get_metadata_for_plotting", "metime_analyser", function(object, which_data, metab_groups, metab_ids, cols_for_vis_samples, screening_vars) {
-    	#Extracting metadata for metabolites and samples simultaneously
-    	list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
-    	list_of_col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% which_data]
-    	if(!is.null(screening_vars)) {
-					object@list_of_data[[object@annotations$phenotype]] <- add_screening_vars(object, vars=screening_vars)
-			}
-			phenotype <- object@list_of_data[[object@annotations$phenotype]]
-			if(length(which_data) > 1) {
-				list_of_metadata_metabs <- list()
-				for(i in 1:length(metab_ids)) {
-					list_of_metadata_metabs[[i]] <- list_of_col_data[[i]][,c(metab_ids[i], metab_groups[i])]
-					class <- rep(which_data[i], each=length(list_of_metadata_metabs[[i]][,1]))
-					list_of_metadata_metabs[[i]][,3] <- class
-					colnames(list_of_metadata_metabs[[i]]) <- c("name", "group", "class")
-				}
-				metadata_metabs <- lapply(list_of_metadata_metabs, as.data.frame)
-				metadata_metabs <- do.call(rbind, metadata_metabs)
-				metadata_metabs <- as.data.frame(metadata_metabs)
-				metadata_metabs <- metadata_metabs[sort(metadata_metabs$name), ]
-				list_of_data <- mod_common_sample_extractor(object)
-				list_of_data <- lapply(list_of_data, function(x) return(x[sort(rownames(x)), ]))
-				metadata_samples <- as.data.frame(list_of_data[[object@annotations$phenotype]][,cols_for_vis_samples])
-			} else {
-				col_data <- list_of_col_data[[1]]
-				class <- rep(which_data, each=length(col_data[,1]))
-				metadata_metabs <- col_data[ ,c(metab_ids, metab_groups)]
-				metadata_metabs <- cbind(metadata_metabs, class)
-				colnames(metadata_metabs) <- c("name", "group", "class")
-				metadata_metabs <- as.data.frame(metadata_metabs)
-				metadata_metabs <- metadata_metabs[order(metadata_metabs$name), ]
-				data <- as.data.frame(object@list_of_data[names(object@list_of_data) %in% which_data][[1]])
-				phenotype <- object@list_of_data[[object@annotations$phenotype]]
-				metadata_samples <- phenotype[rownames(phenotype) %in% rownames(data), cols_for_vis_samples] 
-			}
-			return(list(metab=metadata_metabs, samples=metadata_samples))
-	})  
-
 
 #' Function to pack all the data into a single object of class "metime_analyser" 
 #'
@@ -272,36 +213,99 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 
 #' Function to make a plottable object for viz functions
 #' @description function to generate metime_plotter object from plot data and metadata
-#' @param data_list list of plotable data
-#' @param metadata_list list of metadata for each plot in data list. See get_metadata_for_plotting()
+#' @param data dataframe of plotable data obtained from calc object
+#' @param metadata dataframe with the metadata for the plot table mentioned above. To obtain these see
+#' get_metadata_for_rows() and get_metadata_for_columns()
+#' @param calc_type A character to specify type of calculation - will be used for comp_ functions
+#' @param calc_info A string to define the information about calculation
 #' @param plot_type type of the plot you want to build. eg: "box", "dot" etc. Its a character vector
 #' @export
-get_make_plotter_object <- function(data_list, metadata_list, plot_type) {
-			data_list <- lapply(data_list, function(x) return(x[sort(rownames(x)), ]))
-			plot_data <- list()
-			empty_plots <- list()
-			count <- 1
-			for(i in 1:length(data_list)) {
-					plot_data[[count]] <- cbind(data_list[[i]], metadata_list[[i]])
-					empty_plots[[count]] <- ggplot(plot_data[[count]])
-					count <- count + 1
+get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_type, style) {
+			data <- data[order(rownames(data)), ]
+			plot_data <- as.data.frame(cbind(data, metadata))
+			for(i in 1:length(plot_type)) {
+				if(style[i] %in% "ggplot") {
+						empty_plots[[i]] <- ggplot(plot_data)
+				} else if(style[i] %in% "circos") {
+						empty_plots[[i]] <- NULL
+				} else if(style[i] %in% "visNetwork") {
+						empty_plots[[i]] <- NULL
+				}
 			}
-			object <- new("metime_plotter", plot_data=plot_data, plot_parameters=list(plot=empty_plots,type=plot_type))
+			object <- new("metime_plotter", plot_data=plot_data, plot=empty_plots, calc_type=calc_type, calc_info=calc_info, plot_type=plot_type)
 			return(object)
 }
-#'add aesthetics to plot and so on in this style 
-#'lol <- aes(x=x, y=y)
-#'empty_plot$mappings <- lol
+
 
 #' creating metime_plotter class that converts calculations and metadata as a plotable object to parse 
 #' into viz_plotter
 #' Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
-#' 				  - plot_parameters: ggplot() object with predefined aesthetics 
-#'                - aesthetics: list to define aesthetics. Eg: aesthetics=list(x="colname.x", y="colname.y", color="color", shape="shape")
-#'                - the example above will be predefined in all the methods that creates this object. 
+#' 				  			- plot: ggplot(), circos() or visNetwork() object with predefined aesthetics 
+#'                - calc_type: A vector to specify type of calculation - will be used for comp_ functions
+#'                - calc_info: string to define the information about calculation
+#' 								- plot_type: A character vector to define the type of plots that are needed.
 #' @rdname metime_plotter
 #' @export
-setClass("metime_plotter", slots=list(plot_data="list", plot_parameters="list"))
+setClass("metime_plotter", slots=list(plot_data="data.frame", plot="list", calc_type="character", calc_info="character", plot_type="character"))
 
 ##Think of a check function for both classes separately
 #duplicated ids - check timpoint and subject 
+
+
+#' Get metadata for columns(in most cases for metabolites)
+#' @description function to generate a metadata list for building the MeTime plotter object
+#' @param object S4 object of class MeTime Analyser
+#' @param which_data Names of dataset/s to be used
+#' @param columns A list of character vectors for the columns of interest. Length of the list should be
+#' same as length of which_data
+#' @param names A Character vector with the new names for the columns mentioned above
+#' @param index_of_names character vector to define the name of the column in which names of the variables are stored
+#' @return data.frame with metadata information
+setGeneric("get_metadata_for_columns", function(object, which_data, columns, names, index_of_names) standardGeneric("get_metadata_for_columns"))
+setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_data, columns, names, index_of_names) {
+				list_of_col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% which_data]
+				if(length(which_data)>1) {
+						list_of_metadata_metabs <- list()
+						for(i in 1:length(metab_ids)) {
+								list_of_metadata_metabs[[i]] <- list_of_col_data[[i]][, columns[[i]]]
+								class <- rep(which_data[i], each=length(list_of_metadata_metabs[[i]][,1]))
+								list_of_metadata_metabs[[i]] <- list_of_metadata_metabs[[i]][order(list_of_metadata_metabs[[1]][,index_of_names]), ]
+								colnames(list_of_metadata_metabs[[i]]) <- names
+								list_of_metadata_metabs[[i]][, ncol(list_of_metadata_metabs[[i]])+1] <- class
+						}
+						metadata_metabs <- lapply(list_of_metadata_metabs, as.data.frame)
+						metadata_metabs <- do.call(rbind, metadata_metabs)
+						metadata_metabs <- as.data.frame(metadata_metabs)
+				} else {
+						col_data <- list_of_col_data[[1]]
+						class <- rep(which_data, each=length(col_data[,1]))
+						metadata_metabs <- col_data[ ,columns[[1]]]
+						metadata_metabs[, ncol(metadata_metabs) + 1] <- class
+						metadata_metabs <- metadata_metabs[order(metadata_metabs[,index_of_names]), ]
+				}
+				return(metadata_metabs)
+	})
+
+#' Get metadata for rows(in most cases for samples)
+#' @description function to generate a metadata list for building the MeTime plotter object
+#' @param object S4 object of class MeTime Analyser
+#' @param which_data Names of dataset/s to be used
+#' @param columns A list of character vectors for the columns of interest. Length of the list should be
+#' same as length of which_data
+#' @param names A Character vector with the new names for the columns mentioned above
+#' @return data.frame with metadata information for rows
+#' @export
+setGeneric("get_metadata_for_rows", function(object, which_data, columns, names) standardGeneric("get_metadata_for_rows"))
+setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_data, columns, names) {
+					list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+					if(length(which_data) > 1) {
+							list_of_data <- mod_extract_common_samples(object)
+							list_of_data <- lapply(list_of_data, function(x) return(x[order(rownames(x)), ]))
+							metadata_samples <- as.data.frame(list_of_data[[object@annotations$phenotype]][,columns])
+					} else {
+							data <- as.data.frame(object@list_of_data[names(object@list_of_data) %in% which_data][[1]])
+							phenotype <- object@list_of_data[[object@annotations$phenotype]]
+							metadata_samples <- phenotype[rownames(phenotype) %in% rownames(data), columns]
+							metadata_samples <- metadata_samples[order(rownames(metadata_samples)), ] 
+					}
+	}) 

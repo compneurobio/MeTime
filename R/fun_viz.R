@@ -13,15 +13,16 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 								 annotations="list")) 
 
 
-#' creating metime_plotter class that converts calculations and metadata as a plotable object to parse into viz_dot_plotter, viz_heatmap_plotter etc
+#' creating metime_plotter class that converts calculations and metadata as a plotable object to parse 
+#' into viz_plotter
 #' Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
-#' 				  - plot_parameters: ggplot() object with predefined aesthetics 
-#'                - aesthetics: list to define aesthetics. Eg: aesthetics=list(x="colname.x", y="colname.y", color="color", shape="shape")
-#'                - the example above will be predefined in all the methods that creates this object. 
+#' 				  - plot: ggplot(), circos() or visNetwork() object with predefined aesthetics 
+#'                - calc_type: A vector to specify type of calculation - will be used for comp_ functions
+#'                - calc_info: string to define the information about calculation
+#' 				  - plot_type: A character vector to define the type of plots that are needed.
 #' @rdname metime_plotter
 #' @export
-setClass("metime_plotter", slots=list(plot_data="list", plot_parameters="list"))
-
+setClass("metime_plotter", slots=list(plot_data="data.frame", plot="list", calc_type="character", calc_info="character", plot_type="character"))
 
 
 #' Function for Plotting distributions of phenotypic variables 
@@ -138,7 +139,7 @@ viz_dimensionality_reduction <- function(data_list, metadata_list, axes_labels, 
 		plot_data_samples$timepoints <- factor(timepoints, levels=paste("t", levels, sep=""))
 		plot_samples <- ggplot(plot_data_samples, aes_string(x=colnames(plot_data_samples)[1], y=colnames(plot_data_samples)[2], 
 						color="timepoints", 
-						text=get_text(data=plot_data_samples, colnames=colnames(plot_data_samples)[3:length(colnames(plot_data_samples))]))) +
+						text=get_text_for_plot(data=plot_data_samples, colnames=colnames(plot_data_samples)[3:length(colnames(plot_data_samples))]))) +
 						geom_point() + labs(x=axes_labels[1], y=axes_labels[2], subtitle=title_samples)
 		plot_samples <- ggplotly(plot_samples)
 		return(list(metabs=plot_metabs, samples=plot_samples))
@@ -166,18 +167,22 @@ setMethod("viz_plotter", "metime_plotter", function(object, aesthetics) {
 			plots <- list()
 			for(i in 1:length(object@plot_data)) {
 				if(object@plot_parameters$type[i] %in% "dot") {
-					plots[[i]] <- object@plot_parameters$plot[[i]] + 
-						geom_point(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) +
-						facet_wrap(strats)
+					plots[[i]] <- object@plot_parameters$plot[[i]] + ggplot(text=get_text_for_plot(data=object@plot_data[[i]], colnames=aesthetics[[i]]$vis))
+						geom_point(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
+								color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) +
+						facet_wrap(aesthetics[[i]]$strats) + theme_classic()
 					plots[[i]] <- ggplotly(plots[[i]])
 				} else if(object@plot_parameters$type[i] %in% "heatmap") {
 					plots[[i]] <- object@plot_parameters$plot[[i]] + 
-						geom_tile(aes_string(x=aesthectics[[i]]$x, y=aesthetics[[i]]$y, fill=aesthetics[[i]]$fill))
+						geom_tile(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, fill=aesthetics[[i]]$fill)) +
+						theme_classic()
 					plots[[i]] <- ggplotly(plots[[i]])
 				} else if(object@plot_parameters$type[i] %in% "line") {
-					plots[[i]] <- object@plot_parameters$plot[[i]] + 
-						geom_line(aes_string(x=aesthectics[[i]]$x, y=aesthetics[[i]]$y, color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) + 
-						facet_wrap(strats)
+					plots[[i]] <- object@plot_parameters$plot[[i]] + ggplot(text=get_text_for_plot(data=object@plot_data[[i]], colnames=aesthetics[[i]]$vis))
+						geom_line(aes_string(x=aesthectics[[i]]$x, y=aesthetics[[i]]$y, 
+							color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) + 
+						facet_wrap(aesthetics[[i]]$strats) + theme_classic()
+					plots[[i]] <- ggplotly(plots[[i]])
 				} else {
 					print("currently other types are not available")
 				}
