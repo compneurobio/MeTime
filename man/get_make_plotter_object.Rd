@@ -4,12 +4,17 @@
 \alias{get_make_plotter_object}
 \title{Function to make a plottable object for viz functions}
 \usage{
-get_make_plotter_object(data_list, metadata_list, plot_type)
+get_make_plotter_object(data, metadata, calc_type, calc_info, plot_type, style)
 }
 \arguments{
-\item{data_list}{list of plotable data}
+\item{data}{dataframe of plotable data obtained from calc object}
 
-\item{metadata_list}{list of metadata for each plot in data list. See get_metadata_for_plotting()}
+\item{metadata}{dataframe with the metadata for the plot table mentioned above. To obtain these see
+get_metadata_for_rows() and get_metadata_for_columns()}
+
+\item{calc_type}{A character to specify type of calculation - will be used for comp_ functions}
+
+\item{calc_info}{A string to define the information about calculation}
 
 \item{plot_type}{type of the plot you want to build. eg: "box", "dot" etc. Its a character vector}
 }

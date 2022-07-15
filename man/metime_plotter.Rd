@@ -3,29 +3,27 @@
 \docType{class}
 \name{metime_plotter-class}
 \alias{metime_plotter-class}
-\title{add aesthetics to plot and so on in this style
-lol <- aes(x=x, y=y)
-empty_plot$mappings <- lol
-creating metime_plotter class that converts calculations and metadata as a plotable object to parse
+\title{creating metime_plotter class that converts calculations and metadata as a plotable object to parse
 into viz_plotter
 Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
-- plot_parameters: ggplot() object with predefined aesthetics
-- aesthetics: list to define aesthetics. Eg: aesthetics=list(x="colname.x", y="colname.y", color="color", shape="shape")
-- the example above will be predefined in all the methods that creates this object.}
+- plot: ggplot(), circos() or visNetwork() object with predefined aesthetics
+- calc_type: A vector to specify type of calculation - will be used for comp_ functions
+- calc_info: string to define the information about calculation
+- plot_type: A character vector to define the type of plots that are needed.}
 \description{
-add aesthetics to plot and so on in this style
-lol <- aes(x=x, y=y)
-empty_plot$mappings <- lol
 creating metime_plotter class that converts calculations and metadata as a plotable object to parse
 into viz_plotter
 Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
-- plot_parameters: ggplot() object with predefined aesthetics
-- aesthetics: list to define aesthetics. Eg: aesthetics=list(x="colname.x", y="colname.y", color="color", shape="shape")
-- the example above will be predefined in all the methods that creates this object.
+- plot: ggplot(), circos() or visNetwork() object with predefined aesthetics
+- calc_type: A vector to specify type of calculation - will be used for comp_ functions
+- calc_info: string to define the information about calculation
+- plot_type: A character vector to define the type of plots that are needed.
 
-creating metime_plotter class that converts calculations and metadata as a plotable object to parse into viz_dot_plotter, viz_heatmap_plotter etc
+creating metime_plotter class that converts calculations and metadata as a plotable object to parse
+into viz_plotter
 Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
-- plot_parameters: ggplot() object with predefined aesthetics
-- aesthetics: list to define aesthetics. Eg: aesthetics=list(x="colname.x", y="colname.y", color="color", shape="shape")
-- the example above will be predefined in all the methods that creates this object.
+- plot: ggplot(), circos() or visNetwork() object with predefined aesthetics
+- calc_type: A vector to specify type of calculation - will be used for comp_ functions
+- calc_info: string to define the information about calculation
+- plot_type: A character vector to define the type of plots that are needed.
 }
