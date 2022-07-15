@@ -97,6 +97,7 @@ setMethod("get_samples_and_timepoints", "metime_analyser", function(object, whic
 #' @param screening_vars character vector representing the measurements obtained at baseline to be added to all timepoints for visualization.
 #' is set to NULL if nothing is added to it
 #' @return metadata dataframe with names, groups and class
+#' @export
 setGeneric("get_metadata_for_plotting", function(object, which_data, metab_groups, metab_ids, cols_for_vis_samples, screening_vars) standardGeneric("get_metadata_for_plotting"))
 
 setMethod("get_metadata_for_plotting", "metime_analyser", function(object, which_data, metab_groups, metab_ids, cols_for_vis_samples, screening_vars) {
@@ -274,6 +275,7 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' @param data_list list of plotable data
 #' @param metadata_list list of metadata for each plot in data list. See get_metadata_for_plotting()
 #' @param plot_type type of the plot you want to build. eg: "box", "dot" etc. Its a character vector
+#' @export
 get_make_plotter_object <- function(data_list, metadata_list, plot_type) {
 			data_list <- lapply(data_list, function(x) return(x[sort(rownames(x)), ]))
 			plot_data <- list()

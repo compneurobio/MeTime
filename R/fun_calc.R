@@ -267,6 +267,7 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
 #' 
 #' @return  a list with two dataframes containing the dimensionality reduction information 1) samples - data of the individuals(".$samples")
 #'                     2) metabs - data of the metabolites(".$metabs")
+#' @export
 setGeneric("calc_dimensionality_reduction", function(object, which_data, type) standardGeneric("calc_dimensionality_reduction"))
 
 setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, which_data, type) {

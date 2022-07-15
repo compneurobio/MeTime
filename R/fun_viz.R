@@ -119,6 +119,7 @@ setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname
 #' @param title_metabs character to specify the title of the plot of metabolites
 #' @param title_metabs character to specify the title of the plot of metabolites
 #' @return a list with both the plots of samples and metabolites. Can be accessed by using ".$samples" and ".$metabs"
+#' @export
 viz_dimensionality_reduction <- function(data_list, metadata_list, axes_labels, title_metabs, title_samples) {
 	palette <- get_palette(30)
 	if(is.null(metadata_list)) {
@@ -157,19 +158,26 @@ viz_dimensionality_reduction <- function(data_list, metadata_list, axes_labels, 
 #' @description plot function for metime_plotter object with different inputs to specialize plots. Used for all calc outputs.
 #' @param object S4 object of class metime_plotter
 #' @param aesthetics list for aesthetics. eg: list(list(x="colname",y="colname",color="colname", shape="colname"), list(...)) for "dot" plot and "netowrk"
-#' plot, for heatmap: list(x="colname", y="colname", fill="colname")
+#' plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely $vis and $strats for text
+#' and for facet wrapping. 
+#' @export
 setGeneric("viz_plotter", function(object, aesthetics) standardGeneric("viz_plotter"))
 setMethod("viz_plotter", "metime_plotter", function(object, aesthetics) {
 			plots <- list()
 			for(i in 1:length(object@plot_data)) {
 				if(object@plot_parameters$type[i] %in% "dot") {
 					plots[[i]] <- object@plot_parameters$plot[[i]] + 
-						geom_point(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape))
+						geom_point(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) +
+						facet_wrap(strats)
 					plots[[i]] <- ggplotly(plots[[i]])
 				} else if(object@plot_parameters$type[i] %in% "heatmap") {
 					plots[[i]] <- object@plot_parameters$plot[[i]] + 
 						geom_tile(aes_string(x=aesthectics[[i]]$x, y=aesthetics[[i]]$y, fill=aesthetics[[i]]$fill))
 					plots[[i]] <- ggplotly(plots[[i]])
+				} else if(object@plot_parameters$type[i] %in% "line") {
+					plots[[i]] <- object@plot_parameters$plot[[i]] + 
+						geom_line(aes_string(x=aesthectics[[i]]$x, y=aesthetics[[i]]$y, color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) + 
+						facet_wrap(strats)
 				} else {
 					print("currently other types are not available")
 				}
