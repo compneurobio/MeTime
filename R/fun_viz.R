@@ -70,7 +70,7 @@ setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname
 		bar_plot <- ggplot(data=plot_data, aes_string(x=colname, y="Frequency", fill="Timepoints")) +
 					geom_bar(stat="identity") + scale_fill_manual(values=palette_timepoints)+ theme_classic()
 		line_plot <- ggplot(plot_data, aes_string(x="Timepoints", y="Frequency", group=colname)) + 
-					 geom_line(aes_string(color=colname)) + geom_point(aes_string(color=colname)) + scale_color_manual(values=palette_line) + theme_minimal()
+					 geom_line(aes_string(color=colname)) + geom_point(aes_string(color=colname)) + scale_color_manual(values=palette_line) + theme_classic()
 		return(list_of_plots=list(bar_plot=bar_plot, line_plot=line_plot, var_type=var_type))
 
 	} else {
@@ -167,37 +167,34 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 			for(i in 1:length(object@plot_type)) {
 				if(object@plot_type[i] %in% "dot") {
 					object@plot[[i]] <- object@plot[[i]] + geom_point(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
-										color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) + facet_wrap(aesthetics[[i]]$strats)
-										+ theme_classic()
-					if(!is.null(aesthetics[[i]]$vis)) {
-						object@plot[[i]] <- ggplotly(object@plot[[i]]) %>% style(text=get_text_for_plot(data=object@plot_data[[1]], colnames=aesthetics[[i]]$vis))
-					} else {
-						object@plot[[i]] <- ggplotly(object@plot[[i]])
-					}	
+										color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) + 
+										facet_wrap(aesthetics[[i]]$strats) +
+										theme_classic()
+					object@plot[[i]] <- ggplotly(object@plot[[i]])
 				} else if(object@plot_type[i] %in% "heatmap") {
 					object@plot[[i]] <- object@plot[[i]] + geom_tile(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
-										fill=aesthetics[[i]]$fill)) + facet_wrap(aesthetics[[i]]$strats)
-										+ theme_classic()
+										fill=aesthetics[[i]]$fill)) + facet_wrap(aesthetics[[i]]$strats) +
+										theme_classic()
 					if(!is.null(aesthetics[[i]]$vis)) {
-						object@plot[[i]] <- ggplotly(object@plot[[i]]) %>% style(text=get_text_for_plot(data=object@plot_data[[1]], colnames=aesthetics[[i]]$vis))
+						object@plot[[i]] <- ggplotly(object@plot[[i]]) %>% style(mode="markers", hoverinfo = 'text', text=get_text_for_plot(data=object@plot_data[[1]], colnames=aesthetics[[i]]$vis))
 					} else {
 						object@plot[[i]] <- ggplotly(object@plot[[i]])
 					}	
 				} else if(object@plot_type[i] %in% "line") {
 					object@plot[[i]] <- object@plot[[i]] + geom_line(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
-										color=aesthetics[[i]]$color)) + facet_wrap(aesthetics[[i]]$strats) 
-										+ theme_classic()
+										color=aesthetics[[i]]$color)) + facet_wrap(aesthetics[[i]]$strats) +
+										theme_classic()
 					if(!is.null(aesthetics[[i]]$vis)) {
-						object@plot[[i]] <- ggplotly(object@plot[[i]]) %>% style(text=get_text_for_plot(data=object@plot_data[[1]], colnames=aesthetics[[i]]$vis))
+						object@plot[[i]] <- ggplotly(object@plot[[i]]) %>% style(mode="markers", hoverinfo = 'text', text=get_text_for_plot(data=object@plot_data[[1]], colnames=aesthetics[[i]]$vis))
 					} else {
 						object@plot[[i]] <- ggplotly(object@plot[[i]])
 					}	
 				} else if(object@plot_type[i] %in% "box") {
 					object@plot[[i]] <- object@plot[[i]] + geom_boxplot(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
-										color=aesthetics[[i]]$color), outlier.colour="red", outlier.shape=8, outlier.size=4) + facet_wrap(aesthetics[[i]]$strats) 
-										+ theme_classic() + stat_summary(fun.y=mean, geom="point", shape=23, size=4)
+										color=aesthetics[[i]]$color), outlier.colour="red", outlier.shape=8, outlier.size=4) + facet_wrap(aesthetics[[i]]$strats) +
+										theme_classic() + stat_summary(fun.y=mean, geom="point", shape=23, size=4)
 					if(!is.null(aesthetics[[i]]$vis)) {
-						object@plot[[i]] <- ggplotly(object@plot[[i]]) %>% style(text=get_text_for_plot(data=object@plot_data[[1]], colnames=aesthetics[[i]]$vis))
+						object@plot[[i]] <- ggplotly(object@plot[[i]]) %>% style(mode="markers", hoverinfo = 'text', text=get_text_for_plot(data=object@plot_data[[1]], colnames=aesthetics[[i]]$vis))
 					} else {
 						object@plot[[i]] <- ggplotly(object@plot[[i]])
 					}	
@@ -206,6 +203,8 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 			return(object)
 			
 	})
+
+#lol <- viz_plotter_ggplot(object=plotter_object, aesthetics=list(list(x="PC1",y="PC2",color="group", shape="class"))) 
 
 #' Setting up standard wrapper for all circos plots for a metime_plotter object. 
 #' @description plot function for metime_plotter object with different inputs to specialize plots. Used for all calc outputs.
@@ -248,24 +247,24 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
         if(length(unique(metadata$class) > 1)) {
         	classes <- unique(metadata$class)
             groups <-  unique(metadata$group)
-            graph <- visNetwork(nodes=plot_data[["node"]], edges=plot_data[["edge_list"]], main=main) %>%
+            graph <- visNetwork(nodes=plot_data[["node"]], edges=plot_data[["edge_list"]], main=title) %>%
                     visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
                     visPhysics(stabilization = FALSE)
             for(i in 1:length(classes)) {
                 graph <- visGroups(graph=graph, groupname = classes[i], shape = shapes[i])
             }
             graph <- visEdges(graph=graph, addEdges = ledges, useGroups = T) %>% 
-                        visNodes(borderWidth = 3, color=list(background=colors_for_nodes))
-                        visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group")%>%
+                        visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
+                        visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
                         visInteraction(navigationButtons = T) %>%
                         visConfigure(enabled=T)
         } else {
-        	graph <- visNetwork(nodes=node_list, edges=edge_list, main=main) %>%
+        	graph <- visNetwork(nodes=node_list, edges=edge_list, main=title) %>%
                     visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
                     visPhysics(stabilization = FALSE) %>%
                     visEdges(addEdges = ledges, useGroups = T) %>% 
-                    visNodes(borderWidth = 3, color=list(background=colors_for_nodes))
-                    visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group")%>%
+                    visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
+                    visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
                     visInteraction(navigationButtons = T) %>%
                     visConfigure(enabled=T)
         }

@@ -223,6 +223,7 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' @export
 get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_type, style) {
 			plot_data <- list()
+			empty_plots <- list()
 			if(style %in% "visNetwork") {
 					plot_data[["node"]] <- data$node
 					plot_data[["edge"]] <- data$edge
@@ -234,7 +235,7 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
 			}
 			for(i in 1:length(plot_type)) {
 				if(style %in% "ggplot") {
-						empty_plots[[i]] <- ggplot(plot_data)
+						empty_plots[[i]] <- ggplot(plot_data[[i]])
 				} else if(style %in% "circos") {
 						empty_plots[[i]] <- NULL
 				} else if(style %in% "visNetwork") {
@@ -259,7 +260,8 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
 #'									visNetwork() plot. Is always a singular input. Cannot have two styles in one object.
 #' @rdname metime_plotter
 #' @export
-setClass("metime_plotter", slots=list(plot_data="list", plot="list", calc_type="character", calc_info="character", plot_type="character", style="character"))
+setClass("metime_plotter", slots=list(plot_data="list", plot="list", calc_type="character", calc_info="character", 
+						plot_type="character", style="character"))
 
 ##Think of a check function for both classes separately
 #duplicated ids - check timpoint and subject 
@@ -274,6 +276,7 @@ setClass("metime_plotter", slots=list(plot_data="list", plot="list", calc_type="
 #' @param names A Character vector with the new names for the columns mentioned above
 #' @param index_of_names character vector to define the name of the column in which names of the variables are stored
 #' @return data.frame with metadata information
+#' @export
 setGeneric("get_metadata_for_columns", function(object, which_data, columns, names, index_of_names) standardGeneric("get_metadata_for_columns"))
 setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_data, columns, names, index_of_names) {
 				list_of_col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% which_data]
@@ -284,7 +287,7 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 								class <- rep(which_data[i], each=length(list_of_metadata_metabs[[i]][,1]))
 								list_of_metadata_metabs[[i]] <- list_of_metadata_metabs[[i]][order(list_of_metadata_metabs[[1]][,index_of_names]), ]
 								colnames(list_of_metadata_metabs[[i]]) <- names
-								list_of_metadata_metabs[[i]][, ncol(list_of_metadata_metabs[[i]])+1] <- class
+								list_of_metadata_metabs[[i]] <- as.data.frame(cbind(list_of_metadata_metabs[[i]], class))
 						}
 						metadata_metabs <- lapply(list_of_metadata_metabs, as.data.frame)
 						metadata_metabs <- do.call(rbind, metadata_metabs)
@@ -294,11 +297,17 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 						col_data <- list_of_col_data[[1]]
 						class <- rep(which_data, each=length(col_data[,1]))
 						metadata_metabs <- col_data[ ,columns[[1]]]
-						metadata_metabs[, ncol(metadata_metabs) + 1] <- class
+						metadata_metabs <- as.data.frame(cbind(metadata_metabs, class))
 						metadata_metabs <- metadata_metabs[order(metadata_metabs[,index_of_names]), ]
+						rownames(metadata_metabs) <- metadata_metabs[,index_of_names]
+						colnames(metadata_metabs) <- c(names, "class")
 				}
 				return(metadata_metabs)
 	})
+
+#metadata_metabs <- get_metadata_for_columns(object=data, which_data="lipid_data", columns=list(c("metabolite", "sub_pathway")), 
+#										names=c("name", "group"), index_of_names="metabolite")
+
 
 #' Get metadata for rows(in most cases for samples)
 #' @description function to generate a metadata list for building the MeTime plotter object
@@ -332,3 +341,7 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 					}
 					return(metadata_samples)
 	}) 
+
+#metadata_samples <- get_metadata_for_rows(object=data, which_data="lipid_data", 
+#											columns=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp", "DXGrp_longi", "PTGENDER", "Age", "BMI"), 
+#											names=NULL)
