@@ -17,6 +17,8 @@ get_metadata_for_rows() and get_metadata_for_columns()}
 \item{calc_info}{A string to define the information about calculation}
 
 \item{plot_type}{type of the plot you want to build. eg: "box", "dot" etc. Its a character vector}
+
+\item{style}{Style of plot, accepted inputs are "ggplot", "circos" and "visNetwork". Is a singular option.}
 }
 \description{
 function to generate metime_plotter object from plot data and metadata

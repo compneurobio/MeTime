@@ -155,38 +155,120 @@ viz_dimensionality_reduction <- function(data_list, metadata_list, axes_labels, 
 
 #make_plot_object function to be written
 
-#' Setting up standard wrapper for all plot functions
+#' Setting up standard wrapper for all ggplot plots for a metime_plotter object. 
 #' @description plot function for metime_plotter object with different inputs to specialize plots. Used for all calc outputs.
 #' @param object S4 object of class metime_plotter
-#' @param aesthetics list for aesthetics. eg: list(list(x="colname",y="colname",color="colname", shape="colname"), list(...)) for "dot" plot and "netowrk"
-#' plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely $vis and $strats for text
+#' @param aesthetics list for aesthetics. eg: list(list(x="colname",y="colname",color="colname", shape="colname"), list(...)) for "dot" plot and "heatmap"
+#' plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely .$vis and .$strats for text
 #' and for facet wrapping. 
 #' @export
-setGeneric("viz_plotter", function(object, aesthetics) standardGeneric("viz_plotter"))
-setMethod("viz_plotter", "metime_plotter", function(object, aesthetics) {
-			plots <- list()
-			for(i in 1:length(object@plot_data)) {
-				if(object@plot_parameters$type[i] %in% "dot") {
-					plots[[i]] <- object@plot_parameters$plot[[i]] + ggplot(text=get_text_for_plot(data=object@plot_data[[i]], colnames=aesthetics[[i]]$vis))
-						geom_point(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
-								color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) +
-						facet_wrap(aesthetics[[i]]$strats) + theme_classic()
-					plots[[i]] <- ggplotly(plots[[i]])
-				} else if(object@plot_parameters$type[i] %in% "heatmap") {
-					plots[[i]] <- object@plot_parameters$plot[[i]] + 
-						geom_tile(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, fill=aesthetics[[i]]$fill)) +
-						theme_classic()
-					plots[[i]] <- ggplotly(plots[[i]])
-				} else if(object@plot_parameters$type[i] %in% "line") {
-					plots[[i]] <- object@plot_parameters$plot[[i]] + ggplot(text=get_text_for_plot(data=object@plot_data[[i]], colnames=aesthetics[[i]]$vis))
-						geom_line(aes_string(x=aesthectics[[i]]$x, y=aesthetics[[i]]$y, 
-							color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) + 
-						facet_wrap(aesthetics[[i]]$strats) + theme_classic()
-					plots[[i]] <- ggplotly(plots[[i]])
-				} else {
-					print("currently other types are not available")
+setGeneric("viz_plotter_ggplot", function(object, aesthetics) standardGeneric("viz_plotter_ggplot"))
+setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
+			for(i in 1:length(object@plot_type)) {
+				if(object@plot_type[i] %in% "dot") {
+					object@plot[[i]] <- object@plot[[i]] + geom_point(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
+										color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) + facet_wrap(aesthetics[[i]]$strats)
+										+ theme_classic()
+					if(!is.null(aesthetics[[i]]$vis)) {
+						object@plot[[i]] <- ggplotly(object@plot[[i]]) %>% style(text=get_text_for_plot(data=object@plot_data[[1]], colnames=aesthetics[[i]]$vis))
+					} else {
+						object@plot[[i]] <- ggplotly(object@plot[[i]])
+					}	
+				} else if(object@plot_type[i] %in% "heatmap") {
+					object@plot[[i]] <- object@plot[[i]] + geom_tile(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
+										fill=aesthetics[[i]]$fill)) + facet_wrap(aesthetics[[i]]$strats)
+										+ theme_classic()
+					if(!is.null(aesthetics[[i]]$vis)) {
+						object@plot[[i]] <- ggplotly(object@plot[[i]]) %>% style(text=get_text_for_plot(data=object@plot_data[[1]], colnames=aesthetics[[i]]$vis))
+					} else {
+						object@plot[[i]] <- ggplotly(object@plot[[i]])
+					}	
+				} else if(object@plot_type[i] %in% "line") {
+					object@plot[[i]] <- object@plot[[i]] + geom_line(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
+										color=aesthetics[[i]]$color)) + facet_wrap(aesthetics[[i]]$strats) 
+										+ theme_classic()
+					if(!is.null(aesthetics[[i]]$vis)) {
+						object@plot[[i]] <- ggplotly(object@plot[[i]]) %>% style(text=get_text_for_plot(data=object@plot_data[[1]], colnames=aesthetics[[i]]$vis))
+					} else {
+						object@plot[[i]] <- ggplotly(object@plot[[i]])
+					}	
+				} else if(object@plot_type[i] %in% "box") {
+					object@plot[[i]] <- object@plot[[i]] + geom_boxplot(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
+										color=aesthetics[[i]]$color), outlier.colour="red", outlier.shape=8, outlier.size=4) + facet_wrap(aesthetics[[i]]$strats) 
+										+ theme_classic() + stat_summary(fun.y=mean, geom="point", shape=23, size=4)
+					if(!is.null(aesthetics[[i]]$vis)) {
+						object@plot[[i]] <- ggplotly(object@plot[[i]]) %>% style(text=get_text_for_plot(data=object@plot_data[[1]], colnames=aesthetics[[i]]$vis))
+					} else {
+						object@plot[[i]] <- ggplotly(object@plot[[i]])
+					}	
 				}
 			}
-			return(plots)
+			return(object)
+			
 	})
 
+#' Setting up standard wrapper for all circos plots for a metime_plotter object. 
+#' @description plot function for metime_plotter object with different inputs to specialize plots. Used for all calc outputs.
+#' @param object S4 object of class metime_plotter
+#' @param aesthetics list for aesthetics. eg: list(list(x="colname",y="colname",color="colname", shape="colname"), list(...)) for "dot" plot and "heatmap"
+#' plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely .$vis and .$strats for text
+#' and for facet wrapping. 
+#' @export
+setGeneric("viz_plotter_circos", function(object, aesthetics, outfile) standardGeneric("viz_plotter_circos")) 
+setMethod("viz_plotter_circos", "metime_plotter", function(object, aesthetics, outfile) {
+			pdffile <- pdf(outfile)
+
+			dev.off()
+	}) 
+
+#' Setting up standard wrapper for network plots from visNetwork for a metime_plotter object. 
+#' @description plot function for metime_plotter object with different inputs to specialize plots. Used for all calc outputs.
+#' @param object S4 object of class metime_plotter
+#' @param title character/string that is the title of the graph output
+#' @export
+setGeneric("viz_plotter_visNetwork", function(object, title) standardGeneric("viz_plotter_visNetwork"))
+setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
+		stopifnot(colnames(object@plot_data[["metadata"]]) %in% c("name","group","class"))
+		metadata <- object@plot_data[["metadata"]]
+		#Choosing colors and shapes for visualization
+        if(is.null(metadata$colors)) {
+            shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
+            colors_for_nodes <- metadata$group
+            colors_code <- cbind(unique(node_list$group), get_palette(length(unique(node_list$group))))
+            colnames(colors_code) <- c("group", "color")
+            for(i in 1:length(colors_for_nodes)) {
+                colors_for_nodes[i] <- colors_code[colors_for_nodes %in% colors_code$group, "color"]
+            }
+        } else {
+            shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
+            color_for_nodes <- metadata$colors
+        }
+          
+        ledges <- data.frame(color = c("#920000","#0072b2"), label = c("negative", "positive"), dashes =c(TRUE, FALSE))
+        if(length(unique(metadata$class) > 1)) {
+        	classes <- unique(metadata$class)
+            groups <-  unique(metadata$group)
+            graph <- visNetwork(nodes=plot_data[["node"]], edges=plot_data[["edge_list"]], main=main) %>%
+                    visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
+                    visPhysics(stabilization = FALSE)
+            for(i in 1:length(classes)) {
+                graph <- visGroups(graph=graph, groupname = classes[i], shape = shapes[i])
+            }
+            graph <- visEdges(graph=graph, addEdges = ledges, useGroups = T) %>% 
+                        visNodes(borderWidth = 3, color=list(background=colors_for_nodes))
+                        visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group")%>%
+                        visInteraction(navigationButtons = T) %>%
+                        visConfigure(enabled=T)
+        } else {
+        	graph <- visNetwork(nodes=node_list, edges=edge_list, main=main) %>%
+                    visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
+                    visPhysics(stabilization = FALSE) %>%
+                    visEdges(addEdges = ledges, useGroups = T) %>% 
+                    visNodes(borderWidth = 3, color=list(background=colors_for_nodes))
+                    visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group")%>%
+                    visInteraction(navigationButtons = T) %>%
+                    visConfigure(enabled=T)
+        }
+        object@plot[[1]] <- graph
+        return(object)
+	})

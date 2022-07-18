@@ -5,19 +5,27 @@
 \alias{metime_plotter-class}
 \title{creating metime_plotter class that converts calculations and metadata as a plotable object to parse
 into viz_plotter
-Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
-- plot: ggplot(), circos() or visNetwork() object with predefined aesthetics
-- calc_type: A vector to specify type of calculation - will be used for comp_ functions
-- calc_info: string to define the information about calculation
-- plot_type: A character vector to define the type of plots that are needed.}
-\description{
-creating metime_plotter class that converts calculations and metadata as a plotable object to parse
-into viz_plotter
-Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
-- plot: ggplot(), circos() or visNetwork() object with predefined aesthetics
+Contains slots - plot_data: list of Dataframe(s) with plotting data and metadata for visualization.
+Dataframes is an option only for visNetwork() plots. Need a list of two dataframes:
+Nodes dataframe and edge dataframe named as .$node and .$edge
+- plot: ggplot(), circos() or visNetwork() object
 - calc_type: A vector to specify type of calculation - will be used for comp_ functions
 - calc_info: string to define the information about calculation
 - plot_type: A character vector to define the type of plots that are needed.
+- style: Character that defines the style of plot i.e. a ggplot(), circos() or
+visNetwork() plot. Is always a singular input. Cannot have two styles in one object.}
+\description{
+creating metime_plotter class that converts calculations and metadata as a plotable object to parse
+into viz_plotter
+Contains slots - plot_data: list of Dataframe(s) with plotting data and metadata for visualization.
+Dataframes is an option only for visNetwork() plots. Need a list of two dataframes:
+Nodes dataframe and edge dataframe named as .$node and .$edge
+- plot: ggplot(), circos() or visNetwork() object
+- calc_type: A vector to specify type of calculation - will be used for comp_ functions
+- calc_info: string to define the information about calculation
+- plot_type: A character vector to define the type of plots that are needed.
+- style: Character that defines the style of plot i.e. a ggplot(), circos() or
+visNetwork() plot. Is always a singular input. Cannot have two styles in one object.
 
 creating metime_plotter class that converts calculations and metadata as a plotable object to parse
 into viz_plotter

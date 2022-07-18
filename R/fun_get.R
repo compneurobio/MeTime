@@ -219,34 +219,47 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' @param calc_type A character to specify type of calculation - will be used for comp_ functions
 #' @param calc_info A string to define the information about calculation
 #' @param plot_type type of the plot you want to build. eg: "box", "dot" etc. Its a character vector
+#' @param style Style of plot, accepted inputs are "ggplot", "circos" and "visNetwork". Is a singular option.
 #' @export
 get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_type, style) {
-			data <- data[order(rownames(data)), ]
-			plot_data <- as.data.frame(cbind(data, metadata))
+			plot_data <- list()
+			if(style %in% "visNetwork") {
+					plot_data[["node"]] <- data$node
+					plot_data[["edge"]] <- data$edge
+					plot_data[["metadata"]] <- metadata
+			} else {
+					data <- data[order(rownames(data)), ]
+					metadata <- metadata[rownames(metadata) %in% rownames(data), ]
+					plot_data[[1]] <- as.data.frame(cbind(data, metadata))
+			}
 			for(i in 1:length(plot_type)) {
-				if(style[i] %in% "ggplot") {
+				if(style %in% "ggplot") {
 						empty_plots[[i]] <- ggplot(plot_data)
-				} else if(style[i] %in% "circos") {
+				} else if(style %in% "circos") {
 						empty_plots[[i]] <- NULL
-				} else if(style[i] %in% "visNetwork") {
+				} else if(style %in% "visNetwork") {
 						empty_plots[[i]] <- NULL
 				}
 			}
-			object <- new("metime_plotter", plot_data=plot_data, plot=empty_plots, calc_type=calc_type, calc_info=calc_info, plot_type=plot_type)
+			object <- new("metime_plotter", plot_data=plot_data, plot=empty_plots, calc_type=calc_type, calc_info=calc_info, plot_type=plot_type, style=style)
 			return(object)
 }
 
 
 #' creating metime_plotter class that converts calculations and metadata as a plotable object to parse 
 #' into viz_plotter
-#' Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
-#' 				  			- plot: ggplot(), circos() or visNetwork() object with predefined aesthetics 
+#' Contains slots - plot_data: list of Dataframe(s) with plotting data and metadata for visualization.
+#' 									Dataframes is an option only for visNetwork() plots. Need a list of two dataframes: 
+#' 									Nodes dataframe and edge dataframe named as .$node and .$edge
+#' 				  			- plot: ggplot(), circos() or visNetwork() object  
 #'                - calc_type: A vector to specify type of calculation - will be used for comp_ functions
 #'                - calc_info: string to define the information about calculation
 #' 								- plot_type: A character vector to define the type of plots that are needed.
+#' 								- style: Character that defines the style of plot i.e. a ggplot(), circos() or
+#'									visNetwork() plot. Is always a singular input. Cannot have two styles in one object.
 #' @rdname metime_plotter
 #' @export
-setClass("metime_plotter", slots=list(plot_data="data.frame", plot="list", calc_type="character", calc_info="character", plot_type="character"))
+setClass("metime_plotter", slots=list(plot_data="list", plot="list", calc_type="character", calc_info="character", plot_type="character", style="character"))
 
 ##Think of a check function for both classes separately
 #duplicated ids - check timpoint and subject 
@@ -276,6 +289,7 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 						metadata_metabs <- lapply(list_of_metadata_metabs, as.data.frame)
 						metadata_metabs <- do.call(rbind, metadata_metabs)
 						metadata_metabs <- as.data.frame(metadata_metabs)
+						rownames(metadata_metabs) <- metadata_metabs[,index_of_names] 
 				} else {
 						col_data <- list_of_col_data[[1]]
 						class <- rep(which_data, each=length(col_data[,1]))
@@ -302,10 +316,19 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 							list_of_data <- mod_extract_common_samples(object)
 							list_of_data <- lapply(list_of_data, function(x) return(x[order(rownames(x)), ]))
 							metadata_samples <- as.data.frame(list_of_data[[object@annotations$phenotype]][,columns])
+							timepoints <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[2])))
+							levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
+							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
+							metadata_samples <- as.data.frame(cbind(metadata_samples, timepoints))
 					} else {
 							data <- as.data.frame(object@list_of_data[names(object@list_of_data) %in% which_data][[1]])
 							phenotype <- object@list_of_data[[object@annotations$phenotype]]
 							metadata_samples <- phenotype[rownames(phenotype) %in% rownames(data), columns]
-							metadata_samples <- metadata_samples[order(rownames(metadata_samples)), ] 
+							metadata_samples <- metadata_samples[order(rownames(metadata_samples)), ]
+							timepoints <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[2])))
+							levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
+							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
+							metadata_samples <- as.data.frame(cbind(metadata_samples, timepoints))
 					}
+					return(metadata_samples)
 	}) 
