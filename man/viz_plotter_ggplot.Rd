@@ -13,6 +13,9 @@ viz_plotter_ggplot(object, aesthetics)
 plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely .$vis and .$strats for text
 and for facet wrapping.}
 }
+\value{
+metime_plotter object with updated plot
+}
 \description{
 plot function for metime_plotter object with different inputs to specialize plots. Used for all calc outputs.
 }
