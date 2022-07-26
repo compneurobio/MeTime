@@ -199,7 +199,8 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 					object@plot[[i]] <- object@plot[[i]] + geom_pointrange(aes_string(x=aesthetics[[i]]$label, 
 																	y=aesthetics[[i]]$mean, ymin=aesthetics[[i]]$lower, 
 																	ymax=aesthetics[[i]]$upper, color=aesthetics[[i]]$color)) + 
-										coord_flip() + xlab("Label") + ylab("Mean (95% CI)") + theme_classic()
+										coord_flip() + xlab("Label") + ylab("Mean (95% CI)") + facet_wrap(aesthetics[[i]]$strats) +
+										theme_classic() 
 					object@plot[[i]] <- ggplotly(object@plot[[i]]) 
 				}
 			}

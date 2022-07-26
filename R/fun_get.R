@@ -213,7 +213,7 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 
 #' Function to make a plottable object for viz functions
 #' @description function to generate metime_plotter object from plot data and metadata
-#' @param data dataframe of plotable data obtained from calc object
+#' @param data dataframe/list of plotable data obtained from calc object
 #' @param metadata dataframe with the metadata for the plot table mentioned above. To obtain these see
 #' get_metadata_for_rows() and get_metadata_for_columns()
 #' @param calc_type A character to specify type of calculation - will be used for comp_ functions

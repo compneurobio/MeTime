@@ -7,7 +7,7 @@
 get_make_plotter_object(data, metadata, calc_type, calc_info, plot_type, style)
 }
 \arguments{
-\item{data}{dataframe of plotable data obtained from calc object}
+\item{data}{dataframe/list of plotable data obtained from calc object}
 
 \item{metadata}{dataframe with the metadata for the plot table mentioned above. To obtain these see
 get_metadata_for_rows() and get_metadata_for_columns()}
