@@ -62,12 +62,14 @@ setMethod("mod_extract_common_samples", "metime_analyser",function(object, time_
 		common_samples <- Reduce(intersect, list_of_names)
 		list_of_data <- lapply(list_of_data, function(x) {
 					x <- x[rownames(x) %in% common_samples, ]
+					x <- x[order(rownames(x)), ]
 					return(x)
 			})
 		if(time_splitter) {
-				split_acc_time(object)
+				list_of_data <- mod_split_acc_to_time(object)
 		}
-		return(list_of_data)
+		object@list_of_data <- list_of_data
+		return(object)
 })
 
 #' Function to Convert S4 object of class metime_analyser to an S3 object with same architecture
@@ -84,39 +86,6 @@ setMethod("mod_convert_s4_to_s3", "metime_analyser", function(object) {
 		return(list(list_of_data=object@list_of_data, list_of_col_data=object@list_of_col_data, list_of_row_data=object@list_of_row_data, annotations=object@annotations))
 	})
 
-
-#' Function to prepare and preprocess S4 objects to use it for gaussian gaphical models. Also converts S4 to S3
-#' @description function to be applied onto metime_analyse object to convert into a standard list of S3 type based on the type of GGM analysis to be performed.
-#' @examples # prepping data for genenet ggm for single dataset
-#' object <- mod_prep_data_for_ggms(object, which_type="single", mlp_or_temp=FALSE)
-#' @param object An object of class metime_analyser
-#' @param which_type two choices either: 1) single -  converts S4 to S3 and returns the nested list
-#' 										 2) multi - extracts common samples across the dataframes and returns an S3 nested list
-#' @param mlp_or_temp boolean. If true preps data for multibipartite lasso or temporal networks
-#' @return An S3 object(nested list) with the same architecture as that of class metime_analyser
-#' @export 
-setGeneric("mod_prep_data_for_ggms", function(object, which_type, mlp_or_temp) standardGeneric("mod_prep_data_for_ggms"))
-setMethod("mod_prep_data_for_ggms", "metime_analyser", function(object, which_type, mlp_or_temp) {
-		if(which_type %in% "multi") {
-			object@list_of_data <- mod_common_sample_extractor(object)
-			if(mlp_or_temp) {
-				object@list_of_data <- mod_split_acc_to_time(object)
-				object <- mod_convert_s4_to_s3(object)
-			} else {
-				object <- mod_convert_s4_to_s3(object)
-			}
-		} else if(which_type %in% "single") {
-			if(mlp_or_temp) {
-				object@list_of_data <- mod_split_acc_time(object)
-				object <- mod_convert_s4_to_s3(object)
-			} else {
-				object <- mod_convert_s4_to_s3(object)
-			}
-		} else {
-			stop("Check the input for which_type: only allowed inputs and multi and single")
-		}
-		return(object)
-	})
 
 #' Function to apply log transformation
 #' @description Function to log transform data

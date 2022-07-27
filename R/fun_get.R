@@ -213,7 +213,7 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 
 #' Function to make a plottable object for viz functions
 #' @description function to generate metime_plotter object from plot data and metadata
-#' @param data dataframe/list of plotable data obtained from calc object
+#' @param data dataframe of plotable data obtained from any calc object
 #' @param metadata dataframe with the metadata for the plot table mentioned above. To obtain these see
 #' get_metadata_for_rows() and get_metadata_for_columns()
 #' @param calc_type A character to specify type of calculation - will be used for comp_ functions
@@ -225,8 +225,24 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
 			plot_data <- list()
 			empty_plots <- list()
 			if(style %in% "visNetwork") {
-					plot_data[["node"]] <- data$node
-					plot_data[["edge"]] <- data$edge
+				 	nodes <- unique(c(data$node1, data$node2))
+    			node_list <- data.frame(id=1:length(nodes), label=nodes, group=as.character(1:length(nodes)))
+    			for(i in 1:length(node_list$label)) {
+          		g <- metadata[as.character(metadata$name) %in% as.character(node_list$label[i]), "group"]
+           		node_list$group[i] <- g
+    			}
+          
+    			#Getting edge list
+    			edge_list <- data.frame(from=1:length(network$node1), to=1:length(network$node2))
+    			for(i in 1:length(network$node1)) {
+        			edge_list$from[i] <- node_list[as.character(node_list$label) %in% as.character(data$node1[i]), "id"]
+        			edge_list$to[i] <- node_list[as.character(node_list$label) %in% as.character(data$node2[i]), "id"]
+   			 	}
+    			dashes <- ifelse(data$pcor_val > 0, FALSE, TRUE)
+    			edge_list$dashes <- dashes
+    			edge_list$values <- data$pcor_val
+					plot_data[["node"]] <- node_list
+					plot_data[["edge"]] <- edge_list
 					plot_data[["metadata"]] <- metadata
 			} else {
 					data <- data[order(rownames(data)), ]
@@ -345,3 +361,61 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 #metadata_samples <- get_metadata_for_rows(object=data, which_data="lipid_data", 
 #											columns=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp", "DXGrp_longi", "PTGENDER", "Age", "BMI"), 
 #											names=NULL)
+
+
+#' Function to calculate a dynamic GeneNet GGM from a longitudnal data matrix
+#' @description calculates GGM on longitudnal data matrix and returns a dataframe with edges, 
+#'   partial correlation and associated p-values
+#' @param data data matrix in a longitudnal format
+#' @param threshold type of multiple hypothesis correction. Available are Bonferoni("bonferoni"), 
+#'   Benjamini-Hochberg("FDR") and independent tests method("li", also see Li et al ....)
+#' @return a dataframe with edges, partial correlation and associated p-values 
+#' @export
+get_ggm_genenet <- function(data, threshold=c("bonferoni", "FDR", "li")) {
+  # check if longitudinal
+  if(!longitudinal::is.longitudinal(data)) stop("data is not a longitudinal object") 
+  
+  met.ggm <- GeneNet::ggm.estimate.pcor(data, method="dynamic") # retrieve GGM
+  met.ggm.edges <- GeneNet::network.test.edges(met.ggm, plot=F) # calculate edge statistics
+  
+  #define thresholds
+  p.thresh <- 0.05/((ncol(met.ggm))*(ncol(met.ggm))/2) 
+  fdr.thresh <- 0.05
+    
+  # cut at threshold
+  if(threshhold=="FDR") {
+      met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$qval < 0.05),]
+  } else if(threshhold=="li"){
+      data <- data %>% as.matrix() %>% .[,] %>% as.data.frame()  
+      cordat <- cor(data)
+      eigenvals <- eigen(cordat)$values
+      li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
+      met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < 0.05/li.thresh),]
+  } else if(threshhold=="bonferoni"){
+      met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < p.thresh),]
+  }
+  
+  ## Reinsert node (metabolite) names
+  node1list <- NULL
+  node2list <- NULL
+  for(i in 1:nrow(met.ggm.edges.filtered)){
+    node1list <- c(node1list, colnames(met.ggm)[met.ggm.edges.filtered$node1[i]])
+    node2list <- c(node2list, colnames(met.ggm)[met.ggm.edges.filtered$node2[i]])
+  }
+  met.ggm.edges.filtered$node1 <- node1list
+  met.ggm.edges.filtered$node2 <- node2list
+  ## Filter edges for significant partial correlations that are also significant pairwise correlations
+  edge2rem <- NULL
+  for(i in 1:nrow(met.ggm.edges.filtered)) {
+    cor.nodes <- cor.test(data[,met.ggm.edges.filtered$node1[i]],data[,met.ggm.edges.filtered$node2[i]])
+    # Print and store those that do not make it
+    if(cor.nodes$p.value > p.thresh){
+      cat(met.ggm.edges.filtered$node1[i]," : ", met.ggm.edges.filtered$node2[i], " -> pcor=", met.ggm.edges.filtered$pcor[i],"(P=",met.ggm.edges.filtered$pval[i],"), cor=", cor.nodes$estimate, "(P=", cor.nodes$p.value,")\n")
+      edge2rem <- c(edge2rem, i)
+    }
+  }
+  
+  # Remove edges without significant pairwise correlations
+  met.ggm.edges.filtered <- met.ggm.edges.filtered[-edge2rem,]
+  return(met.ggm.edges.filtered)
+}

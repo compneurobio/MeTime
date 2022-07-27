@@ -399,3 +399,61 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
 #' @param split_var split variable for testing
 #' @return t-test result as a list or a list of t-test results 
 #' @export
+setGeneric("calc_ttest", function(object, which_data, split_var) standardGeneric("calc_ttest"))
+setMethod("calc_ttest", "metime_analyser", function(object, which_data, split_var) {
+
+  })
+
+
+#' An automated fucntion to calculate GGM from genenet
+#' @description automated funtion that can be applied on s3 object obtained after prep_data_for_ggms() to obtain geneNet network along with threshold used
+#' @param object S4 object of cĺass metime_analyser
+#' @param which_data a character or a character vector naming the datasets of interest
+#' @param threshold type of threshold to be used for extracting significant edges
+#' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
+#' @return Network data with edgelist, partial correlation values and associated p-values and corrected p-values 
+setGeneric("calc_ggm_genenet", function(object, which_data, threshold, timepoints) standardGeneric("calc_ggm_genenet"))
+setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, threshold, timepoints) {
+    #sanity checks
+    stopifnot(timepoints %in% c("t0","t12","t24"))
+    stopifnot(threshhold %in% c("li","bonferoni","FDR"))
+    #Extracting data that is needed
+    object@list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+    timepoints <- as.character(unlist(lapply(strsplit(timepoints), split="t", fixed=TRUE), function(x) return(x[2])))
+    #converting prepped data to full ggm network
+    if(length(which_data > 1)) {
+        object <- mod_common_sample_extractor(object)
+        data <- do.call(cbind, object@list_of_data)
+        colnames(data) <- unlist(lapply(strsplit(colnames(data), split="_data."), function(x) return(x[2])))
+    } else {
+        data <- object@list_of_data[[1]]
+    } 
+    data <- data %>% 
+            dplyr::mutate(id = .[] %>% rownames(), 
+                        subject = .[] %>% rownames() %>% str_split(pattern="R", n=2) %>% 
+                              sapply("[[", 2) %>% str_split(pattern="_t", n=2) %>% sapply("[[", 1) %>% as.numeric(),
+                        timepoint = .[] %>% rownames() %>% str_split(pattern="R", n=2) %>% 
+                              sapply("[[", 2) %>% str_split(pattern="_t", n=2) %>% sapply("[[", 2) %>% as.numeric())
+    my_rid <- x.data %>%     
+              dplyr::select(all_of(c("subject","timepoint"))) %>% 
+              dplyr::filter(get("timepoint") %in% timepoints)%>% 
+              dplyr::group_by(subject) %>% 
+              dplyr::count(subject) %>% 
+              dplyr::filter(n == length(timepoints))
+                  
+    data <- data %>% 
+            dplyr::filter(timepoint %in% timepoints,
+            subject %in% my_rid[["subject"]])
+    rm_col = intersect(names(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
+    vars <- data %>% select(-c(rm_col)) %>% names()
+    # get full data
+    data <- data %>% dplyr::arrange(timepoint, subject) 
+    n_subject = unique(data$subject) %>% length() %>% as.numeric()
+    name_tp = unique(data$timepoint) %>% as.numeric()
+  
+    data <- longitudinal::as.longitudinal(x=as.matrix(data[,vars]), repeats=n_subject, time=name_tp)
+    
+    network <- get_ggm_genenet(data=data, threshold=threshold)
+       
+    return(network)
+})

@@ -112,39 +112,39 @@ setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname
 	}
 })
 
-#' Function to dot plot any kind of dot_plotter including for dimensionality reduction
-#' @description General function to be implemented on data_list that is obtained after applying a dimensionality reduction method
-#' @param data_list list obtained after applying calc_dimensionality_reduction() on metime_analyse object
-#' @param metadata_list list obtained after applying get_metadata_for_plotting() on metime_analyse object
-#' @param axes_labels character vector to specify the labels of the axes in the order x and y.
-#' @param title_metabs character to specify the title of the plot of metabolites
-#' @param title_metabs character to specify the title of the plot of metabolites
-#' @return a list with both the plots of samples and metabolites. Can be accessed by using ".$samples" and ".$metabs"
-#' @export
-viz_dimensionality_reduction <- function(data_list, metadata_list, axes_labels, title_metabs, title_samples) {
-	palette <- get_palette(30)
-	if(is.null(metadata_list)) {
-		return(list(metabs=plot(data_list$metabs), samples=plot(data_list$samples)))
-	} else {
-		plot <- list()
-		data_list <- lapply(data_list, function(x) return(x[sort(rownames(x)),]))
-		plot_data_metabs <- as.data.frame(cbind(data_list$metabs, metadata_list$metabs))
-		plot_data_samples <- as.data.frame(cbind(data_list$samples, metadata_list$samples))
-		plot_metabs <- ggplot(plot_data_metabs, aes_string(x=colnames(plot_data_metabs)[1], y=colnames(plot_data_metabs)[2], 
-							color="groups", shape="class", text=paste("metab_name :", plot_data_metabs$name, sep="")))  
-						+ geom_point() + labs(x=axes_labels[1], y=axes_labels[2], subtitle=title_metabs) 
-		plot_metabs <- ggplotly(metabs)
-		timepoints <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2])))
-		levels <- unique(sort(as.numeric(unlist(lapply(strsplit(timepoints, split="t", fixed=TRUE), function(x) return(x[2]))))))
-		plot_data_samples$timepoints <- factor(timepoints, levels=paste("t", levels, sep=""))
-		plot_samples <- ggplot(plot_data_samples, aes_string(x=colnames(plot_data_samples)[1], y=colnames(plot_data_samples)[2], 
-						color="timepoints", 
-						text=get_text_for_plot(data=plot_data_samples, colnames=colnames(plot_data_samples)[3:length(colnames(plot_data_samples))]))) +
-						geom_point() + labs(x=axes_labels[1], y=axes_labels[2], subtitle=title_samples)
-		plot_samples <- ggplotly(plot_samples)
-		return(list(metabs=plot_metabs, samples=plot_samples))
-	}
-}
+# #' Function to dot plot any kind of dot_plotter including for dimensionality reduction
+# #' @description General function to be implemented on data_list that is obtained after applying a dimensionality reduction method
+# #' @param data_list list obtained after applying calc_dimensionality_reduction() on metime_analyse object
+# #' @param metadata_list list obtained after applying get_metadata_for_plotting() on metime_analyse object
+# #' @param axes_labels character vector to specify the labels of the axes in the order x and y.
+# #' @param title_metabs character to specify the title of the plot of metabolites
+# #' @param title_metabs character to specify the title of the plot of metabolites
+# #' @return a list with both the plots of samples and metabolites. Can be accessed by using ".$samples" and ".$metabs"
+# #' @export
+# viz_dimensionality_reduction <- function(data_list, metadata_list, axes_labels, title_metabs, title_samples) {
+# 	palette <- get_palette(30)
+# 	if(is.null(metadata_list)) {
+# 		return(list(metabs=plot(data_list$metabs), samples=plot(data_list$samples)))
+# 	} else {
+# 		plot <- list()
+# 		data_list <- lapply(data_list, function(x) return(x[sort(rownames(x)),]))
+# 		plot_data_metabs <- as.data.frame(cbind(data_list$metabs, metadata_list$metabs))
+# 		plot_data_samples <- as.data.frame(cbind(data_list$samples, metadata_list$samples))
+# 		plot_metabs <- ggplot(plot_data_metabs, aes_string(x=colnames(plot_data_metabs)[1], y=colnames(plot_data_metabs)[2], 
+# 							color="groups", shape="class", text=paste("metab_name :", plot_data_metabs$name, sep="")))  
+# 						+ geom_point() + labs(x=axes_labels[1], y=axes_labels[2], subtitle=title_metabs) 
+# 		plot_metabs <- ggplotly(metabs)
+# 		timepoints <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2])))
+# 		levels <- unique(sort(as.numeric(unlist(lapply(strsplit(timepoints, split="t", fixed=TRUE), function(x) return(x[2]))))))
+# 		plot_data_samples$timepoints <- factor(timepoints, levels=paste("t", levels, sep=""))
+# 		plot_samples <- ggplot(plot_data_samples, aes_string(x=colnames(plot_data_samples)[1], y=colnames(plot_data_samples)[2], 
+# 						color="timepoints", 
+# 						text=get_text_for_plot(data=plot_data_samples, colnames=colnames(plot_data_samples)[3:length(colnames(plot_data_samples))]))) +
+# 						geom_point() + labs(x=axes_labels[1], y=axes_labels[2], subtitle=title_samples)
+# 		plot_samples <- ggplotly(plot_samples)
+# 		return(list(metabs=plot_metabs, samples=plot_samples))
+# 	}
+# }
  
 #viz_conversation_index()
 
