@@ -165,43 +165,59 @@ viz_dimensionality_reduction <- function(data_list, metadata_list, axes_labels, 
 #' @export
 setGeneric("viz_plotter_ggplot", function(object, aesthetics) standardGeneric("viz_plotter_ggplot"))
 setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
+			stopifnot(object@plot_type %in% c("dot", "heatmap", "line", "box", "bar", "forest", "QQ"))
 			for(i in 1:length(object@plot_type)) {
 				if(object@plot_type[i] %in% "dot") {
 					object@plot[[i]] <- object@plot[[i]] + geom_point(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
 										color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) + 
 										facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic()
-					object@plot[[i]] <- ggplotly(object@plot[[i]])
+					object@plot[[i]] <- plotly_build(object@plot[[i]])
+					object@plot[[i]]$x$data[[2]]$text <- get_text_for_plot(data=object@plot_data, colnames=aesthetics[[i]]$vis)
 
 				} else if(object@plot_type[i] %in% "heatmap") {
 					
 					object@plot[[i]] <- object@plot[[i]] + geom_tile(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
 										fill=aesthetics[[i]]$fill)) + facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic()
-					object@plot[[i]] <- ggplotly(object@plot[[i]])
+					object@plot[[i]] <- plotly_build(object@plot[[i]])
+					object@plot[[i]]$x$data[[2]]$text <- get_text_for_plot(data=object@plot_data, colnames=aesthetics[[i]]$vis)
 
 				} else if(object@plot_type[i] %in% "line") {
 					
 					object@plot[[i]] <- object@plot[[i]] + geom_line(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
 										color=aesthetics[[i]]$color)) + facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic()
-					
-					object@plot[[i]] <- ggplotly(object@plot[[i]])
+					object@plot[[i]] <- plotly_build(object@plot[[i]])
+					object@plot[[i]]$x$data[[2]]$text <- get_text_for_plot(data=object@plot_data, colnames=aesthetics[[i]]$vis)
+
 						
 				} else if(object@plot_type[i] %in% "box") {
 					object@plot[[i]] <- object@plot[[i]] + geom_boxplot(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
 										color=aesthetics[[i]]$color), outlier.colour="red", outlier.shape=8, outlier.size=4) + facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic() + stat_summary(fun.y=mean, geom="point", shape=23, size=4)
-					
-					object@plot[[i]] <- ggplotly(object@plot[[i]])
+					object@plot[[i]] <- plotly_build(object@plot[[i]])
+					object@plot[[i]]$x$data[[2]]$text <- get_text_for_plot(data=object@plot_data, colnames=aesthetics[[i]]$vis)
 						
 				} else if(object@plot_type[i] %in% "forest") {
 					object@plot[[i]] <- object@plot[[i]] + geom_pointrange(aes_string(x=aesthetics[[i]]$label, 
 																	y=aesthetics[[i]]$mean, ymin=aesthetics[[i]]$lower, 
 																	ymax=aesthetics[[i]]$upper, color=aesthetics[[i]]$color)) + 
-										coord_flip() + xlab("Label") + ylab("Mean (95% CI)") + facet_wrap(aesthetics[[i]]$strats) +
+										coord_flip() + facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic() 
-					object@plot[[i]] <- ggplotly(object@plot[[i]]) 
+					object@plot[[i]] <- plotly_build(object@plot[[i]])
+					object@plot[[i]]$x$data[[2]]$text <- get_text_for_plot(data=object@plot_data, colnames=aesthetics[[i]]$vis)
+				} else if(object@plot_type[i] %in% "QQ") {
+					object@plot[[i]] <- object@plot[[i]] + stat_qq(aes_string(sample=aesthetics[[i]]$sample, color=aesthetics[[i]]$color, 
+															shape=aesthetics[[i]]$shape)) + facet_wrap(aesthetics[[i]]$strats) + theme_classic()
+					object@plot[[i]] <- plotly_build(object@plot[[i]])
+					object@plot[[i]]$x$data[[2]]$text <- get_text_for_plot(data=object@plot_data, colnames=aesthetics[[i]]$vis)
+				} else if(object@plot_type[i] %in% "bar") {
+					object@plot[[i]] <- object@plot[[i]] + geom_bar(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
+										fill=aesthetics[[i]]$fill), stat="identity", position=aesthetics[[i]]$postion) + 
+										facet_wrap(aesthetics[[i]]$strats) + theme_classic()
+					object@plot[[i]] <- plotly_build(object@plot[[i]])
+					object@plot[[i]]$x$data[[2]]$text <- get_text_for_plot(data=object@plot_data, colnames=aesthetics[[i]]$vis)
 				}
 			}
 			return(object)

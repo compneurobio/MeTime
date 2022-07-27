@@ -390,3 +390,12 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
   }
   return(out)
 })
+
+
+#' Function to calculate students t-test
+#' @description Method for S4 object of class metime_analyser for performing t-test
+#' @param object S4 object of class metime_analyser
+#' @param which_data dataset or datasets to be used for the analysis
+#' @param split_var split variable for testing
+#' @return t-test result as a list or a list of t-test results 
+#' @export
