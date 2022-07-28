@@ -412,6 +412,7 @@ setMethod("calc_ttest", "metime_analyser", function(object, which_data, split_va
 #' @param threshold type of threshold to be used for extracting significant edges
 #' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
 #' @return Network data with edgelist, partial correlation values and associated p-values and corrected p-values 
+#' @export
 setGeneric("calc_ggm_genenet", function(object, which_data, threshold, timepoints) standardGeneric("calc_ggm_genenet"))
 setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, threshold, timepoints) {
     #sanity checks
@@ -457,3 +458,23 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
        
     return(network)
 })
+
+
+#' An automated fucntion to calculate GGM from multibipartite lasso approach
+#' @description automated funtion that can be applied on s4 object of class metime_analyser to calculate a network using
+#' multibipartite lasso
+#' @param object S4 object of cĺass metime_analyser
+#' @param which_data a character or a character vector naming the datasets of interest
+#' @param alpha tuning parameter for lasso + ridge regression in glmnet
+#' @param nfolds nfolds for cv.glmnet
+#' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
+#' @return Network data with edges and their respective betas
+#' @export
+setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha, nfolds, timepoints) standardGeneric("calc_ggm_multibipartite_lasso"))
+setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha, nfolds, timepoints) {
+          if(length(which_data) > 1) object <- mod_common_sample_extractor(object)
+          object@list_of_data <- mod_split_acc_to_time(object)
+          list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+          list_of_data <- lapply(object@list_of_data, function(x) return(x[names(x) %in% timepoints]))
+          
+  })
