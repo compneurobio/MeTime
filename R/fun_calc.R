@@ -476,5 +476,10 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
           object@list_of_data <- mod_split_acc_to_time(object)
           list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
           list_of_data <- lapply(object@list_of_data, function(x) return(x[names(x) %in% timepoints]))
+          count <- 1
+          for(i in 1:length(timepoints)) {
+              list_of_mats[[count]] <- lapply(list_of_data, function(x) return(x[names(x) %in% timepoints[i]]))
+              names(list_of_mats[[count]]) <- which_data
+          }
           
   })

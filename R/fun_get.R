@@ -42,9 +42,9 @@ get_text_for_plot <- function(data, colnames) {
 		for(i in 1:length(rownames(data))) {
 			for(j in 1:length(colnames)) {
 				if(j==1) {
-						text <- paste("<br> ", colnames[j], " : ", data[i, colnames[j]], sep="")
+						text <- paste("<br /> ", colnames[j], " : ", data[i, colnames[j]], sep="")
 					} else {
-						text <- paste(text, "<br> ", colnames[j], " : ", data[i, colnames[j]], sep="")
+						text <- paste(text, "<br /> ", colnames[j], " : ", data[i, colnames[j]], sep="")
 					}
 				}
 				strings_vector[count] <- text
