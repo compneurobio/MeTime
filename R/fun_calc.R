@@ -538,9 +538,80 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
             edge_lists[[i]] <- final_edge_list            
           }
           names(edges_lists) <- timepoints
-          
+          return(edge_lists)
   })
 
 
 #lol <- calc_ggm_multibipartite_lasso(object=data, alpha=1, which_data=c("lipid_data", "nmr_data"), nfolds=3, timepoints="t0")
 
+#' An automated function to caluclate temporal network with lagged model
+#' @description calculates temporal networks for each dataset with a lagged model as used in graphical VAR
+#' @param object S4 object of class metab_analyser
+#' @param lag which lagged model to use. 1 means one-lagged model, similary 2,3,..etc
+#' @param which_data dataset or datasets to be used
+#' @param timepoints timepoints of interest that are to be used to build networks(in the order of measurement)
+#' @param alpha parameter for regression coefficient
+#' @param nfolds nfolds parameter for glmnet style of regression
+#' @return temporal network data with edgelist and regression values
+#' @export
+setGeneric("calc_temporal_ggm", function(object, which_data, lag, timepoints, alpha, nfolds) standardGeneric("calc_temporal_ggm"))
+setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, lag, timepoints, alpha, nfolds) {
+        if(length(which_data) > 1) object <- mod_extract_common_samples(object)
+        object@list_of_data <- mod_split_acc_to_time(object)
+        list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+        list_of_data <- lapply(list_of_data, function(x) {
+              x <- x[names(x) %in% timepoints]
+              x <- lapply(x, function(a) return(a[order(rownames(a)), ]))
+              return(x)
+          })
+        final_data <- list()
+        list_of_data <- unname(list_of_data)
+        for(i in 1:length(timepoints)) {
+            timepoint_list <- lapply(list_of_data, function(x) return(x[[i]]))
+            final_data[[i]] <- do.call(cbind, timepoint_list)
+        }
+        names(final_data) <- timepoints
+        count <- 1
+        model_seqs <- list()
+        while(lag + count <= length(timepoints)) {
+            model_seqs[[count]] <- timepoints[seq(from=lag+count, to=count, by=-1)]
+            count <- count + 1
+        }
+        models <- list()
+        for(i in 1:length(model_seqs)) {
+            network_data <- final_data[names(final_data) %in% model_seqs[[i]]]
+            count <- 1
+            network_data <- lapply(network_data, function(x) {
+                    colnames(x) <- paste(colnames(x), model_seqs[[i]][count], sep="_time:")
+                    rownames(x) <- unlist(lapply(strsplit(rownames(x), split="_"), function(x) return(x[1])))
+                    count <- count +1 
+                    return(x) 
+              })
+            network_data <- unname(network_data)
+            list_of_names <- lapply(network_data, function(x) {
+                return(rownames(x))
+            })
+            common_samples <- Reduce(intersect, list_of_names)
+            network_data <- lapply(network_data, function(x) {
+                x <- x[rownames(x) %in% common_samples, ]
+                x <- x[order(rownames(x)), ]
+                return(x)
+            })
+            network_data <- do.call(cbind, network_data)
+            ymat <- network_data[ ,grep(model_seqs[[i]][1] ,colnames(network_data))]
+            xmat <- network_data[ ,!grep(model_seqs[[i]][1] ,colnames(network_data))]
+            fit_list <- list()
+            for(k in 1:ncol(ymat)) {
+                fit_list[[k]] <- cv.glmnet(x=xmat, y=ymat[,k], alpha=alpha, nfolds=nfolds)
+                coeffs <- coef(fit_list[[k]])[,1]
+                coeffs <- coeffs[!(coeffs==0)]
+                coeffs <- coeffs[-1]
+                target <- names(coeffs)
+                source <- rep(colnames(ymat)[k], each=length(coeffs))
+                fit_list[[k]] <- as.data.frame(cbind(source, target, coeffs))
+            }
+            fit_list <- unname(fit_list)
+            models[[i]] <- as.data.frame(do.call(rbind, fit_list))
+        }
+        return(models)
+  })
