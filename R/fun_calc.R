@@ -612,6 +612,7 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
             }
             fit_list <- unname(fit_list)
             models[[i]] <- as.data.frame(do.call(rbind, fit_list))
+            names(models)[i] <- paste(model_seqs[[i]], sep="-")
         }
         return(models)
   })
