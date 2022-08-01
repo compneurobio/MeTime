@@ -472,14 +472,75 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
 #' @export
 setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha, nfolds, timepoints) standardGeneric("calc_ggm_multibipartite_lasso"))
 setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha, nfolds, timepoints) {
-          if(length(which_data) > 1) object <- mod_common_sample_extractor(object)
+          if(length(which_data) > 1) object <- mod_extract_common_samples(object)
           object@list_of_data <- mod_split_acc_to_time(object)
           list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
-          list_of_data <- lapply(object@list_of_data, function(x) return(x[names(x) %in% timepoints]))
+          list_of_data <- lapply(list_of_data, function(x) return(x[names(x) %in% timepoints]))
           count <- 1
+          edge_lists <- list()
           for(i in 1:length(timepoints)) {
-              list_of_mats[[count]] <- lapply(list_of_data, function(x) return(x[names(x) %in% timepoints[i]]))
-              names(list_of_mats[[count]]) <- which_data
+              list_of_mats <- list()
+              list_of_mats <- lapply(list_of_data, function(x) {
+                            x <- x[names(x) %in% timepoints[i]]
+                            x <- x[[1]][order(rownames(x[[1]])),]
+                            return(x) 
+              })
+              names(list_of_mats) <- which_data
+              #glmnet results are stored here in a list
+              list <- get_betas_for_multibipartite_lasso(list_of_mats=list_of_mats, 
+                                            alpha=alpha, nfolds=nfolds)
+              #list to check and collect all the edges that have non-zero coefficient 
+              list_to_check <- list()
+              #list here is the list with all the details from glmnet
+              for(j in 1:length(list)) {
+                  #creating a list to store the edges
+                  list_of_edges <- list()
+                  #list[[1]] is the data for first metabolite
+                  for(k in 1:length(list[[j]])) {
+                      #coeffs is the vector with all the coefficient values
+                      coeffs <- coef(list[[j]][[k]])[,1]
+                      #removing zero coefficients
+                      coeffs <- coeffs[!(coeffs==0)]
+                      #removing the intercept data
+                      coeffs <- coeffs[-1]
+                      #source is the metab names
+                      source <- rep(names(list[[j]])[k], each=length(coeffs))
+                      #target is the name of the metabolites that have non-zero coeffs
+                      target <- names(coeffs)
+                      #storing data as a nested list
+                      list_of_edges[[k]] <- cbind(source, target, coeffs) 
+                      names(list_of_edges)[k] <- source[1]
+                     
+                }
+                #list_to_check will now store the edges
+                list_to_check[[j]] <- list_of_edges
+            }
+            edge_list <- unlist(list_to_check, recursive=FALSE)
+            edge_list <- as.data.frame(do.call(rbind, edge_list)) 
+            uids <- c()
+            colnames(edge_list) <- NULL
+            rownames(edge_list) <- NULL
+            #ERROR FOUND HERE AND CORRECTED!!!!!!!!
+            for(i in 1:length(edge_list[,1])) {
+              vec <- edge_list[i,1:2]
+              vec <- sort(vec)
+              uids[i] <- paste(vec[1], vec[2],sep="_")
+            }
+            edge_list <- cbind(edge_list, uids)
+            edge_list <- as.data.frame(edge_list)
+            colnames(edge_list) <- c("node1", "node2", "coeffs", "uids")
+            check <- edge_list[,c("uids", "coeffs")]
+            check <- reshape(transform(check, time=ave(coeffs, uids, FUN=seq_along)), idvar="uids", direction="wide")
+            final_edge_list <- check[!is.na(check$coeffs.2), ]
+            final_edge_list$node1 <- unlist(lapply(strsplit(final_edge_list$uids, split="_"), function(x) return(x[1])))
+            final_edge_list$node2 <- unlist(lapply(strsplit(final_edge_list$uids, split="_"), function(x) return(x[2])))
+            final_edge_list$uids <- NULL
+            edge_lists[[i]] <- final_edge_list            
           }
+          names(edges_lists) <- timepoints
           
   })
+
+
+#lol <- calc_ggm_multibipartite_lasso(object=data, alpha=1, which_data=c("lipid_data", "nmr_data"), nfolds=3, timepoints="t0")
+
