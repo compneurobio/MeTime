@@ -12,6 +12,8 @@ viz_distribution_plotter(object, colname, which_data, strats)
 \item{colname}{Name of the variable whose distribution is of interest}
 
 \item{which_data}{Name of the dataset from which the samples will be extracted}
+
+\item{strats}{Character vector with colnames that are to be used for stratification}
 }
 \value{
 a list with either 1) density plot, mean table acc to timepoint and variable type or

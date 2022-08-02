@@ -32,7 +32,7 @@ setClass("metime_plotter", slots=list(plot_data="data.frame", plot="list", calc_
 #' @param object An object of class metime_analyser
 #' @param colname Name of the variable whose distribution is of interest
 #' @param which_data Name of the dataset from which the samples will be extracted
-#'
+#' @param strats Character vector with colnames that are to be used for stratification 
 #' @return a list with either 1) density plot, mean table acc to timepoint and variable type or 
 #'								2) bar plot, line plot, and variable type
 #' @export
@@ -41,8 +41,7 @@ setGeneric("viz_distribution_plotter", function(object, colname, which_data, str
 setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname, which_data, strats=NULL) {
 	data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 	data <- data[[1]]
-	phenotype_name <- object@annotations$phenotype
-	phenotype <- object@list_of_data[[phenotype_name]]
+	phenotype <- object@list_of_row_data[[which_data]]
 	var_type <- c()
 	vec <- phenotype[,colname]
 	vec <- na.omit(vec)
