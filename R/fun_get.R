@@ -336,18 +336,18 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 #' @export
 setGeneric("get_metadata_for_rows", function(object, which_data, columns, names) standardGeneric("get_metadata_for_rows"))
 setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_data, columns, names) {
-					list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 					if(length(which_data) > 1) {
-							list_of_data <- mod_extract_common_samples(object)
+							object <- mod_extract_common_samples(object)
+							list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 							list_of_data <- lapply(list_of_data, function(x) return(x[order(rownames(x)), ]))
-							metadata_samples <- as.data.frame(list_of_data[[object@annotations$phenotype]][,columns])
+							metadata_samples <- object@list_of_row_data[[1]][ ,columns]
 							timepoints <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[2])))
 							levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
 							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
 							metadata_samples <- as.data.frame(cbind(metadata_samples, timepoints))
 					} else {
 							data <- as.data.frame(object@list_of_data[names(object@list_of_data) %in% which_data][[1]])
-							phenotype <- object@list_of_data[[object@annotations$phenotype]]
+							phenotype <- object@list_of_row_data[[which_data]]
 							metadata_samples <- phenotype[rownames(phenotype) %in% rownames(data), columns]
 							metadata_samples <- metadata_samples[order(rownames(metadata_samples)), ]
 							timepoints <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[2])))
