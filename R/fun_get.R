@@ -298,7 +298,7 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 				list_of_col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% which_data]
 				if(length(which_data)>1) {
 						list_of_metadata_metabs <- list()
-						for(i in 1:length(metab_ids)) {
+						for(i in 1:length(columns)) {
 								list_of_metadata_metabs[[i]] <- list_of_col_data[[i]][, columns[[i]]]
 								class <- rep(which_data[i], each=length(list_of_metadata_metabs[[i]][,1]))
 								list_of_metadata_metabs[[i]] <- list_of_metadata_metabs[[i]][order(list_of_metadata_metabs[[1]][,index_of_names]), ]
@@ -331,11 +331,10 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 #' @param which_data Names of dataset/s to be used
 #' @param columns A list of character vectors for the columns of interest. Length of the list should be
 #' same as length of which_data
-#' @param names A Character vector with the new names for the columns mentioned above
 #' @return data.frame with metadata information for rows
 #' @export
-setGeneric("get_metadata_for_rows", function(object, which_data, columns, names) standardGeneric("get_metadata_for_rows"))
-setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_data, columns, names) {
+setGeneric("get_metadata_for_rows", function(object, which_data, columns) standardGeneric("get_metadata_for_rows"))
+setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_data, columns) {
 					if(length(which_data) > 1) {
 							object <- mod_extract_common_samples(object)
 							list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
