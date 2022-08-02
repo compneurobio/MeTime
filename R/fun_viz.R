@@ -174,7 +174,8 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 					object@plot[[i]] <- ggplotly(object@plot[[i]])
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[match(object@plot_data[ ,aesthetics[[i]]$x], x), ] 
+						data <- object@plot_data[[1]]
+						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
 						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
 					}
 					
@@ -187,10 +188,10 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 					object@plot[[i]] <- ggplotly(object@plot[[i]])
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[match(object@plot_data[ ,aesthetics[[i]]$x], x), ] 
+						data <- object@plot_data[[1]]
+						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
 						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
 					}
-					
 
 				} else if(object@plot_type[i] %in% "line") {
 					
@@ -200,7 +201,8 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 					object@plot[[i]] <- ggplotly(object@plot[[i]])
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[match(object@plot_data[ ,aesthetics[[i]]$x], x), ] 
+						data <- object@plot_data[[1]]
+						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
 						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
 					}
 					
@@ -213,10 +215,10 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 					object@plot[[i]] <- ggplotly(object@plot[[i]])
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[match(object@plot_data[ ,aesthetics[[i]]$x], x), ] 
+						data <- object@plot_data[[1]]
+						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
 						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
 					}
-					
 						
 				} else if(object@plot_type[i] %in% "forest") {
 					object@plot[[i]] <- object@plot[[i]] + geom_pointrange(aes_string(x=aesthetics[[i]]$label, 
@@ -227,7 +229,8 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 					object@plot[[i]] <- ggplotly(object@plot[[i]])
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[match(object@plot_data[ ,aesthetics[[i]]$x], x), ] 
+						data <- object@plot_data[[1]]
+						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
 						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
 					}
 					
@@ -237,7 +240,8 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 					object@plot[[i]] <- ggplotly(object@plot[[i]])
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[match(object@plot_data[ ,aesthetics[[i]]$x], x), ] 
+						data <- object@plot_data[[1]]
+						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
 						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
 					}
 					
@@ -248,7 +252,8 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 					oobject@plot[[i]] <- ggplotly(object@plot[[i]])
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[match(object@plot_data[ ,aesthetics[[i]]$x], x), ] 
+						data <- object@plot_data[[1]]
+						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
 						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
 					}
 					
@@ -301,7 +306,7 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
         if(length(unique(metadata$class) > 1)) {
         	classes <- unique(metadata$class)
             groups <-  unique(metadata$group)
-            graph <- visNetwork(nodes=plot_data[["node"]], edges=plot_data[["edge_list"]], main=title) %>%
+            graph <- visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
                     visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
                     visPhysics(stabilization = FALSE)
             for(i in 1:length(classes)) {
@@ -313,7 +318,7 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
                         visInteraction(navigationButtons = T) %>%
                         visConfigure(enabled=T)
         } else {
-        	graph <- visNetwork(nodes=node_list, edges=edge_list, main=title) %>%
+        	graph <- visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
                     visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
                     visPhysics(stabilization = FALSE) %>%
                     visEdges(addEdges = ledges, useGroups = T) %>% 
