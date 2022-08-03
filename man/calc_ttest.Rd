@@ -11,7 +11,9 @@ calc_ttest(object, which_data, split_var)
 
 \item{which_data}{dataset or datasets to be used for the analysis}
 
-\item{split_var}{split variable for testing}
+\item{split_var}{split variable for testing such as diagnostic group etc}
+
+\item{timepoints}{two timepoints of interest to perform the test on}
 }
 \value{
 t-test result as a list or a list of t-test results

@@ -4,7 +4,7 @@
 \alias{get_metadata_for_rows}
 \title{Get metadata for rows(in most cases for samples)}
 \usage{
-get_metadata_for_rows(object, which_data, columns, names)
+get_metadata_for_rows(object, which_data, columns)
 }
 \arguments{
 \item{object}{S4 object of class MeTime Analyser}
@@ -13,8 +13,6 @@ get_metadata_for_rows(object, which_data, columns, names)
 
 \item{columns}{A list of character vectors for the columns of interest. Length of the list should be
 same as length of which_data}
-
-\item{names}{A Character vector with the new names for the columns mentioned above}
 }
 \value{
 data.frame with metadata information for rows

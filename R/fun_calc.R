@@ -282,6 +282,8 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
       } else {
         data <- object@list_of_data[names(object@list_of_data) %in% which_data][[1]]
       }
+      rm_col = intersect(names(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
+      data <- data %>% select(-c(rm_col))
       if(type %in% "PCA") {
         pca_metabs <- prcomp(t(data), scale.=T, center=T)
         pca_individuals <- prcomp(data, scale.=T, center=T)
@@ -396,28 +398,40 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
 #' @description Method for S4 object of class metime_analyser for performing t-test
 #' @param object S4 object of class metime_analyser
 #' @param which_data dataset or datasets to be used for the analysis
-#' @param split_var split variable for testing
+#' @param timepoints two timepoints of interest to perform the test on
+#' @param split_var split variable for testing such as diagnostic group etc
 #' @return t-test result as a list or a list of t-test results 
 #' @export
 setGeneric("calc_ttest", function(object, which_data, split_var) standardGeneric("calc_ttest"))
 setMethod("calc_ttest", "metime_analyser", function(object, which_data, split_var) {
+        if(length(which_data) > 1) object <- mod_extract_common_samples(object)
+        list_of_data <- mod_split_acc_to_time(object)
+        list_of_data <- list_of_data[names(list_of_data) %in% which_data]
+        list_of_data <- lapply(list_of_data, function(x) {
+              x <- x[names(x) %in% timepoints]
+              x <- lapply(x[ ,order(colnames(x))])
+              return(x)
+        })
+        if(!is.null(split_var)) {
+
+        }
 
   })
 
 
-#' An automated fucntion to calculate GGM from genenet
-#' @description automated funtion that can be applied on s3 object obtained after prep_data_for_ggms() to obtain geneNet network along with threshold used
+#' An automated fucntion to calculate GGM from genenet longitudnal version
+#' @description automated funtion that can be applied on metime_analyser object to obtain geneNet network along with threshold used
 #' @param object S4 object of cĺass metime_analyser
 #' @param which_data a character or a character vector naming the datasets of interest
 #' @param threshold type of threshold to be used for extracting significant edges
 #' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
 #' @return Network data with edgelist, partial correlation values and associated p-values and corrected p-values 
 #' @export
-setGeneric("calc_ggm_genenet", function(object, which_data, threshold, timepoints) standardGeneric("calc_ggm_genenet"))
-setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, threshold, timepoints) {
+setGeneric("calc_ggm_genenet_longitudnal", function(object, which_data, threshold, timepoints) standardGeneric("calc_ggm_genenet_longitudnal"))
+setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, which_data, threshold, timepoints) {
     #sanity checks
     stopifnot(timepoints %in% c("t0","t12","t24"))
-    stopifnot(threshhold %in% c("li","bonferoni","FDR"))
+    stopifnot(threshold %in% c("li","bonferroni","FDR"))
     #Extracting data that is needed
     object@list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
     timepoints <- as.character(unlist(lapply(strsplit(timepoints), split="t", fixed=TRUE), function(x) return(x[2])))
@@ -429,12 +443,8 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
     } else {
         data <- object@list_of_data[[1]]
     } 
-    data <- data %>% 
-            dplyr::mutate(id = .[] %>% rownames(), 
-                        subject = .[] %>% rownames() %>% str_split(pattern="R", n=2) %>% 
-                              sapply("[[", 2) %>% str_split(pattern="_t", n=2) %>% sapply("[[", 1) %>% as.numeric(),
-                        timepoint = .[] %>% rownames() %>% str_split(pattern="R", n=2) %>% 
-                              sapply("[[", 2) %>% str_split(pattern="_t", n=2) %>% sapply("[[", 2) %>% as.numeric())
+    data$subject <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[1])))
+    data$timepoint <- as.numeric(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2]))))
     my_rid <- x.data %>%     
               dplyr::select(all_of(c("subject","timepoint"))) %>% 
               dplyr::filter(get("timepoint") %in% timepoints)%>% 
@@ -613,6 +623,56 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
             fit_list <- unname(fit_list)
             models[[i]] <- as.data.frame(do.call(rbind, fit_list))
             names(models)[i] <- paste(model_seqs[[i]], sep="-")
+            colnames(models[[i]]) <- c("node1", "node2", "coeffs")
+            models[[i]]$node1 <- unlist(lapply(strsplit(models[[i]]$node1, split="_time:"), function(x) return(x[1])))
+            models[[i]]$node2 <- unlist(lapply(strsplit(models[[i]]$node2, split="_time:"), function(x) return(x[1])))
         }
         return(models)
+  })
+
+
+#' An automated fucntion to calculate GGM from genenet crosssectional version
+#' @description automated funtion that can be applied on metime_analyser object to obtain geneNet network along with threshold used
+#' @param object S4 object of cĺass metime_analyser
+#' @param which_data a character or a character vector naming the datasets of interest
+#' @param threshold type of threshold to be used for extracting significant edges
+#' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
+#' @return Network data with edgelist, partial correlation values and associated p-values and corrected p-values 
+#' @export
+setGeneric("calc_ggm_genenet_crosssectional", function(object, which_data, threshold, timepoints) standardGeneric("calc_ggm_genenet_crosssectional"))
+setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object, which_data, threshold, timepoints) {
+        if(length(which_data) > 1) object <- mod_extract_common_samples(object)
+        stopifnot(threshhold %in% c("li","bonferroni","FDR"))
+        list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+        list_of_data <- unname(lapply(list_of_data, function(x) return(x[order(rownames(x)),])))
+        data <- as.data.frame(do.call(cbind, list_of_data))
+        rm_col = intersect(colnames(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
+        data <- data %>% select(-c(rm_col))
+        this_mat <- as.matrix(apply(data, 2, as.numeric))
+        pcor_mat <- ggm.estimate.pcor(as.matrix(this_mat), method = "dynamic", verbose = F)
+        # compute p-values of edges
+        pval_mat <- network.test.edges(pcor_mat, plot = F, verbose = F)
+        # p-value correction of edges
+        pval_mat$p.adj.bh <- p.adjust(pval_mat$pval, method="BH")
+        pval_mat$p.adj.bon <- p.adjust(pval_mat$pval, method="bonferroni")    
+        ggm_thresh <- 0.05
+        # extract edge list
+        tmp <- pcor_mat %>% graph_from_adjacency_matrix(mode='undirected', weighted = T) %>% igraph::simplify()
+        ggm_edges <- cbind.data.frame(get.edgelist(tmp), edge_attr(tmp)$weight)
+        names(ggm_edges) <- c("node1", "node2", "pcor_val")
+        if(threshold %in% "bonferroni") {
+          #filter edges based on p-values - bonferroni
+          ggm_data <-  ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bon<=ggm_thresh]))) 
+        } else if(threshold %in% "FDR"){
+          # filter edges based on p-values - BH 
+          ggm_data <-  ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bh<=ggm_thresh])))
+        } else if(threshold %in% "li") {
+          data <- this_mat %>% as.matrix() %>% .[,] %>% as.data.frame()  
+          cordat <- cor(data)
+          eigenvals <- eigen(cordat)$values
+          li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
+          ggm_data <- ggm_edges %>% filter(abs(pcor_val))>=min(abs(pval_mat$pcor[pval_mat$pval<=0.05/li.thresh]))
+        }
+        return(ggm_data)
+
   })

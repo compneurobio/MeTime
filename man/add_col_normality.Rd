@@ -11,7 +11,7 @@ add_col_normality(object, which_data, type, metab_names)
 
 \item{which_data}{dataset on which the method is to be applied}
 
-\item{type}{type of test, currently only shapiro-wilk test is available under the choice "shapiro"}
+\item{type}{type of test, "shapiro" and "kruskal" are available}
 
 \item{metab_names}{column that has the metabolite names in col_data.}
 }

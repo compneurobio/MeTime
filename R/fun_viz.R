@@ -22,7 +22,7 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' 				  - plot_type: A character vector to define the type of plots that are needed.
 #' @rdname metime_plotter
 #' @export
-setClass("metime_plotter", slots=list(plot_data="data.frame", plot="list", calc_type="character", calc_info="character", plot_type="character"))
+setClass("metime_plotter", slots=list(plot_data="data.frame", plot="list", calc_type="character", calc_info="character", plot_type="character", style="character"))
 
 
 #' Function for Plotting distributions of phenotypic variables 
@@ -303,7 +303,7 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
         }
           
         ledges <- data.frame(color = c("#920000","#0072b2"), label = c("negative", "positive"), dashes =c(TRUE, FALSE))
-        if(length(unique(metadata$class) > 1)) {
+        if(length(unique(metadata$class)) > 1) {
         	classes <- unique(metadata$class)
             groups <-  unique(metadata$group)
             graph <- visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
@@ -330,3 +330,16 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
         object@plot[[1]] <- graph
         return(object)
 	})
+
+
+
+
+
+
+
+
+
+
+
+
+

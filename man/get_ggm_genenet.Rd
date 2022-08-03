@@ -4,7 +4,7 @@
 \alias{get_ggm_genenet}
 \title{Function to calculate a dynamic GeneNet GGM from a longitudnal data matrix}
 \usage{
-get_ggm_genenet(data, threshold = c("bonferoni", "FDR", "li"))
+get_ggm_genenet(data, threshold = c("bonferroni", "FDR", "li"))
 }
 \arguments{
 \item{data}{data matrix in a longitudnal format}

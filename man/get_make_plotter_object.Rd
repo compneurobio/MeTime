@@ -12,7 +12,8 @@ get_make_plotter_object(data, metadata, calc_type, calc_info, plot_type, style)
 \item{metadata}{dataframe with the metadata for the plot table mentioned above. To obtain these see
 get_metadata_for_rows() and get_metadata_for_columns()}
 
-\item{calc_type}{A character to specify type of calculation - will be used for comp_ functions}
+\item{calc_type}{A character to specify type of calculation - will be used for comp_ functions
+For networks the accepted notations are "genenet_ggm", "multibipartite_ggm", and "temporal_network"}
 
 \item{calc_info}{A string to define the information about calculation}
 

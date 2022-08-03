@@ -217,6 +217,7 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' @param metadata dataframe with the metadata for the plot table mentioned above. To obtain these see
 #' get_metadata_for_rows() and get_metadata_for_columns()
 #' @param calc_type A character to specify type of calculation - will be used for comp_ functions
+#' For networks the accepted notations are "genenet_ggm", "multibipartite_ggm", and "temporal_network"
 #' @param calc_info A string to define the information about calculation
 #' @param plot_type type of the plot you want to build. eg: "box", "dot" etc. Its a character vector
 #' @param style Style of plot, accepted inputs are "ggplot", "circos" and "visNetwork". Is a singular option.
@@ -233,14 +234,25 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
     			}
           
     			#Getting edge list
-    			edge_list <- data.frame(from=1:length(network$node1), to=1:length(network$node2))
-    			for(i in 1:length(network$node1)) {
+    			edge_list <- data.frame(from=1:length(data$node1), to=1:length(data$node2))
+    			for(i in 1:length(data$node1)) {
         			edge_list$from[i] <- node_list[as.character(node_list$label) %in% as.character(data$node1[i]), "id"]
         			edge_list$to[i] <- node_list[as.character(node_list$label) %in% as.character(data$node2[i]), "id"]
    			 	}
-    			dashes <- ifelse(data$pcor_val > 0, FALSE, TRUE)
-    			edge_list$dashes <- dashes
-    			edge_list$values <- data$pcor_val
+   			 	if(calc_type %in% "genenet_ggm") {
+   			 			dashes <- ifelse(data$pcor_val > 0, FALSE, TRUE)
+   			 			edge_list$dashes <- dashes
+    					edge_list$values <- data$pcor_val
+   			 	} else if(calc_type %in% "multibipartite_ggm") {
+   			 			dashes <- ifelse(data$coeff1 > 0 & data$coeff2 > 0, FALSE, TRUE)
+   			 			edge_list$dashes <- dashes
+    					edge_list$values <- data$coeff1
+    					edge_list$title <- paste("coeff1: ", data$coeff1, "<br /> coeff2: ", data$coeff2, sep=" ")
+   			 	} else if(calc_type %in% "temporal_network") {
+   			 			dashes <- ifelse(data$coeffs > 0, FALSE, TRUE)
+   			 			edge_list$dashes <- dashes
+   			 			edge_list$arrows <- rep("from", each=length(edge_list$dashes))
+   			 	}
 					plot_data[["node"]] <- node_list
 					plot_data[["edge"]] <- edge_list
 					plot_data[["metadata"]] <- metadata
@@ -321,8 +333,8 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 				return(metadata_metabs)
 	})
 
-#metadata_metabs <- get_metadata_for_columns(object=data, which_data="lipid_data", columns=list(c("metabolite", "sub_pathway")), 
-#										names=c("name", "group"), index_of_names="metabolite")
+#metadata_metabs <- get_metadata_for_columns(object=data, which_data="lipid_data", columns=list(c("id", "sub_pathway")), 
+#										names=c("name", "group"), index_of_names="id")
 
 
 #' Get metadata for rows(in most cases for samples)
@@ -370,7 +382,7 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 #'   Benjamini-Hochberg("FDR") and independent tests method("li", also see Li et al ....)
 #' @return a dataframe with edges, partial correlation and associated p-values 
 #' @export
-get_ggm_genenet <- function(data, threshold=c("bonferoni", "FDR", "li")) {
+get_ggm_genenet <- function(data, threshold=c("bonferroni", "FDR", "li")) {
   # check if longitudinal
   if(!longitudinal::is.longitudinal(data)) stop("data is not a longitudinal object") 
   
@@ -390,7 +402,7 @@ get_ggm_genenet <- function(data, threshold=c("bonferoni", "FDR", "li")) {
       eigenvals <- eigen(cordat)$values
       li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
       met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < 0.05/li.thresh),]
-  } else if(threshhold=="bonferoni"){
+  } else if(threshhold=="bonferroni"){
       met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < p.thresh),]
   }
   
