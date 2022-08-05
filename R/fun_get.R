@@ -333,8 +333,8 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 				return(metadata_metabs)
 	})
 
-#metadata_metabs <- get_metadata_for_columns(object=data, which_data="lipid_data", columns=list(c("id", "sub_pathway")), 
-#										names=c("name", "group"), index_of_names="id")
+#metadata <- get_metadata_for_columns(object=object, which_data="lipid_data", columns=list(c("id", "sub_pathway")), 
+#									names=c("name", "group"), index_of_names="id")
 
 
 #' Get metadata for rows(in most cases for samples)
@@ -394,15 +394,15 @@ get_ggm_genenet <- function(data, threshold=c("bonferroni", "FDR", "li")) {
   fdr.thresh <- 0.05
     
   # cut at threshold
-  if(threshhold=="FDR") {
+  if(threshold=="FDR") {
       met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$qval < 0.05),]
-  } else if(threshhold=="li"){
+  } else if(threshold=="li"){
       data <- data %>% as.matrix() %>% .[,] %>% as.data.frame()  
       cordat <- cor(data)
       eigenvals <- eigen(cordat)$values
       li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
       met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < 0.05/li.thresh),]
-  } else if(threshhold=="bonferroni"){
+  } else if(threshold=="bonferroni"){
       met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < p.thresh),]
   }
   

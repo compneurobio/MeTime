@@ -360,7 +360,7 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
 #' @export
 
 setGeneric("calc_distance_pairwise", function(object, which_data, method) standardGeneric("calc_distance_pairwise"))
-setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_data, method="euclidean"){
+setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_data, method="euclidean") {
   stopifnot(all(which_data %in% names(object@list_of_data)))
   
   flattenCorrMatrix <- function(cormat) {
@@ -402,19 +402,28 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
 #' @param split_var split variable for testing such as diagnostic group etc
 #' @return t-test result as a list or a list of t-test results 
 #' @export
-setGeneric("calc_ttest", function(object, which_data, split_var) standardGeneric("calc_ttest"))
-setMethod("calc_ttest", "metime_analyser", function(object, which_data, split_var) {
+setGeneric("calc_ttest", function(object, which_data, timepoints, split_var) standardGeneric("calc_ttest"))
+setMethod("calc_ttest", "metime_analyser", function(object, which_data, timepoints, split_var) {
         if(length(which_data) > 1) object <- mod_extract_common_samples(object)
         list_of_data <- mod_split_acc_to_time(object)
         list_of_data <- list_of_data[names(list_of_data) %in% which_data]
         list_of_data <- lapply(list_of_data, function(x) {
               x <- x[names(x) %in% timepoints]
-              x <- lapply(x[ ,order(colnames(x))])
+              count <- 1
+              x <- lapply(x, function(a) {
+                    a <- a[ ,order(colnames(a))]
+                    colnames(a) <- paste(colnames(a), "_time:", timepoints[count], sep="")
+                    count <- count + 1
+                    return(a)
+              })
               return(x)
         })
         if(!is.null(split_var)) {
+            for(i in 1:length(list_of_data)) {
 
+            }
         }
+        
 
   })
 
@@ -434,7 +443,7 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
     stopifnot(threshold %in% c("li","bonferroni","FDR"))
     #Extracting data that is needed
     object@list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
-    timepoints <- as.character(unlist(lapply(strsplit(timepoints), split="t", fixed=TRUE), function(x) return(x[2])))
+    #timepoints <- as.character(unlist(lapply(strsplit(timepoints, split="t", fixed=TRUE), function(x) return(x[2]))))
     #converting prepped data to full ggm network
     if(length(which_data > 1)) {
         object <- mod_common_sample_extractor(object)
@@ -444,8 +453,8 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
         data <- object@list_of_data[[1]]
     } 
     data$subject <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[1])))
-    data$timepoint <- as.numeric(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2]))))
-    my_rid <- x.data %>%     
+    data$timepoint <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2])))
+    my_rid <- data %>%     
               dplyr::select(all_of(c("subject","timepoint"))) %>% 
               dplyr::filter(get("timepoint") %in% timepoints)%>% 
               dplyr::group_by(subject) %>% 
@@ -456,11 +465,11 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
             dplyr::filter(timepoint %in% timepoints,
             subject %in% my_rid[["subject"]])
     rm_col = intersect(names(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
-    vars <- data %>% select(-c(rm_col)) %>% names()
+    vars <- data %>% select(-c(all_of(rm_col))) %>% names()
     # get full data
     data <- data %>% dplyr::arrange(timepoint, subject) 
     n_subject = unique(data$subject) %>% length() %>% as.numeric()
-    name_tp = unique(data$timepoint) %>% as.numeric()
+    name_tp = as.numeric(unlist(lapply(strsplit(unique(data$timepoint), split="t"), function(x) return(x[2]))))
   
     data <- longitudinal::as.longitudinal(x=as.matrix(data[,vars]), repeats=n_subject, time=name_tp)
     
@@ -626,6 +635,9 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
             colnames(models[[i]]) <- c("node1", "node2", "coeffs")
             models[[i]]$node1 <- unlist(lapply(strsplit(models[[i]]$node1, split="_time:"), function(x) return(x[1])))
             models[[i]]$node2 <- unlist(lapply(strsplit(models[[i]]$node2, split="_time:"), function(x) return(x[1])))
+            models[[i]]$label <- paste(unlist(lapply(strsplit(models[[i]]$node1, split="_time:"), function(x) return(x[1]))),
+                                      unlist(lapply(strsplit(models[[i]]$node2, split="_time:"), function(x) return(x[1]))),
+                                        sep="-")
         }
         return(models)
   })
@@ -639,15 +651,18 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
 #' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
 #' @return Network data with edgelist, partial correlation values and associated p-values and corrected p-values 
 #' @export
-setGeneric("calc_ggm_genenet_crosssectional", function(object, which_data, threshold, timepoints) standardGeneric("calc_ggm_genenet_crosssectional"))
-setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object, which_data, threshold, timepoints) {
+setGeneric("calc_ggm_genenet_crosssectional", function(object, which_data, threshold, timepoint) standardGeneric("calc_ggm_genenet_crosssectional"))
+setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object, which_data, threshold, timepoint) {
         if(length(which_data) > 1) object <- mod_extract_common_samples(object)
         stopifnot(threshhold %in% c("li","bonferroni","FDR"))
+        object@list_of_data <- mod_split_acc_to_time(object)
         list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
-        list_of_data <- unname(lapply(list_of_data, function(x) return(x[order(rownames(x)),])))
+        list_of_data <- lapply(list_of_data, function(x) return(x[names(x) %in% timepoint]))
+        list_of_data <- lapply(list_of_data, function(x) return(x[[1]][order(rownames(x[[1]])),]))
+        list_of_data <- unname(list_of_data)
         data <- as.data.frame(do.call(cbind, list_of_data))
         rm_col = intersect(colnames(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
-        data <- data %>% select(-c(rm_col))
+        data <- data %>% select(-c(all_of(rm_col)))
         this_mat <- as.matrix(apply(data, 2, as.numeric))
         pcor_mat <- ggm.estimate.pcor(as.matrix(this_mat), method = "dynamic", verbose = F)
         # compute p-values of edges
@@ -671,7 +686,7 @@ setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object,
           cordat <- cor(data)
           eigenvals <- eigen(cordat)$values
           li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
-          ggm_data <- ggm_edges %>% filter(abs(pcor_val))>=min(abs(pval_mat$pcor[pval_mat$pval<=0.05/li.thresh]))
+          ggm_data <- ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$pval<=0.05/li.thresh])))
         }
         return(ggm_data)
 

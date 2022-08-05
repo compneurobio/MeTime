@@ -22,7 +22,7 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' 				  - plot_type: A character vector to define the type of plots that are needed.
 #' @rdname metime_plotter
 #' @export
-setClass("metime_plotter", slots=list(plot_data="data.frame", plot="list", calc_type="character", calc_info="character", plot_type="character", style="character"))
+setClass("metime_plotter", slots=list(plot_data="list", plot="list", calc_type="character", calc_info="character", plot_type="character", style="character"))
 
 
 #' Function for Plotting distributions of phenotypic variables 

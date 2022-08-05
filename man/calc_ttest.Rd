@@ -4,16 +4,16 @@
 \alias{calc_ttest}
 \title{Function to calculate students t-test}
 \usage{
-calc_ttest(object, which_data, split_var)
+calc_ttest(object, which_data, timepoints, split_var)
 }
 \arguments{
 \item{object}{S4 object of class metime_analyser}
 
 \item{which_data}{dataset or datasets to be used for the analysis}
 
-\item{split_var}{split variable for testing such as diagnostic group etc}
-
 \item{timepoints}{two timepoints of interest to perform the test on}
+
+\item{split_var}{split variable for testing such as diagnostic group etc}
 }
 \value{
 t-test result as a list or a list of t-test results
