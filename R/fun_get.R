@@ -274,6 +274,7 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
 			return(object)
 }
 
+#plotter_baseline_fdr <- get_make_plotter_object(data=baseline_fdr, metadata=metadata, calc_type="genenet_ggm", style="visNetwork", calc_info="baseline_li", plot_type="network")
 
 #' creating metime_plotter class that converts calculations and metadata as a plotable object to parse 
 #' into viz_plotter

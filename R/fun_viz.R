@@ -288,18 +288,22 @@ setGeneric("viz_plotter_visNetwork", function(object, title) standardGeneric("vi
 setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
 		stopifnot(colnames(object@plot_data[["metadata"]]) %in% c("name","group","class"))
 		metadata <- object@plot_data[["metadata"]]
+		node_list <- object@plot_data[["node"]]
+		edge_list <- object@plot_data[["edge"]]
 		#Choosing colors and shapes for visualization
-        if(is.null(metadata$colors)) {
+        if(is.null(node_list$colors)) {
             shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
-            colors_for_nodes <- metadata$group
-            colors_code <- cbind(unique(node_list$group), get_palette(length(unique(node_list$group))))
+            colors_for_nodes <- node_list$group
+            colors_code <- as.data.frame(cbind(unique(node_list$group), get_palette(length(unique(node_list$group)))))
             colnames(colors_code) <- c("group", "color")
+            colors_new <- c()
             for(i in 1:length(colors_for_nodes)) {
-                colors_for_nodes[i] <- colors_code[colors_for_nodes %in% colors_code$group, "color"]
+            	colors_new[i] <- colors_code$color[colors_code$group %in% colors_for_nodes[i]]
             }
+            colors_for_nodes <- colors_new
         } else {
             shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
-            color_for_nodes <- metadata$colors
+            color_for_nodes <- node_list$colors
         }
           
         ledges <- data.frame(color = c("#920000","#0072b2"), label = c("negative", "positive"), dashes =c(TRUE, FALSE))
@@ -307,22 +311,24 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
         	classes <- unique(metadata$class)
             groups <-  unique(metadata$group)
             graph <- visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
-                    visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
+                    visIgraphLayout(layout='layout.davidson.harel', physics = F, smooth = F) %>%
                     visPhysics(stabilization = FALSE)
             for(i in 1:length(classes)) {
                 graph <- visGroups(graph=graph, groupname = classes[i], shape = shapes[i])
             }
-            graph <- visEdges(graph=graph, addEdges = ledges, useGroups = T) %>% 
-                        visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
+            graph <- visLegend(addEdges = ledges, useGroups = T) %>% 
+                    visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
+                    visEdges(smooth = FALSE, shadow = TRUE) %>%
                         visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
                         visInteraction(navigationButtons = T) %>%
                         visConfigure(enabled=T)
         } else {
         	graph <- visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
-                    visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
+                    visIgraphLayout(layout='layout.davidson.harel', physics = F, smooth = F) %>%
                     visPhysics(stabilization = FALSE) %>%
-                    visEdges(addEdges = ledges, useGroups = T) %>% 
+                    visLegend(addEdges = ledges, useGroups = T) %>% 
                     visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
+                    visEdges(smooth = FALSE, shadow = TRUE) %>%
                     visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
                     visInteraction(navigationButtons = T) %>%
                     visConfigure(enabled=T)
@@ -343,3 +349,5 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
 
 
 
+####
+#Add covariates to genenet and multibipartite lasso
