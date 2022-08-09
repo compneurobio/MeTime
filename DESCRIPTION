@@ -21,6 +21,7 @@ Depends:
     igraph,
     longitudinal,
     M3C,
+    nnet,
     plotly,
     plyr,
     RColorBrewer,

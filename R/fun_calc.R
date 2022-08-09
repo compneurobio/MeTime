@@ -443,12 +443,12 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
     stopifnot(threshold %in% c("li","bonferroni","FDR"))
     #Extracting data that is needed
     object@list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
-    #timepoints <- as.character(unlist(lapply(strsplit(timepoints, split="t", fixed=TRUE), function(x) return(x[2]))))
+    object@list_of_row_data <- object@list_of_row_data[names(object@list_of_row_data) %in% which_data]
     #converting prepped data to full ggm network
     if(length(which_data > 1)) {
-        object <- mod_common_sample_extractor(object)
-        data <- do.call(cbind, object@list_of_data)
-        colnames(data) <- unlist(lapply(strsplit(colnames(data), split="_data."), function(x) return(x[2])))
+        object <- mod_extract_common_samples(object)
+        list_of_data <- unname(object@list_of_data)
+        data <- do.call(cbind, list_of_data)
     } else {
         data <- object@list_of_data[[1]]
     } 
@@ -533,7 +533,7 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
                 }
                 #list_to_check will now store the edges
                 list_to_check[[j]] <- list_of_edges
-            }
+              }
             edge_list <- unlist(list_to_check, recursive=FALSE)
             edge_list <- as.data.frame(do.call(rbind, edge_list)) 
             uids <- c()
@@ -654,7 +654,7 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
 setGeneric("calc_ggm_genenet_crosssectional", function(object, which_data, threshold, timepoint) standardGeneric("calc_ggm_genenet_crosssectional"))
 setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object, which_data, threshold, timepoint) {
         if(length(which_data) > 1) object <- mod_extract_common_samples(object)
-        stopifnot(threshhold %in% c("li","bonferroni","FDR"))
+        stopifnot(threshold %in% c("li","bonferroni","FDR"))
         object@list_of_data <- mod_split_acc_to_time(object)
         list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
         list_of_data <- lapply(list_of_data, function(x) return(x[names(x) %in% timepoint]))
@@ -691,3 +691,5 @@ setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object,
         return(ggm_data)
 
   })
+
+

@@ -11,7 +11,7 @@ usethis::use_package("GeneNet", type="depends")
 usethis::use_package("longitudinal", type="depends")
 usethis::use_package("glmnet", type="depends")
 usethis::use_package("Boruta", type="depends")
-
+usethis::use_package("nnet", type="depends")
 #' Setting new structure definition for the metime_analyser object
 #' @description function to see the structure of metime_analyser object
 #' @param object S4 object of class metime_analyser
