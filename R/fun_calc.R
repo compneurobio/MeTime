@@ -549,6 +549,7 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
             edge_list <- as.data.frame(edge_list)
             colnames(edge_list) <- c("node1", "node2", "coeffs", "uids")
             check <- edge_list[,c("uids", "coeffs")]
+            check$uids <- as.character(check$uids)
             check <- reshape(transform(check, time=ave(coeffs, uids, FUN=seq_along)), idvar="uids", direction="wide")
             final_edge_list <- check[!is.na(check$coeffs.2), ]
             final_edge_list$uids <- as.character(final_edge_list$uids)
