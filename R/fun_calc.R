@@ -537,20 +537,21 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
             edge_list <- unlist(list_to_check, recursive=FALSE)
             edge_list <- as.data.frame(do.call(rbind, edge_list)) 
             uids <- c()
-            colnames(edge_list) <- NULL
-            rownames(edge_list) <- NULL
             #ERROR FOUND HERE AND CORRECTED!!!!!!!!
-            for(i in 1:length(edge_list[,1])) {
-              vec <- edge_list[i,1:2]
-              vec <- sort(vec)
-              uids[i] <- paste(vec[1], vec[2],sep="_")
-            }
+              for(m in 1:length(edge_list[,1])) {
+                vec <- c()
+                vec[1] <- as.character(edge_list$node1[m])
+                vec[2] <- as.character(edge_list$node2[m])
+                vec <- vec[order(vec)]
+                uids[m] <- paste(vec, collapse="_")
+              }
             edge_list <- cbind(edge_list, uids)
             edge_list <- as.data.frame(edge_list)
             colnames(edge_list) <- c("node1", "node2", "coeffs", "uids")
             check <- edge_list[,c("uids", "coeffs")]
             check <- reshape(transform(check, time=ave(coeffs, uids, FUN=seq_along)), idvar="uids", direction="wide")
             final_edge_list <- check[!is.na(check$coeffs.2), ]
+            final_edge_list$uids <- as.character(final_edge_list$uids)
             final_edge_list$node1 <- unlist(lapply(strsplit(final_edge_list$uids, split="_"), function(x) return(x[1])))
             final_edge_list$node2 <- unlist(lapply(strsplit(final_edge_list$uids, split="_"), function(x) return(x[2])))
             final_edge_list$uids <- NULL
@@ -647,7 +648,8 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
 #' @description automated funtion that can be applied on metime_analyser object to obtain geneNet network along with threshold used
 #' @param object S4 object of cĺass metime_analyser
 #' @param which_data a character or a character vector naming the datasets of interest
-#' @param threshold type of threshold to be used for extracting significant edges
+#' @param threshold type of threshold to be used for extracting significant edges. 
+#'      allowed inputs are "li", "FDR", "bonferroni"
 #' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
 #' @return Network data with edgelist, partial correlation values and associated p-values and corrected p-values 
 #' @export

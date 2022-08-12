@@ -32,16 +32,21 @@ setClass("metime_plotter", slots=list(plot_data="list", plot="list", calc_type="
 #' @param object An object of class metime_analyser
 #' @param colname Name of the variable whose distribution is of interest
 #' @param which_data Name of the dataset from which the samples will be extracted
-#' @param strats Character vector with colnames that are to be used for stratification 
+#' @param strats Character vector with colnames that are to be used for stratification
+#' @param phenotype Logical. If true data will be collected from phenotype_data matrix else from row data 
 #' @return a list with either 1) density plot, mean table acc to timepoint and variable type or 
 #'								2) bar plot, line plot, and variable type
 #' @export
-setGeneric("viz_distribution_plotter", function(object, colname, which_data, strats) standardGeneric("viz_distribution_plotter") )
+setGeneric("viz_distribution_plotter", function(object, colname, which_data, strats, phenotype) standardGeneric("viz_distribution_plotter") )
 
-setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname, which_data, strats=NULL) {
+setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname, which_data, strats=NULL, phenotype) {
 	data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 	data <- data[[1]]
-	phenotype <- object@list_of_row_data[[which_data]]
+	if(phenotype) {
+		phenotype <- object@list_of_data[[object@annotations$phenotype]]
+	} else {
+		phenotype <- object@list_of_row_data[[which_data]]
+	}
 	var_type <- c()
 	vec <- phenotype[,colname]
 	vec <- na.omit(vec)

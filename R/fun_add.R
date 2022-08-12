@@ -121,15 +121,14 @@ setMethod("add_distribution_vars_to_rows", "metime_analyser", function(object, s
 #' Function to add covariates to the dataset of interest for GGMs
 #' @description adds Covariates to data matrices in metime_analyser S4 object
 #' @param object object of class metime_analyser
-#' @param which_data Dataset/s to which the covariates is to be added
-#' @param covariates list of character vector names of covariates. 
-#'  Use based on number of dataset cov <- list(c(covs_lipids), c(covs_nmr))
+#' @param which_data Dataset to which the covariates is to be added
+#' @param covariates character vector names of covariates. 
 #' @param class.ind Logical to convert factor variables into class.ind style or not
 #' @param phenotype Logical. If True will extract from phenotype dataset else uses row data
 #' @return S4 object with covariates added to the dataset
 #' @export
-setGeneric("add_covariates_for_ggms", function(object, which_data, covariates, class.ind, phenotype) standardGeneric("add_covariates_for_ggms"))
-setMethod("add_covariates_for_ggms", "metime_analyser", function(object, which_data, covariates, class.ind, phenotype) {
+setGeneric("add_phenotypes_as_covariates", function(object, which_data, covariates, class.ind, phenotype) standardGeneric("add_phenotypes_as_covariates"))
+setMethod("add_phenotypes_as_covariates", "metime_analyser", function(object, which_data, covariates, class.ind, phenotype) {
 			if(phenotype) {
 				phenotype <- object@list_of_data[[object@annotations$phenotype]]
 				phenotype <- phenotype[order(rownames(phenotype)),]
@@ -164,6 +163,67 @@ setMethod("add_covariates_for_ggms", "metime_analyser", function(object, which_d
 					 object@list_of_data[[which_data[i]]] <- list_of_data[[i]]
 				}
 			} else {
-				#####Add ways to integrate row data here.
+				list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+				for(i in 1:length(which_data)) {
+					dummy <- list_of_row_data[[which_data[i]]]
+					dummy <- dummy[ ,covariates[[i]]]
+					dummy <- dummy[order(rownames(dummy)), ]
+					data <- list_of_data[[i]]
+					data <- data[rownames(data) %in% rownames(dummy), ]
+					data <- data[order(rownames(data)), ]
+					list_of_data[[i]] <- as.data.frame(cbind(data, dummy))
+					if(class.ind) {
+					 	for(j in 1:length(covariates)) {
+					 		vec <- list_of_data[[i]][ ,covariates[j]]
+					 		if(class(vec) %in% "character" | class(vec) %in% "factor") {
+					 			new_data <- class.ind(vec)
+					 			list_of_data[[i]] <- list_of_data[[i]][ ,!(names(list_of_data[[i]]) %in% covariates[i])]
+					 			list_of_data[[i]] <- as.data.frame(cbind(list_of_data[[i]], new_data))
+							}
+					 	}
+					 } else {
+					 	for(j in 1:length(covariates)) {
+					 			vec <- list_of_data[[i]][ ,covariates[j]]
+					 			if(class(vec) %in% "character" | class(vec) %in% "factor") {
+					 				new_vec <- as.numeric(vec)
+					 				list_of_data[[i]] <- list_of_data[[i]][ ,!(names(list_of_data[[i]]) %in% covariates[i])]
+					 				list_of_data[[i]] <- as.data.frame(cbind(list_of_data[[i]], new_vec))
+					 			}
+					 		}
+					 }
+					 object@list_of_data[[which_data[i]]] <- list_of_data[[i]]
+				}
 			}
 	})	
+
+#' Function to add metabolites as covariates for network construction
+#' @description Method applied on metime_analyser object to add other metabolite data to a certain dataset
+#' @param object A S4 object of class metime_analyser
+#' @param which_data Dataset to which the metab data is to be added(please note that this a single character)
+#' @param which_metabs list of names of metabs and name of the list represents the dataset from which 
+#' the metabs are to be acquired. eg: which_metabs=list(nmr_data=c("metab1", "metab2"), lipid_data=c(""))
+#' @return S4 object with metabs added for GGM to another dataset
+setGeneric("add_metabs_as_covariates", function(object, which_data, which_metabs) standardGeneric("add_metabs_as_covariates"))
+setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_data, which_metabs) {
+			data <- object@list_of_data[[which_data]]
+			list_of_metabs
+			for(i in 1:length(which_metabs)) {
+				dat <- object@list_of_data[[names(which_metabs)[i]]]
+				dat <- dat[ ,which_metabs[[i]]]
+				dat <- dat[order(rownames(dat)), ]
+				list_of_metabs[[i]] <- data
+			}
+			if(length(which_data) > 1) {
+				metab_matrix <- do.call(cbind, list_of_metabs)
+			} else {
+				metab_matrix <- list_of_metabs[[1]]
+			}
+			list_of_samples <- list(rownames(data), rownames(metab_matrix))
+			common_samples <- Reduce(intersect, list_of_samples)
+			data <- data[rownames(data) %in% common_samples, ]
+			data <- data[order(rownames(data)),]
+			metab_matrix <- metab_matrix[rownames(metab_matrix) %in% common_samples, ]
+			metab_matrix <- metab_matrix[order(rownames(metab_matrix)), ]
+			object@list_of_data[[which_data]] <- as.data.frame(cbind(data, metab_matrix))
+			return(object)
+	})

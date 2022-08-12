@@ -11,7 +11,8 @@ calc_ggm_genenet_crosssectional(object, which_data, threshold, timepoint)
 
 \item{which_data}{a character or a character vector naming the datasets of interest}
 
-\item{threshold}{type of threshold to be used for extracting significant edges}
+\item{threshold}{type of threshold to be used for extracting significant edges.
+allowed inputs are "li", "FDR", "bonferroni"}
 
 \item{timepoints}{timepoints of interest that are to be used to build networks(as per timepoints in rows)}
 }

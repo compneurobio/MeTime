@@ -4,7 +4,7 @@
 \alias{viz_distribution_plotter}
 \title{Function for Plotting distributions of phenotypic variables}
 \usage{
-viz_distribution_plotter(object, colname, which_data, strats)
+viz_distribution_plotter(object, colname, which_data, strats, phenotype)
 }
 \arguments{
 \item{object}{An object of class metime_analyser}
@@ -14,6 +14,8 @@ viz_distribution_plotter(object, colname, which_data, strats)
 \item{which_data}{Name of the dataset from which the samples will be extracted}
 
 \item{strats}{Character vector with colnames that are to be used for stratification}
+
+\item{phenotype}{Logical. If true data will be collected from phenotype_data matrix else from row data}
 }
 \value{
 a list with either 1) density plot, mean table acc to timepoint and variable type or
