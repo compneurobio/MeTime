@@ -379,21 +379,26 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 #' @description calculates GGM on longitudnal data matrix and returns a dataframe with edges, 
 #'   partial correlation and associated p-values
 #' @param data data matrix in a longitudnal format
-#' @param threshold type of multiple hypothesis correction. Available are Bonferoni("bonferoni"), 
+#' @param threshold type of multiple hypothesis correction. Available are Bonferoni("bonferroni"), 
 #'   Benjamini-Hochberg("FDR") and independent tests method("li", also see Li et al ....)
+#' @param all Logical to get all edges without any cutoff.
+#' @param ... additional arguments for ggm.estimate.pcor()
 #' @return a dataframe with edges, partial correlation and associated p-values 
 #' @export
-get_ggm_genenet <- function(data, threshold=c("bonferroni", "FDR", "li")) {
+get_ggm_genenet <- function(data, threshold=c("bonferroni", "FDR", "li"), all, ...) {
   # check if longitudinal
   if(!longitudinal::is.longitudinal(data)) stop("data is not a longitudinal object") 
   
-  met.ggm <- GeneNet::ggm.estimate.pcor(data, method="dynamic") # retrieve GGM
+  met.ggm <- GeneNet::ggm.estimate.pcor(data, method="dynamic", ...) # retrieve GGM
   met.ggm.edges <- GeneNet::network.test.edges(met.ggm, plot=F) # calculate edge statistics
   
   #define thresholds
   p.thresh <- 0.05/((ncol(met.ggm))*(ncol(met.ggm))/2) 
   fdr.thresh <- 0.05
-    
+  #Check all or threshold
+  if(all) {
+  	met.ggm.edges.filtered <- met.ggm.edges
+  }  
   # cut at threshold
   if(threshold=="FDR") {
       met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$qval < 0.05),]

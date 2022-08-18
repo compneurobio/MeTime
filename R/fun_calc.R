@@ -228,7 +228,7 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
             stringsAsFactors = F
           )
         }else{
-          
+           stop("there is an issue here ")
         }
         
         
@@ -264,13 +264,13 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
 #' @param object An object of class metime_analyser
 #' @param which_data a character vector - Names of the dataset from which the samples will be extracted
 #' @param type type of the dimensionality reduction method to be applied. Accepted inputs are "UMAP", "tSNE", "PCA"
-#' 
+#' @param ... additional arguments that can be passed on to prcomp(), M3C::tsne() and umap::umap()
 #' @return  a list with two dataframes containing the dimensionality reduction information 1) samples - data of the individuals(".$samples")
 #'                     2) metabs - data of the metabolites(".$metabs")
 #' @export
-setGeneric("calc_dimensionality_reduction", function(object, which_data, type) standardGeneric("calc_dimensionality_reduction"))
+setGeneric("calc_dimensionality_reduction", function(object, which_data, type, ...) standardGeneric("calc_dimensionality_reduction"))
 
-setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, which_data, type) {
+setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, which_data, type, ...) {
       if(length(which_data) > 1) {
         object@list_of_data <- mod_common_sample_extractor(object@list_of_data)
         data <- object@list_of_data[names(object@list_of_data) %in% which_data]
@@ -285,18 +285,18 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
       rm_col = intersect(names(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
       data <- data %>% select(-c(rm_col))
       if(type %in% "PCA") {
-        pca_metabs <- prcomp(t(data), scale.=T, center=T)
-        pca_individuals <- prcomp(data, scale.=T, center=T)
+        pca_metabs <- prcomp(t(data), scale.=T, center=T, ...)
+        pca_individuals <- prcomp(data, scale.=T, center=T, ...)
         dr_data_metabs <- as.data.frame(pca_metabs$x[,1:2])
         dr_data_samples <- as.data.frame(pca_individuals$x[,1:2])
       } else if(type %in% "UMAP") {
-        umap_individuals <- umap::umap(data)
+        umap_individuals <- umap::umap(data, ...)
         dr_data_samples <- as.data.frame(umap_individuals$layout)
-        umap_metabs <- umap::umap(t(data))
+        umap_metabs <- umap::umap(t(data), ...)
         dr_data_metabs <- as.data.frame(umap_metabs$layout) 
       } else if(type %in% "tSNE") {
-        tsne_samples <- tsne(t(data))
-        tsne_metabs <- tsne(data)
+        tsne_samples <- tsne(t(data), ...)
+        tsne_metabs <- tsne(data, ...)
         dr_data_metabs <- as.data.frame(tsne_metabs$data)
         dr_data_samples <- as.data.frame(tsne_samples$data)
       }
@@ -434,10 +434,12 @@ setMethod("calc_ttest", "metime_analyser", function(object, which_data, timepoin
 #' @param which_data a character or a character vector naming the datasets of interest
 #' @param threshold type of threshold to be used for extracting significant edges
 #' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
+#' @param all Logical to get all edges without any cutoff.
+#' @param ... addtional arguments for genenet network
 #' @return Network data with edgelist, partial correlation values and associated p-values and corrected p-values 
 #' @export
-setGeneric("calc_ggm_genenet_longitudnal", function(object, which_data, threshold, timepoints) standardGeneric("calc_ggm_genenet_longitudnal"))
-setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, which_data, threshold, timepoints) {
+setGeneric("calc_ggm_genenet_longitudnal", function(object, which_data, threshold, timepoints, all, ...) standardGeneric("calc_ggm_genenet_longitudnal"))
+setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, which_data, threshold, timepoints, all, ...) {
     #sanity checks
     stopifnot(timepoints %in% c("t0","t12","t24"))
     stopifnot(threshold %in% c("li","bonferroni","FDR"))
@@ -473,7 +475,7 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
   
     data <- longitudinal::as.longitudinal(x=as.matrix(data[,vars]), repeats=n_subject, time=name_tp)
     
-    network <- get_ggm_genenet(data=data, threshold=threshold)
+    network <- get_ggm_genenet(data=data, threshold=threshold, ...)
        
     return(network)
 })
@@ -492,8 +494,8 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
 setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha, nfolds, timepoints) standardGeneric("calc_ggm_multibipartite_lasso"))
 setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha, nfolds, timepoints) {
           if(length(which_data) > 1) object <- mod_extract_common_samples(object)
-          object@list_of_data <- mod_split_acc_to_time(object)
-          list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+          list_of_data <- mod_split_acc_to_time(object)
+          list_of_data <- list_of_data[names(list_of_data) %in% which_data]
           list_of_data <- lapply(list_of_data, function(x) return(x[names(x) %in% timepoints]))
           count <- 1
           edge_lists <- list()
@@ -501,8 +503,9 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
               list_of_mats <- list()
               list_of_mats <- lapply(list_of_data, function(x) {
                             x <- x[names(x) %in% timepoints[i]]
-                            x <- x[[1]][order(rownames(x[[1]])),]
-                            return(x) 
+                            x <- lapply(x, function(a) return(a[order(rownames(a)), ]))
+                            x <- lapply(x, function(a) return(as.matrix(a)))
+                            return(x[[1]]) 
               })
               names(list_of_mats) <- which_data
               #glmnet results are stored here in a list
@@ -538,13 +541,13 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
             edge_list <- as.data.frame(do.call(rbind, edge_list)) 
             uids <- c()
             #ERROR FOUND HERE AND CORRECTED!!!!!!!!
-              for(m in 1:length(edge_list[,1])) {
+            for(m in 1:length(edge_list[,1])) {
                 vec <- c()
-                vec[1] <- as.character(edge_list$node1[m])
-                vec[2] <- as.character(edge_list$node2[m])
+                vec[1] <- as.character(edge_list$source[m])
+                vec[2] <- as.character(edge_list$target[m])
                 vec <- vec[order(vec)]
                 uids[m] <- paste(vec, collapse="_")
-              }
+            }
             edge_list <- cbind(edge_list, uids)
             edge_list <- as.data.frame(edge_list)
             colnames(edge_list) <- c("node1", "node2", "coeffs", "uids")
@@ -552,7 +555,7 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
             check$uids <- as.character(check$uids)
             check$coeffs <- as.numeric(as.character(check$coeffs))
             check <- reshape(transform(check, time=ave(coeffs, uids, FUN=seq_along)), idvar="uids", direction="wide")
-            final_edge_list <- check[!is.na(check$coeffs.2), ]
+            final_edge_list <- na.omit(check)
             final_edge_list$uids <- as.character(final_edge_list$uids)
             final_edge_list$node1 <- unlist(lapply(strsplit(final_edge_list$uids, split="_"), function(x) return(x[1])))
             final_edge_list$node2 <- unlist(lapply(strsplit(final_edge_list$uids, split="_"), function(x) return(x[2])))

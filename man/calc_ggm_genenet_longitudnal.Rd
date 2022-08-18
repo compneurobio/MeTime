@@ -4,7 +4,14 @@
 \alias{calc_ggm_genenet_longitudnal}
 \title{An automated fucntion to calculate GGM from genenet longitudnal version}
 \usage{
-calc_ggm_genenet_longitudnal(object, which_data, threshold, timepoints)
+calc_ggm_genenet_longitudnal(
+  object,
+  which_data,
+  threshold,
+  timepoints,
+  all,
+  ...
+)
 }
 \arguments{
 \item{object}{S4 object of cĺass metime_analyser}
@@ -14,6 +21,10 @@ calc_ggm_genenet_longitudnal(object, which_data, threshold, timepoints)
 \item{threshold}{type of threshold to be used for extracting significant edges}
 
 \item{timepoints}{timepoints of interest that are to be used to build networks(as per timepoints in rows)}
+
+\item{all}{Logical to get all edges without any cutoff.}
+
+\item{...}{addtional arguments for genenet network}
 }
 \value{
 Network data with edgelist, partial correlation values and associated p-values and corrected p-values

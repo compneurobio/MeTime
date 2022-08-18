@@ -4,13 +4,17 @@
 \alias{get_ggm_genenet}
 \title{Function to calculate a dynamic GeneNet GGM from a longitudnal data matrix}
 \usage{
-get_ggm_genenet(data, threshold = c("bonferroni", "FDR", "li"))
+get_ggm_genenet(data, threshold = c("bonferroni", "FDR", "li"), all, ...)
 }
 \arguments{
 \item{data}{data matrix in a longitudnal format}
 
-\item{threshold}{type of multiple hypothesis correction. Available are Bonferoni("bonferoni"),
+\item{threshold}{type of multiple hypothesis correction. Available are Bonferoni("bonferroni"),
 Benjamini-Hochberg("FDR") and independent tests method("li", also see Li et al ....)}
+
+\item{all}{Logical to get all edges without any cutoff.}
+
+\item{...}{additional arguments for ggm.estimate.pcor()}
 }
 \value{
 a dataframe with edges, partial correlation and associated p-values

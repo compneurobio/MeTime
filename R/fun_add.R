@@ -49,47 +49,52 @@ setMethod("add_screening_vars", "metime_analyser", function(object, vars) {
 #' @param which_data dataset on which the method is to be applied
 #' @param type type of test, "shapiro" and "kruskal" are available
 #' @param metab_names column that has the metabolite names in col_data.
+#' @param all logical to add all kinds of available stats.
 #' @return S4 object with shapiro wilk test related data in the col_data
 #' @export
-setGeneric("add_col_normality", function(object, which_data, type, metab_names) standardGeneric("add_col_normality"))
-setMethod("add_col_normality", "metime_analyser", function(object, which_data, type="shapiro", metab_names) {
+setGeneric("add_col_stats", function(object, which_data, type, metab_names) standardGeneric("add_col_stats"))
+setMethod("add_col_stats", "metime_analyser", function(object, which_data, type="shapiro", metab_names) {
 	  stopifnot(type %in% c("shapiro", "kruskal"))
       for(i in 1:length(which_data)) {
-      		if(type %in% "shapiro") {
-      			out <- lapply(names(object@list_of_data[[which_data[i]]]), function(x) {
+      		out <- lapply(names(object@list_of_data[[which_data[i]]]), function(x) {
       					my_model <- shapiro.test(object@list_of_data[[which_data[i]]][[x]])
       					return(data.frame(id=x,
                  				shapiro_pval=as.numeric(my_model$p.value),
                  				shapiro_statistic=as.numeric(my_model$statistic),
                  				stringsAsFactors = F))}) %>%  
       					do.call(what=rbind.data.frame)
-	      		dummy <- out[order(out$id), ]
-	      		shapiro_pval <- dummy$shapiro_pval
-	      		shapiro_statistic <- dummy$shapiro_statistic
-	      		shapiro_normal <- ifelse(dummy$shapiro_pval>0.05, TRUE,FALSE)
-	      		col_data <- object@list_of_col_data[[which_data[i]]]
-	      		col_data <- col_data[order(col_data[ ,metab_names[i]]), ]
-	      		col_data <- as.data.frame(cbind(col_data, shapiro_pval, shapiro_statistic, shapiro_normal))
-	      		object@list_of_col_data[[which_data[i]]] <- col_data  
-	      	} else if(type %in% "kruskal") {
-	      		out <- lapply(names(object@list_of_data[[which_data[i]]]), function(x) {
+	      	dummy <- out[order(out$id), ]
+	      	shapiro_pval <- dummy$shapiro_pval
+	      	shapiro_statistic <- dummy$shapiro_statistic
+	      	shapiro_normal <- ifelse(dummy$shapiro_pval>0.05, TRUE,FALSE)
+	      	out <- lapply(names(object@list_of_data[[which_data[i]]]), function(x) {
       						my_model <- shapiro.test(object@list_of_data[[which_data[i]]][[x]])
       						return(data.frame(id=x,
                  				kruskal_pval=as.numeric(my_model$p.value),
                  				kruskal_statistic=as.numeric(my_model$statistic),
                  				stringsAsFactors = F))}) %>%  
       						do.call(what=rbind.data.frame)
-      			dummy <- out[order(out$id), ]
-	      		kruskal_pval <- dummy$kruskal_pval
-	      		kruskal_statistic <- dummy$kruskal_statistic
-	      		kruskal_normal <- ifelse(dummy$kruskal_pval>0.05, TRUE,FALSE)
-	      		col_data <- object@list_of_col_data[[which_data[i]]]
-	    		col_data <- col_data[order(col_data[ ,metab_names[i]]), ]
-	     		col_data <- as.data.frame(cbind(col_data, kruskal_pval, kruskal_statistic, kruskal_normal))
-	      		object@list_of_col_data[[which_data[i]]] <- col_data  
+      		dummy <- out[order(out$id), ]
+	      	kruskal_pval <- dummy$kruskal_pval
+	      	kruskal_statistic <- dummy$kruskal_statistic
+	      	kruskal_normal <- ifelse(dummy$kruskal_pval>0.05, TRUE,FALSE)
+	      	col_data <- object@list_of_col_data[[which_data[i]]]
+	    	col_data <- col_data[order(col_data[ ,metab_names[i]]), ]
+	      	if(all) {
+	      		col_data <- as.data.frame(cbind(col_data, kruskal_pval, kruskal_statistic, kruskal_normal, 
+	      										shapiro_pval, shapiro_statistic, shapiro_normal))
+	      		object@list_of_col_data[[which_data[i]]] <- col_data
+	      	} else {
+	    		if(type %in% "shapiro") {
+	    			col_data <- as.data.frame(cbind(col_data, shapiro_pval, shapiro_statistic, shapiro_normal))
+	    			object@list_of_col_data[[which_data[i]]] <- col_data
+	    		} else if(type %in% "kruskal") {
+	    			col_data <- as.data.frame(cbind(col_data, kruskal_pval, kruskal_statistic, kruskal_normal))
+	      			object@list_of_col_data[[which_data[i]]] <- col_data
+	    		}  
 	      	}
       		
-      	}
+    }      	
 	return(object)
   
 })
