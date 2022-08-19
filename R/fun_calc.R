@@ -272,7 +272,7 @@ setGeneric("calc_dimensionality_reduction", function(object, which_data, type, .
 
 setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, which_data, type, ...) {
       if(length(which_data) > 1) {
-        object@list_of_data <- mod_common_sample_extractor(object@list_of_data)
+        object <- mod_extract_common_samples(object)
         data <- object@list_of_data[names(object@list_of_data) %in% which_data]
         data <- lapply(data, function(x) {
             return(x[sort(rownames(x)),])
@@ -284,6 +284,7 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
       }
       rm_col = intersect(names(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
       data <- data %>% select(-c(rm_col))
+      data <- na.omit(data)
       if(type %in% "PCA") {
         pca_metabs <- prcomp(t(data), scale.=T, center=T, ...)
         pca_individuals <- prcomp(data, scale.=T, center=T, ...)

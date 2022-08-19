@@ -108,13 +108,17 @@ setMethod("add_col_stats", "metime_analyser", function(object, which_data, type=
 #'			distribution_vars=c("Age", "BMI", "ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp", "DXGrp_longi", "PTGENDER"), which_data="lipid_data")
 #' @param object An object of class metime_analyser
 #' @param vars A character naming the vars of interest
-#' @param which_data dataset to which the information is to be added
+#' @param which_data dataset to which the information is to be added(only 1 can be used at a time)
 #' @return object of class metime_analyser with phenotype data added to row data
 #' @export
 setGeneric("add_distribution_vars_to_rows", function(object, screening_vars, distribution_vars, which_data) standardGeneric("add_distribution_vars_to_rows"))
 setMethod("add_distribution_vars_to_rows", "metime_analyser", function(object, screening_vars, distribution_vars, which_data) {
-			if(!is.null(screening_vars)) phenotype <- add_screening_vars(object, screening_vars)
-			data <- object@list_of_row_data[[which_data]]
+			if(!is.null(screening_vars)) {
+				phenotype <- add_screening_vars(object, screening_vars)
+			} else {
+				phenotype <- object@list_of_data[[object@annotations$phenotype]]
+			}
+			data <- as.data.frame(object@list_of_row_data[[which_data]])
 			phenotype <- phenotype[rownames(phenotype) %in% rownames(data), ]
 			phentoype <- phenotype[order(rownames(phenotype)),]
 			data <- data[order(rownames(data)), ]

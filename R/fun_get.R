@@ -312,16 +312,16 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 				if(length(which_data)>1) {
 						list_of_metadata_metabs <- list()
 						for(i in 1:length(columns)) {
-								list_of_metadata_metabs[[i]] <- list_of_col_data[[i]][, columns[[i]]]
+								list_of_metadata_metabs[[i]] <- as.matrix(list_of_col_data[[i]][, columns[[i]]])
 								class <- rep(which_data[i], each=length(list_of_metadata_metabs[[i]][,1]))
-								list_of_metadata_metabs[[i]] <- list_of_metadata_metabs[[i]][order(list_of_metadata_metabs[[1]][,index_of_names]), ]
+								list_of_metadata_metabs[[i]] <- list_of_metadata_metabs[[i]][order(list_of_metadata_metabs[[i]][ ,index_of_names[i]]), ]
 								colnames(list_of_metadata_metabs[[i]]) <- names
 								list_of_metadata_metabs[[i]] <- as.data.frame(cbind(list_of_metadata_metabs[[i]], class))
 						}
 						metadata_metabs <- lapply(list_of_metadata_metabs, as.data.frame)
 						metadata_metabs <- do.call(rbind, metadata_metabs)
 						metadata_metabs <- as.data.frame(metadata_metabs)
-						rownames(metadata_metabs) <- metadata_metabs[,index_of_names] 
+						rownames(metadata_metabs) <- metadata_metabs[, names[1]] 
 				} else {
 						col_data <- list_of_col_data[[1]]
 						class <- rep(which_data, each=length(col_data[,1]))

@@ -14,7 +14,7 @@ add_distribution_vars_to_rows(
 \arguments{
 \item{object}{An object of class metime_analyser}
 
-\item{which_data}{dataset to which the information is to be added}
+\item{which_data}{dataset to which the information is to be added(only 1 can be used at a time)}
 
 \item{vars}{A character naming the vars of interest}
 }
