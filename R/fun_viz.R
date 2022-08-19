@@ -163,7 +163,7 @@ setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname
 #' @description plot function for metime_plotter object with different inputs to specialize plots. Used for all calc outputs.
 #' @param object S4 object of class metime_plotter
 #' @param aesthetics list for aesthetics. eg: list(list(x="colname",y="colname",color="colname", shape="colname"), list(...)) for "dot" plot and "heatmap"
-#' plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely .$vis and .$strats for text
+#' plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely .$viz and .$strats for text
 #' and for facet wrapping. 
 #' @return metime_plotter object with updated plot
 #' @export
@@ -181,7 +181,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
 						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
+						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
 					}
 					
 
@@ -195,7 +195,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
 						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
+						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
 					}
 
 				} else if(object@plot_type[i] %in% "line") {
@@ -208,7 +208,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
 						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
+						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
 					}
 					
 
@@ -222,7 +222,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
 						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
+						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
 					}
 						
 				} else if(object@plot_type[i] %in% "forest") {
@@ -247,7 +247,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
 						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
+						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
 					}
 					
 				} else if(object@plot_type[i] %in% "bar") {
@@ -259,7 +259,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
 						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
+						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
 					}
 					
 				}

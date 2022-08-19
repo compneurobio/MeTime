@@ -39,12 +39,12 @@ get_text_for_plot <- function(data, colnames) {
 		strings_vector <- c()
 		count <- 1
 		text <- c()
-		for(i in 1:length(rownames(data))) {
-			for(j in 1:length(colnames)) {
-				if(j==1) {
-						text <- paste("<br /> ", colnames[j], " : ", data[i, colnames[j]], sep="")
+		for(l in 1:length(rownames(data))) {
+			for(m in 1:length(colnames)) {
+				if(m==1) {
+						text <- paste("<br /> ", colnames[m], " : ", data[l, colnames[m]], sep="")
 					} else {
-						text <- paste(text, "<br /> ", colnames[j], " : ", data[i, colnames[j]], sep="")
+						text <- paste(text, "<br /> ", colnames[m], " : ", data[l, colnames[m]], sep="")
 					}
 				}
 				strings_vector[count] <- text
@@ -259,6 +259,7 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
 			} else {
 					data <- data[order(rownames(data)), ]
 					metadata <- metadata[rownames(metadata) %in% rownames(data), ]
+					data <- data[rownames(data) %in% rownames(metadata),]
 					plot_data[[1]] <- as.data.frame(cbind(data, metadata))
 			}
 			for(i in 1:length(plot_type)) {

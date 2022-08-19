@@ -293,13 +293,17 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
       } else if(type %in% "UMAP") {
         umap_individuals <- umap::umap(data, ...)
         dr_data_samples <- as.data.frame(umap_individuals$layout)
+        colnames(dr_data_samples) <- c("UMAP1", "UMAP2")
         umap_metabs <- umap::umap(t(data), ...)
-        dr_data_metabs <- as.data.frame(umap_metabs$layout) 
+        dr_data_metabs <- as.data.frame(umap_metabs$layout)
+        colnames(dr_data_metabs) <- c("UMAP1", "UMAP2")
       } else if(type %in% "tSNE") {
         tsne_samples <- tsne(t(data), ...)
         tsne_metabs <- tsne(data, ...)
         dr_data_metabs <- as.data.frame(tsne_metabs$data)
+        rownames(dr_data_metabs) <- colnames(data)
         dr_data_samples <- as.data.frame(tsne_samples$data)
+        rownames(dr_data_samples) <- rownames(data)
       }
       return(list(metabs=dr_data_metabs, samples=dr_data_samples))
   })
