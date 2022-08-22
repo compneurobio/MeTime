@@ -176,7 +176,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 										color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) + 
 										facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic()
-					object@plot[[i]] <- ggplotly(object@plot[[i]])
+					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
@@ -190,7 +190,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 					object@plot[[i]] <- object@plot[[i]] + geom_tile(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
 										fill=aesthetics[[i]]$fill)) + facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic()
-					object@plot[[i]] <- ggplotly(object@plot[[i]])
+					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
@@ -217,7 +217,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 					object@plot[[i]] <- object@plot[[i]] + geom_boxplot(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
 										color=aesthetics[[i]]$color), outlier.colour="red", outlier.shape=8, outlier.size=4) + facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic() + stat_summary(fun.y=mean, geom="point", shape=23, size=4)
-					object@plot[[i]] <- ggplotly(object@plot[[i]])
+					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
@@ -231,7 +231,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 																	ymax=aesthetics[[i]]$upper, color=aesthetics[[i]]$color)) + 
 										coord_flip() + facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic() 
-					object@plot[[i]] <- ggplotly(object@plot[[i]])
+					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
@@ -242,7 +242,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 				} else if(object@plot_type[i] %in% "QQ") {
 					object@plot[[i]] <- object@plot[[i]] + stat_qq(aes_string(sample=aesthetics[[i]]$sample, color=aesthetics[[i]]$color, 
 															shape=aesthetics[[i]]$shape)) + facet_wrap(aesthetics[[i]]$strats) + theme_classic()
-					object@plot[[i]] <- ggplotly(object@plot[[i]])
+					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
@@ -254,7 +254,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 					object@plot[[i]] <- object@plot[[i]] + geom_bar(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
 										fill=aesthetics[[i]]$fill), stat="identity", position=aesthetics[[i]]$postion) + 
 										facet_wrap(aesthetics[[i]]$strats) + theme_classic()
-					oobject@plot[[i]] <- ggplotly(object@plot[[i]])
+					oobject@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]

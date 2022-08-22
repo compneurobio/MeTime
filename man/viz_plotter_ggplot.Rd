@@ -10,7 +10,7 @@ viz_plotter_ggplot(object, aesthetics)
 \item{object}{S4 object of class metime_plotter}
 
 \item{aesthetics}{list for aesthetics. eg: list(list(x="colname",y="colname",color="colname", shape="colname"), list(...)) for "dot" plot and "heatmap"
-plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely .$vis and .$strats for text
+plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely .$viz and .$strats for text
 and for facet wrapping.}
 }
 \value{
