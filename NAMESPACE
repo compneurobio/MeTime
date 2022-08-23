@@ -2,6 +2,7 @@
 
 export(add_col_stats)
 export(add_distribution_vars_to_rows)
+export(add_metabs_as_covariates)
 export(add_phenotypes_as_covariates)
 export(add_screening_vars)
 export(calc_conservation_metabolite)

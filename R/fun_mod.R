@@ -191,9 +191,9 @@ setMethod("mod_merge_metime_analysers", "metime_analyser", function(list_of_obje
 #' @param which_data dataset/s for which the method is to be applied
 #' @return S4 object with NA's removed and data manipulated accordingly
 #' @export
-setGeneric("mod_remove_nas", function(object) standardGeneric("mod_remove_nas"))
-setMethod("mod_remove_nas", "metime_analyser", function(object) {
-				list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data, ]
+setGeneric("mod_remove_nas", function(object, which_data) standardGeneric("mod_remove_nas"))
+setMethod("mod_remove_nas", "metime_analyser", function(object, which_data) {
+				list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 				list_of_data <- lapply(list_of_data, function(x) return(na.omit(x)))
 				for(i in 1:length(list_of_data)) {
 						rows <- object@list_of_row_data[[which_data[i]]]

@@ -96,13 +96,15 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
     
     
     if(verbose) cat("Processing dataframe", i,": ")
-    out[[i]] = lapply(1:nrow(tp_split), function(x){
+
+    out[[i]] = lapply(1:nrow(tp_split), function(x) {
       
       if(verbose) cat(tp_split[x,] %>% paste0(collapse="vs"), "; ")
 
+      v1_data <- data_merged %>% 
+                dplyr::filter(id %in% id_split[,paste0(tp_split$V1[[x]])]) %>% 
+                 dplyr::select(-id, -timepoint,-rid) %>% t() %>% as.data.frame()
 
-      v1_data <- data_merged %>% dplyr::filter(id %in% id_split[,paste0(tp_split$V1[[x]])]) %>% 
-        dplyr::select(-id, -timepoint,-rid) %>% t() %>% as.data.frame()
       colnames(v1_data) = intersect(id_split[,paste0(tp_split$V1[[x]])], data_merged$id)
       
       v2_data <- data_merged %>% dplyr::filter(id %in% id_split[,paste0(tp_split$V2[[x]])]) %>% 
@@ -112,12 +114,14 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
       cor_mat = cbind(v1_data,v2_data) %>% 
         cor(use="pairwise.complete.obs")
       
-      ci_out <- lapply(1:nrow(id_split), function(y){
+      ci_out <- lapply(1:nrow(id_split), function(y) {
         v2_id = id_split[,paste0(tp_split$V2[[x]])][y]
         v1_id = id_split[,paste0(tp_split$V1[[x]])][y]
-        if(all(!is.na(c(v2_id, v1_id)))){
-          ci_info<-cor_mat[intersect(id_split[,paste0(tp_split$V2[[x]])], data_merged$id),v1_id] %>% sort(decreasing = T)
-          rank<-which(names(ci_info)==v2_id)
+        
+        if(all(!is.na(c(v2_id, v1_id)))) {
+          
+          ci_info <- cor_mat[intersect(id_split[,paste0(tp_split$V2[[x]])], data_merged$id),v1_id] %>% sort(decreasing = T)
+          rank <- which(names(ci_info)==v2_id)
           
           data.frame(
             id=v1_id,
@@ -128,11 +132,10 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
             rank=ifelse(length(rank)>0, rank, NA),
             stringsAsFactors = F
           )
-        }else{
-
-        }
-          
-        
+        } else {
+          stop("There is an issue here")
+        }   
+  
       }) %>% 
         do.call(what=rbind.data.frame)
       
@@ -169,84 +172,80 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
   #define data to be processed
   #data_position <- which(names(object@list_of_data) %in% which_data)
   out=list()
-  for(i in which_data){
+  for(i in which_data) {
     data_position <- which(names(object@list_of_data) %in% i)
     data_var <- object@list_of_col_data[[data_position]]$id
     
     data_merged <- object@list_of_data[[data_position]] %>% 
       dplyr::mutate(id = rownames(.[])) %>% 
-      dplyr::left_join(
-        object@list_of_row_data[[data_position]] %>% 
+      dplyr::left_join(object@list_of_row_data[[data_position]] %>% 
           dplyr::mutate(timepoint = as.numeric(timepoint)) %>% 
-          dplyr::select(id, timepoint, rid),
-        by="id"
-      )
+          dplyr::select(id, timepoint, rid), 
+          by="id")
     
     tp_split <- utils::combn(x = unique(data_merged$timepoint), m=2, simplify = T) %>% 
       base::t() %>% 
       base::as.data.frame()
     
-    id_split <- data.frame(
-      met=rep(data_var,each=length(unique(data_merged$timepoint))),
-      timepoint=rep(unique(data_merged$timepoint),length(data_var)),
-      stringsAsFactors = F
-    ) %>% 
-      dplyr::mutate(id=paste0(met, "_",timepoint)) %>% 
-      tidyr::spread(timepoint, id)
+    id_split <- data.frame(met=rep(data_var, each=length(unique(data_merged$timepoint))),
+      timepoint=rep(unique(data_merged$timepoint), length(data_var)),
+      stringsAsFactors = F) %>% 
+        dplyr::mutate(id=paste0(met, "_",timepoint)) %>% 
+          tidyr::spread(timepoint, id)
     
     
     if(verbose) cat("Processing dataframe", i,": ")
-    out[[i]] = lapply(1:nrow(tp_split), function(x){
-      
-      if(verbose) cat(tp_split[x,] %>% paste0(collapse="vs"), "; ")
-      
-      
-      v1_data <- data_merged %>% dplyr::filter(timepoint == tp_split[x,"V1"]) %>% 
-        dplyr::select(-id, -timepoint,-rid)
-      colnames(v1_data)  = paste0(names(v1_data), "_",tp_split$V1[x])
-      
-      v2_data <- data_merged %>% dplyr::filter(timepoint == tp_split[x,"V2"]) %>% 
-        dplyr::select(-id, -timepoint,-rid) 
-      colnames(v2_data)  = paste0(names(v2_data), "_",tp_split$V2[x])
-      
-      cor_mat = cbind(v1_data,v2_data) %>% 
-        cor(use="pairwise.complete.obs")
-      
-      ci_out <- lapply(1:nrow(id_split), function(y){
-        v2_id = id_split[,paste0(tp_split$V2[[x]])][y]
-        v1_id = id_split[,paste0(tp_split$V1[[x]])][y]
-        if(all(!is.na(c(v2_id, v1_id)))){
-          ci_info<-cor_mat[intersect(rownames(cor_mat),id_split[,paste0(tp_split$V2[[x]])]),v1_id] %>% sort(decreasing = T)
-          rank<-which(names(ci_info)==v2_id)
+      out[[i]] = lapply(1:nrow(tp_split), function(x){
+        
+        if(verbose) cat(tp_split[x,] %>% paste0(collapse="vs"), "; ")
+        
+        
+        v1_data <- data_merged %>% dplyr::filter(timepoint == tp_split[x,"V1"]) %>% 
+          dplyr::select(-id, -timepoint,-rid)
+        colnames(v1_data)  = paste0(names(v1_data), "_",tp_split$V1[x])
+        
+        v2_data <- data_merged %>% dplyr::filter(timepoint == tp_split[x,"V2"]) %>% 
+          dplyr::select(-id, -timepoint,-rid) 
+        colnames(v2_data)  = paste0(names(v2_data), "_",tp_split$V2[x])
+        
+        cor_mat = cbind(v1_data,v2_data) %>% 
+          cor(use="pairwise.complete.obs")
+        
+        ci_out <- lapply(1:nrow(id_split), function(y){
+          v2_id = id_split[,paste0(tp_split$V2[[x]])][y]
+          v1_id = id_split[,paste0(tp_split$V1[[x]])][y]
+          if(all(!is.na(c(v2_id, v1_id)))){
+            ci_info <- cor_mat[intersect(rownames(cor_mat),id_split[,paste0(tp_split$V2[[x]])]),v1_id] %>% sort(decreasing = T)
+            rank <- which(names(ci_info)==v2_id)
+            
+            data.frame(
+              id=id_split$met[y],
+              from_tp=tp_split[x,"V1"],
+              to_tp=tp_split[x,"V2"],
+              nsubject=length(ci_info),
+              rank=ifelse(length(rank)>0, rank, NA),
+              stringsAsFactors = F
+            )
+          }else{
+             stop("there is an issue here ")
+          }
           
-          data.frame(
-            id=id_split$met[y],
-            from_tp=tp_split[x,"V1"],
-            to_tp=tp_split[x,"V2"],
-            nsubject=length(ci_info),
-            rank=ifelse(length(rank)>0, rank, NA),
-            stringsAsFactors = F
-          )
-        }else{
-           stop("there is an issue here ")
-        }
+          
+        }) %>% 
+          do.call(what=rbind.data.frame)
         
+        ci_out = ci_out %>%
+          dplyr::mutate(ci=(1 - ((rank -1)/(nsubject-1)))) %>% 
+          dplyr::arrange(ci) %>% 
+          dplyr::mutate(y=ci, 
+                        x=1:nrow(.[])) %>% 
+          dplyr::select(x,y,ci,id, from_tp, to_tp, nsubject,rank)
         
-      }) %>% 
-        do.call(what=rbind.data.frame)
+        ci_out
+      })
       
-      ci_out = ci_out %>%
-        dplyr::mutate(ci=(1 - ((rank -1)/(nsubject-1)))) %>% 
-        dplyr::arrange(ci) %>% 
-        dplyr::mutate(y=ci, 
-                      x=1:nrow(.[])) %>% 
-        dplyr::select(x,y,ci,id, from_tp, to_tp, nsubject,rank)
-      
-      ci_out
-    })
-    
-    names(out[[i]]) = paste0(tp_split$V1,"vs", tp_split$V2)
-  }
+      names(out[[i]]) = paste0(tp_split$V1,"vs", tp_split$V2)
+    }
   
   return(out)
 })
@@ -447,7 +446,7 @@ setGeneric("calc_ggm_genenet_longitudnal", function(object, which_data, threshol
 setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, which_data, threshold, timepoints, all, ...) {
     #sanity checks
     stopifnot(timepoints %in% c("t0","t12","t24"))
-    stopifnot(threshold %in% c("li","bonferroni","FDR"))
+    stopifnot(threshold %in% c("li","bonferroni","FDR", NULL))
     #Extracting data that is needed
     object@list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
     object@list_of_row_data <- object@list_of_row_data[names(object@list_of_row_data) %in% which_data]
@@ -459,6 +458,7 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
     } else {
         data <- object@list_of_data[[1]]
     } 
+    data <- na.omit(data)
     data$subject <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[1])))
     data$timepoint <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2])))
     my_rid <- data %>%     
@@ -473,14 +473,16 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
             subject %in% my_rid[["subject"]])
     rm_col = intersect(names(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
     vars <- data %>% select(-c(all_of(rm_col))) %>% names()
+
+
     # get full data
     data <- data %>% dplyr::arrange(timepoint, subject) 
     n_subject = unique(data$subject) %>% length() %>% as.numeric()
     name_tp = as.numeric(unlist(lapply(strsplit(unique(data$timepoint), split="t"), function(x) return(x[2]))))
-  
+
     data <- longitudinal::as.longitudinal(x=as.matrix(data[,vars]), repeats=n_subject, time=name_tp)
-    
-    network <- get_ggm_genenet(data=data, threshold=threshold, ...)
+
+    network <- get_ggm_genenet(data=data, threshold=threshold, all=all, ...)
        
     return(network)
 })
@@ -661,12 +663,14 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
 #' @param threshold type of threshold to be used for extracting significant edges. 
 #'      allowed inputs are "li", "FDR", "bonferroni"
 #' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
+#' @param all Logical to extract all edges without any pval correction
+#' @param ... additional arguments for GeneNet
 #' @return Network data with edgelist, partial correlation values and associated p-values and corrected p-values 
 #' @export
-setGeneric("calc_ggm_genenet_crosssectional", function(object, which_data, threshold, timepoint) standardGeneric("calc_ggm_genenet_crosssectional"))
-setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object, which_data, threshold, timepoint) {
+setGeneric("calc_ggm_genenet_crosssectional", function(object, which_data, threshold, timepoint, all, ...) standardGeneric("calc_ggm_genenet_crosssectional"))
+setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object, which_data, threshold, timepoint, all, ...) {
         if(length(which_data) > 1) object <- mod_extract_common_samples(object)
-        stopifnot(threshold %in% c("li","bonferroni","FDR"))
+        stopifnot(threshold %in% c("li","bonferroni","FDR", NULL))
         object@list_of_data <- mod_split_acc_to_time(object)
         list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
         list_of_data <- lapply(list_of_data, function(x) return(x[names(x) %in% timepoint]))
@@ -687,20 +691,24 @@ setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object,
         tmp <- pcor_mat %>% graph_from_adjacency_matrix(mode='undirected', weighted = T) %>% igraph::simplify()
         ggm_edges <- cbind.data.frame(get.edgelist(tmp), edge_attr(tmp)$weight)
         names(ggm_edges) <- c("node1", "node2", "pcor_val")
-        if(threshold %in% "bonferroni") {
-          #filter edges based on p-values - bonferroni
-          ggm_data <-  ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bon<=ggm_thresh]))) 
-        } else if(threshold %in% "FDR"){
-          # filter edges based on p-values - BH 
-          ggm_data <-  ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bh<=ggm_thresh])))
-        } else if(threshold %in% "li") {
-          data <- this_mat %>% as.matrix() %>% .[,] %>% as.data.frame()  
-          cordat <- cor(data)
-          eigenvals <- eigen(cordat)$values
-          li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
-          ggm_data <- ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$pval<=0.05/li.thresh])))
+        if(all) {
+           return(ggm_edges)
+        } else {
+          if(threshold %in% "bonferroni") {
+            #filter edges based on p-values - bonferroni
+            ggm_data <-  ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bon<=ggm_thresh]))) 
+          } else if(threshold %in% "FDR"){
+           # filter edges based on p-values - BH 
+            ggm_data <-  ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bh<=ggm_thresh])))
+          } else if(threshold %in% "li") {
+            data <- this_mat %>% as.matrix() %>% .[,] %>% as.data.frame()  
+            cordat <- cor(data)
+            eigenvals <- eigen(cordat)$values
+            li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
+            ggm_data <- ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$pval<=0.05/li.thresh])))
+          }
+          return(ggm_data)        
         }
-        return(ggm_data)
 
   })
 

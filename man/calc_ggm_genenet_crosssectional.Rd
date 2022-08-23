@@ -4,7 +4,14 @@
 \alias{calc_ggm_genenet_crosssectional}
 \title{An automated fucntion to calculate GGM from genenet crosssectional version}
 \usage{
-calc_ggm_genenet_crosssectional(object, which_data, threshold, timepoint)
+calc_ggm_genenet_crosssectional(
+  object,
+  which_data,
+  threshold,
+  timepoint,
+  all,
+  ...
+)
 }
 \arguments{
 \item{object}{S4 object of cĺass metime_analyser}
@@ -13,6 +20,10 @@ calc_ggm_genenet_crosssectional(object, which_data, threshold, timepoint)
 
 \item{threshold}{type of threshold to be used for extracting significant edges.
 allowed inputs are "li", "FDR", "bonferroni"}
+
+\item{all}{Logical to extract all edges without any pval correction}
+
+\item{...}{additional arguments for GeneNet}
 
 \item{timepoints}{timepoints of interest that are to be used to build networks(as per timepoints in rows)}
 }

@@ -399,19 +399,21 @@ get_ggm_genenet <- function(data, threshold=c("bonferroni", "FDR", "li"), all, .
   #Check all or threshold
   if(all) {
   	met.ggm.edges.filtered <- met.ggm.edges
-  }  
-  # cut at threshold
-  if(threshold=="FDR") {
+  } else {
+  	# cut at threshold
+  	if(threshold=="FDR") {
       met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$qval < 0.05),]
-  } else if(threshold=="li"){
+  	} else if(threshold=="li"){
       data <- data %>% as.matrix() %>% .[,] %>% as.data.frame()  
       cordat <- cor(data)
       eigenvals <- eigen(cordat)$values
       li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
       met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < 0.05/li.thresh),]
-  } else if(threshold=="bonferroni"){
+ 	 	} else if(threshold=="bonferroni"){
       met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$pval < p.thresh),]
+  	}
   }
+  
   
   ## Reinsert node (metabolite) names
   node1list <- NULL

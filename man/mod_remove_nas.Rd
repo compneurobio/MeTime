@@ -4,7 +4,7 @@
 \alias{mod_remove_nas}
 \title{Function to remove NA's from data matrices}
 \usage{
-mod_remove_nas(object)
+mod_remove_nas(object, which_data)
 }
 \arguments{
 \item{object}{S4 object of class metime_analyser}
