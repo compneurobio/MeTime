@@ -679,6 +679,7 @@ setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object,
         data <- as.data.frame(do.call(cbind, list_of_data))
         rm_col = intersect(colnames(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
         data <- data %>% select(-c(all_of(rm_col)))
+        data <- na.omit(data)
         this_mat <- as.matrix(apply(data, 2, as.numeric))
         pcor_mat <- ggm.estimate.pcor(as.matrix(this_mat), method = "dynamic", verbose = F)
         # compute p-values of edges
