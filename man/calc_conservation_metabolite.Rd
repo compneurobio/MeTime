@@ -4,12 +4,14 @@
 \alias{calc_conservation_metabolite}
 \title{Function to calculate metabolite conservation index}
 \usage{
-calc_conservation_metabolite(object, which_data, verbose)
+calc_conservation_metabolite(object, which_data, timepoints, verbose)
 }
 \arguments{
 \item{object}{An object of class metime_analyser}
 
 \item{which_data}{Name of the dataset to be used}
+
+\item{timepoints}{character vector with timepoints of interest}
 
 \item{verbose}{Information provided on steps being processed}
 }

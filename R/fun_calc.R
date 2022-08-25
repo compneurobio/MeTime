@@ -65,12 +65,13 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
 #' out <- calc_metabotype_conservation(object=metime_analyser_object, which_data="Name of the dataset")
 #' @param object An object of class metime_analyser
 #' @param which_data Name of the dataset to be used
+#' @param timepoints character vector with timepoints of interest
 #' @param verbose Information provided on steps being processed
 #' @return List of conservation index results
 #' @export
 
-setGeneric("calc_conservation_metabotype", function(object, which_data, verbose) standardGeneric("calc_conservation_metabotype"))
-setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, verbose=F) {
+setGeneric("calc_conservation_metabotype", function(object, which_data, timepoints, verbose) standardGeneric("calc_conservation_metabotype"))
+setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, timepoints, verbose=F) {
   #define data to be processed
   #data_position <- which(names(object@list_of_data) %in% which_data)
   out=list()
@@ -90,6 +91,8 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
     tp_split <- utils::combn(x = unique(data_merged$timepoint), m=2, simplify = T) %>% 
       base::t() %>% 
       base::as.data.frame()
+    timepoints <- unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2])))
+    tp_split <- tp_split[which(as.character(tp_split$V1) %in% timepoints & as.character(tp_split$V2) %in% timepoints), ]
     
     id_split <- data_merged %>% select(id, rid, timepoint) %>% 
       tidyr::spread(timepoint, id)
@@ -117,25 +120,19 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
       ci_out <- lapply(1:nrow(id_split), function(y) {
         v2_id = id_split[,paste0(tp_split$V2[[x]])][y]
         v1_id = id_split[,paste0(tp_split$V1[[x]])][y]
-        
         if(all(!is.na(c(v2_id, v1_id)))) {
           
           ci_info <- cor_mat[intersect(id_split[,paste0(tp_split$V2[[x]])], data_merged$id),v1_id] %>% sort(decreasing = T)
           rank <- which(names(ci_info)==v2_id)
-          
-          data.frame(
+          return(data.frame(
             id=v1_id,
             from_tp=tp_split[x,"V1"],
             to_tp=tp_split[x,"V2"],
             var=id_split$rid[which(id_split[[paste0(tp_split$V2[[x]])]]==v2_id)],
             nsubject=length(ci_info),
             rank=ifelse(length(rank)>0, rank, NA),
-            stringsAsFactors = F
-          )
-        } else {
-          stop("There is an issue here")
-        }   
-  
+            stringsAsFactors = F))
+        } 
       }) %>% 
         do.call(what=rbind.data.frame)
       
@@ -146,7 +143,7 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
                       x=1:nrow(.[])) %>% 
         dplyr::select(x,y,ci,id, from_tp, to_tp, nsubject,rank)
       
-      ci_out
+      return(ci_out)
     })
     
     names(out[[i]]) = paste0(tp_split$V1,"vs", tp_split$V2)
@@ -162,13 +159,14 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
 #' out <- calc_metabolite_conservation(object=metime_analyser_object, which_data="Name of the dataset")
 #' @param object An object of class metime_analyser
 #' @param which_data Name of the dataset to be used
+#' @param timepoints character vector with timepoints of interest
 #' @param verbose Information provided on steps being processed
 #' @return List of conservation index results
 #' @export
 #' 
 #' 
-setGeneric("calc_conservation_metabolite", function(object, which_data, verbose) standardGeneric("calc_conservation_metabolite"))
-setMethod("calc_conservation_metabolite", "metime_analyser", function(object, which_data, verbose=F) {
+setGeneric("calc_conservation_metabolite", function(object, which_data, timepoints, verbose) standardGeneric("calc_conservation_metabolite"))
+setMethod("calc_conservation_metabolite", "metime_analyser", function(object, which_data, timepoints, verbose=F) {
   #define data to be processed
   #data_position <- which(names(object@list_of_data) %in% which_data)
   out=list()
@@ -186,6 +184,9 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
     tp_split <- utils::combn(x = unique(data_merged$timepoint), m=2, simplify = T) %>% 
       base::t() %>% 
       base::as.data.frame()
+
+    timepoints <- unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2])))
+    tp_split <- tp_split[which(as.character(tp_split$V1) %in% timepoints & as.character(tp_split$V2) %in% timepoints), ]
     
     id_split <- data.frame(met=rep(data_var, each=length(unique(data_merged$timepoint))),
       timepoint=rep(unique(data_merged$timepoint), length(data_var)),
@@ -200,14 +201,26 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
         if(verbose) cat(tp_split[x,] %>% paste0(collapse="vs"), "; ")
         
         
+
         v1_data <- data_merged %>% dplyr::filter(timepoint == tp_split[x,"V1"]) %>% 
-          dplyr::select(-id, -timepoint,-rid)
-        colnames(v1_data)  = paste0(names(v1_data), "_",tp_split$V1[x])
+                    dplyr::select(-id, -timepoint) 
+        colnames(v1_data)[-length(colnames(v1_data))]  = paste0(names(v1_data)[-length(names(v1_data))], "_", tp_split$V1[x])
         
-        v2_data <- data_merged %>% dplyr::filter(timepoint == tp_split[x,"V2"]) %>% 
-          dplyr::select(-id, -timepoint,-rid) 
-        colnames(v2_data)  = paste0(names(v2_data), "_",tp_split$V2[x])
-        
+        v2_data <- data_merged %>% dplyr::filter(timepoint == tp_split[x,"V2"])  %>% 
+                    dplyr::select(-id, -timepoint)
+        colnames(v2_data)[-length(colnames(v2_data))]  = paste0(names(v2_data)[-length(names(v2_data))], "_",tp_split$V2[x])
+
+        if(length(v1_data$rid) > length(v2_data$rid)) {
+             v1_data <- v1_data[v1_data$rid %in% v2_data$rid, ]
+             v2_data <- v2_data[v2_data$rid %in% v1_data$rid, ]
+        } else {
+              v2_data <- v2_data[v2_data$rid %in% v1_data$rid, ]
+              v1_data <- v1_data[v1_data$rid %in% v2_data$rid, ] 
+        }
+
+        v1_data <- v1_data %>% dplyr::select(-rid)
+        v2_data <- v2_data %>% dplyr::select(-rid)
+
         cor_mat = cbind(v1_data,v2_data) %>% 
           cor(use="pairwise.complete.obs")
         
@@ -224,12 +237,8 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
               to_tp=tp_split[x,"V2"],
               nsubject=length(ci_info),
               rank=ifelse(length(rank)>0, rank, NA),
-              stringsAsFactors = F
-            )
-          }else{
-             stop("there is an issue here ")
+              stringsAsFactors = F)
           }
-          
           
         }) %>% 
           do.call(what=rbind.data.frame)
@@ -569,7 +578,7 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
             final_edge_list$uids <- NULL
             edge_lists[[i]] <- final_edge_list            
           }
-          names(edges_lists) <- timepoints
+          names(edge_lists) <- timepoints
           return(edge_lists)
   })
 
