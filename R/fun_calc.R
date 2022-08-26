@@ -641,6 +641,8 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
             network_data <- do.call(cbind, network_data)
             ymat <- network_data[ ,grep(model_seqs[[i]][1] ,colnames(network_data), value=TRUE)]
             xmat <- network_data[ ,!(colnames(network_data) %in% colnames(ymat))]
+            ymat <- as.matrix(na.omit(ymat))
+            xmat <- as.matrix(na.omit(xmat))
             fit_list <- list()
             for(k in 1:ncol(ymat)) {
                 fit_list[[k]] <- cv.glmnet(x=xmat, y=ymat[,k], alpha=alpha, nfolds=nfolds)
