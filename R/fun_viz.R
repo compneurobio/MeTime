@@ -352,7 +352,3 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
 
 
 
-
-
-####
-#Add covariates to genenet and multibipartite lasso

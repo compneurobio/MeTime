@@ -625,7 +625,7 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
             network_data <- lapply(network_data, function(x) {
                     colnames(x) <- paste(colnames(x), model_seqs[[i]][count], sep="_time:")
                     rownames(x) <- unlist(lapply(strsplit(rownames(x), split="_"), function(x) return(x[1])))
-                    count <- count +1 
+                    count <<- count +1 
                     return(x) 
               })
             network_data <- unname(network_data)
@@ -639,8 +639,8 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
                 return(x)
             })
             network_data <- do.call(cbind, network_data)
-            ymat <- network_data[ ,grep(model_seqs[[i]][1] ,colnames(network_data))]
-            xmat <- network_data[ ,!grep(model_seqs[[i]][1] ,colnames(network_data))]
+            ymat <- network_data[ ,grep(model_seqs[[i]][1] ,colnames(network_data), value=TRUE)]
+            xmat <- network_data[ ,!(colnames(network_data) %in% colnames(ymat))]
             fit_list <- list()
             for(k in 1:ncol(ymat)) {
                 fit_list[[k]] <- cv.glmnet(x=xmat, y=ymat[,k], alpha=alpha, nfolds=nfolds)
@@ -723,3 +723,11 @@ setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object,
   })
 
 
+##search for metabolic networks in ad
+#Download any lipid based network from kegg
+#write a fucntion to compare edges and check out elisas paper again
+#see the outliers of pca in tsne and umap
+#remove unnecessary texts in rmarkdowns
+#read parafac and repeated asca+ papers and see which one is suitable for us
+#R packages that can be used to enrich networks for metabolites
+#think of ideas for R shiny app, see humet and adatlas. test app to see if the backend needs to be changed
