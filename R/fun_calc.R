@@ -655,7 +655,7 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
             }
             fit_list <- unname(fit_list)
             models[[i]] <- as.data.frame(do.call(rbind, fit_list))
-            names(models)[i] <- paste(model_seqs[[i]], sep="-")
+            names(models)[i] <- paste(model_seqs[[i]], collapse="-")
             colnames(models[[i]]) <- c("node1", "node2", "coeffs")
             models[[i]]$node1 <- unlist(lapply(strsplit(models[[i]]$node1, split="_time:"), function(x) return(x[1])))
             models[[i]]$node2 <- unlist(lapply(strsplit(models[[i]]$node2, split="_time:"), function(x) return(x[1])))
@@ -728,7 +728,7 @@ setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object,
 ##search for metabolic networks in ad
 #Download any lipid based network from kegg
 #write a fucntion to compare edges and check out elisas paper again
-#see the outliers of pca in tsne and umap
+#see the outliers of pca - in tsne and umap
 #remove unnecessary texts in rmarkdowns
 #read parafac and repeated asca+ papers and see which one is suitable for us
 #R packages that can be used to enrich networks for metabolites
