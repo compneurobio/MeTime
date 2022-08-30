@@ -238,3 +238,5 @@ setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_
 			object@list_of_data[[which_data]] <- as.data.frame(cbind(data, metab_matrix))
 			return(object)
 	})
+
+

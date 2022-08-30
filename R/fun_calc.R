@@ -142,7 +142,7 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
         dplyr::mutate(y=ci, 
                       x=1:nrow(.[])) %>% 
         dplyr::select(x,y,ci,id, from_tp, to_tp, nsubject,rank)
-      
+      rownames(ci_out) <- ci_out$id
       return(ci_out)
     })
     
@@ -249,8 +249,8 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
           dplyr::mutate(y=ci, 
                         x=1:nrow(.[])) %>% 
           dplyr::select(x,y,ci,id, from_tp, to_tp, nsubject,rank)
-        
-        ci_out
+        rownames(ci_out) <- ci_out$id
+        return(ci_out)
       })
       
       names(out[[i]]) = paste0(tp_split$V1,"vs", tp_split$V2)
@@ -657,11 +657,12 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
             models[[i]] <- as.data.frame(do.call(rbind, fit_list))
             names(models)[i] <- paste(model_seqs[[i]], collapse="-")
             colnames(models[[i]]) <- c("node1", "node2", "coeffs")
-            models[[i]]$node1 <- unlist(lapply(strsplit(models[[i]]$node1, split="_time:"), function(x) return(x[1])))
-            models[[i]]$node2 <- unlist(lapply(strsplit(models[[i]]$node2, split="_time:"), function(x) return(x[1])))
-            models[[i]]$label <- paste(unlist(lapply(strsplit(models[[i]]$node1, split="_time:"), function(x) return(x[1]))),
-                                      unlist(lapply(strsplit(models[[i]]$node2, split="_time:"), function(x) return(x[1]))),
+            models[[i]]$label <- paste(unlist(lapply(strsplit(as.character(models[[i]]$node1), split="_time:"), function(x) return(x[2]))),
+                                      unlist(lapply(strsplit(as.character(models[[i]]$node2), split="_time:"), function(x) return(x[2]))),
                                         sep="-")
+            models[[i]]$node1 <- unlist(lapply(strsplit(as.character(models[[i]]$node1), split="_time:"), function(x) return(x[1])))
+            models[[i]]$node2 <- unlist(lapply(strsplit(as.character(models[[i]]$node2), split="_time:"), function(x) return(x[1])))
+            
         }
         return(models)
   })
