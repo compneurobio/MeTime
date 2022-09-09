@@ -355,18 +355,20 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 							list_of_data <- lapply(list_of_data, function(x) return(x[order(rownames(x)), ]))
 							metadata_samples <- object@list_of_row_data[[1]][ ,columns]
 							timepoints <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[2])))
+							samples <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[1])))
 							levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
 							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
-							metadata_samples <- as.data.frame(cbind(metadata_samples, timepoints))
+							metadata_samples <- as.data.frame(cbind(metadata_samples, timepoints, samples))
 					} else {
 							data <- as.data.frame(object@list_of_data[names(object@list_of_data) %in% which_data][[1]])
 							phenotype <- object@list_of_row_data[[which_data]]
 							metadata_samples <- phenotype[rownames(phenotype) %in% rownames(data), columns]
 							metadata_samples <- metadata_samples[order(rownames(metadata_samples)), ]
 							timepoints <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[2])))
+							samples <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[1])))
 							levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
 							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
-							metadata_samples <- as.data.frame(cbind(metadata_samples, timepoints))
+							metadata_samples <- as.data.frame(cbind(metadata_samples, timepoints, samples))
 					}
 					return(metadata_samples)
 	}) 
@@ -487,3 +489,30 @@ get_betas_for_multibipartite_lasso <- function(list_of_mats, # list of matrices 
 	}
 	return(list_with_combos)
 }
+
+
+#' Function to get information on how many class edges are present
+#' @description Function to check how the different edges in a GGM are associated to their 
+#' respective classes(it could be super-pathway or sub-pathway)
+#' @param calc_networks list of calculated networks
+#' @param metadata metadata of the edges present 
+#' @return table with information on different type of edges present
+#' @export
+get_class_info_from_edges <- function(calc_networks, metadata) {
+					class_list <- list()
+					for(i in 1:length(calc_networks)) {
+								rm_phen <- c("Age", "PTGENDER", "BMI", "Total_C", "HDL_C", "Total_TG", "VLDL_TG", "LDL_TG", "HDL_TG")
+								
+								calc_networks[[i]] <- calc_networks[[i]][!calc_networks[[i]]$node1 %in% rm_phen, ]
+								calc_networks[[i]] <- calc_networks[[i]][!calc_networks[[i]]$node2 %in% rm_phen, ]
+								network <- calc_networks[[i]]
+								network$node1 <- metadata[as.character(calc_networks[[i]]$node1) %in% metadata$name, "group"]	
+								network$node2 <- metadata[as.character(calc_networks[[i]]$node2) %in% metadata$name, "group"]
+								
+								network <- network[ ,c("node1", "node2")]
+								network <- setDT(network)[ ,list(count=.N), names(network)]
+								network <- na.omit(network)
+								class_list[[i]] <- network
+					}
+					return(class_list)
+	}

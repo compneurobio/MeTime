@@ -15,8 +15,10 @@ RoxygenNote: 7.1.2
 Depends: 
     abind,
     Boruta,
+    data.table,
     DT,
     GeneNet,
+    generics,
     ggplot2,
     glmnet,
     igraph,
