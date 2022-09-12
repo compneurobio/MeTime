@@ -165,10 +165,11 @@ setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname
 #' @param aesthetics list for aesthetics. eg: list(list(x="colname",y="colname",color="colname", shape="colname"), list(...)) for "dot" plot and "heatmap"
 #' plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely .$viz and .$strats for text
 #' and for facet wrapping. 
+#' @param interactive Flag option(Logical). If set to TRUE will generate an interactive plot else will generate a normal ggplot
 #' @return metime_plotter object with updated plot
 #' @export
-setGeneric("viz_plotter_ggplot", function(object, aesthetics) standardGeneric("viz_plotter_ggplot"))
-setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
+setGeneric("viz_plotter_ggplot", function(object, aesthetics, interactive) standardGeneric("viz_plotter_ggplot"))
+setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics, interactive) {
 			stopifnot(object@plot_type %in% c("dot", "heatmap", "line", "box", "bar", "forest", "QQ"))
 			for(i in 1:length(object@plot_type)) {
 				if(object@plot_type[i] %in% "dot") {
@@ -176,92 +177,43 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 										color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) + 
 										facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic()
-					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
-					for(j in 1:length(object@plot[[i]]$x$data)) {
-						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[[1]]
-						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
-					}
-					
-
 				} else if(object@plot_type[i] %in% "heatmap") {
-					
 					object@plot[[i]] <- object@plot[[i]] + geom_tile(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
 										fill=aesthetics[[i]]$fill)) + facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic()
-					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
-					for(j in 1:length(object@plot[[i]]$x$data)) {
-						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[[1]]
-						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
-					}
-
 				} else if(object@plot_type[i] %in% "line") {
-					
 					object@plot[[i]] <- object@plot[[i]] + geom_line(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
 										color=aesthetics[[i]]$color)) + facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic()
-					object@plot[[i]] <- ggplotly(object@plot[[i]])
-					for(j in 1:length(object@plot[[i]]$x$data)) {
-						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[[1]]
-						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
-					}
-					
-
-						
 				} else if(object@plot_type[i] %in% "box") {
 					object@plot[[i]] <- object@plot[[i]] + geom_boxplot(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
 										color=aesthetics[[i]]$color), outlier.colour="red", outlier.shape=8, outlier.size=4) + facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic() + stat_summary(fun.y=mean, geom="point", shape=23, size=4)
-					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
-					for(j in 1:length(object@plot[[i]]$x$data)) {
-						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[[1]]
-						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
-					}
-						
 				} else if(object@plot_type[i] %in% "forest") {
 					object@plot[[i]] <- object@plot[[i]] + geom_pointrange(aes_string(x=aesthetics[[i]]$label, 
 																	y=aesthetics[[i]]$mean, ymin=aesthetics[[i]]$lower, 
 																	ymax=aesthetics[[i]]$upper, color=aesthetics[[i]]$color)) + 
 										coord_flip() + facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic() 
-					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
-					for(j in 1:length(object@plot[[i]]$x$data)) {
-						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[[1]]
-						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$vis)
-					}
-					
 				} else if(object@plot_type[i] %in% "QQ") {
 					object@plot[[i]] <- object@plot[[i]] + stat_qq(aes_string(sample=aesthetics[[i]]$sample, color=aesthetics[[i]]$color, 
-															shape=aesthetics[[i]]$shape)) + facet_wrap(aesthetics[[i]]$strats) + theme_classic()
-					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
-					for(j in 1:length(object@plot[[i]]$x$data)) {
-						x <- object@plot[[i]]$x$data[[j]]$x
-						data <- object@plot_data[[1]]
-						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
-						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
-					}
-					
+															shape=aesthetics[[i]]$shape)) + facet_wrap(aesthetics[[i]]$strats) + theme_classic()	
 				} else if(object@plot_type[i] %in% "bar") {
 					object@plot[[i]] <- object@plot[[i]] + geom_bar(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
 										fill=aesthetics[[i]]$fill), stat="identity", position=aesthetics[[i]]$postion) + 
 										facet_wrap(aesthetics[[i]]$strats) + theme_classic()
-					oobject@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
+				} else {
+					stop("input for plot_type is either wrong or such a plot is not available")
+				}
+
+				if(interactive) {
+					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
 						data <- data[data[ ,aesthetics[[i]]$x] %in% x, ] 
 						object@plot[[i]]$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=aesthetics[[i]]$viz)
 					}
-					
 				}
 			}
 			return(object)
@@ -275,10 +227,10 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics) {
 #' @param object S4 object of class metime_plotter
 #' @param aesthetics list for aesthetics. eg: list(list(x="colname",y="colname",color="colname", shape="colname"), list(...)) for "dot" plot and "heatmap"
 #' plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely .$vis and .$strats for text
-#' and for facet wrapping. 
+#' and for facet wrapping.
 #' @export
-setGeneric("viz_plotter_circos", function(object, aesthetics, outfile) standardGeneric("viz_plotter_circos")) 
-setMethod("viz_plotter_circos", "metime_plotter", function(object, aesthetics, outfile) {
+setGeneric("viz_plotter_circos", function(object, aesthetics, outfile, layout_by) standardGeneric("viz_plotter_circos")) 
+setMethod("viz_plotter_circos", "metime_plotter", function(object, aesthetics, outfile, layout_by) {
 			pdffile <- pdf(outfile)
 
 			dev.off()
@@ -288,9 +240,10 @@ setMethod("viz_plotter_circos", "metime_plotter", function(object, aesthetics, o
 #' @description plot function for metime_plotter object with different inputs to specialize plots. Used for all calc outputs.
 #' @param object S4 object of class metime_plotter
 #' @param title character/string that is the title of the graph output
+#' @param layout_by character to define the layout style to be used
 #' @export
-setGeneric("viz_plotter_visNetwork", function(object, title) standardGeneric("viz_plotter_visNetwork"))
-setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
+setGeneric("viz_plotter_visNetwork", function(object, title, layout_by) standardGeneric("viz_plotter_visNetwork"))
+setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, layout_by) {
 		stopifnot(colnames(object@plot_data[["metadata"]]) %in% c("name","group","class"))
 		metadata <- object@plot_data[["metadata"]]
 		node_list <- object@plot_data[["node"]]
@@ -316,7 +269,7 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
         	classes <- unique(metadata$class)
             groups <-  unique(metadata$group)
             graph <- visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
-                    visIgraphLayout(layout='layout.davidson.harel', physics = F, smooth = F) %>%
+                    visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
                     visPhysics(stabilization = FALSE)
             for(i in 1:length(classes)) {
                 graph <- visGroups(graph=graph, groupname = classes[i], shape = shapes[i])
@@ -329,7 +282,7 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
                         visConfigure(enabled=T)
         } else {
         	graph <- visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
-                    visIgraphLayout(layout='layout.davidson.harel', physics = F, smooth = F) %>%
+                    visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
                     visPhysics(stabilization = FALSE) %>%
                     visLegend(addEdges = ledges, useGroups = T) %>% 
                     visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
@@ -348,7 +301,7 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title) {
 
 
 
-
+#Update layout by in the function -done
 
 
 

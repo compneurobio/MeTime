@@ -4,7 +4,7 @@
 \alias{viz_plotter_ggplot}
 \title{Setting up standard wrapper for all ggplot plots for a metime_plotter object.}
 \usage{
-viz_plotter_ggplot(object, aesthetics)
+viz_plotter_ggplot(object, aesthetics, interactive)
 }
 \arguments{
 \item{object}{S4 object of class metime_plotter}
@@ -12,6 +12,8 @@ viz_plotter_ggplot(object, aesthetics)
 \item{aesthetics}{list for aesthetics. eg: list(list(x="colname",y="colname",color="colname", shape="colname"), list(...)) for "dot" plot and "heatmap"
 plot, for heatmap: list(x="colname", y="colname", fill="colname"). Additionally two other character vectors are allowed namely .$viz and .$strats for text
 and for facet wrapping.}
+
+\item{interactive}{Flag option(Logical). If set to TRUE will generate an interactive plot else will generate a normal ggplot}
 }
 \value{
 metime_plotter object with updated plot

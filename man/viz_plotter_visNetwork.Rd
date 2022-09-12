@@ -4,12 +4,14 @@
 \alias{viz_plotter_visNetwork}
 \title{Setting up standard wrapper for network plots from visNetwork for a metime_plotter object.}
 \usage{
-viz_plotter_visNetwork(object, title)
+viz_plotter_visNetwork(object, title, layout_by)
 }
 \arguments{
 \item{object}{S4 object of class metime_plotter}
 
 \item{title}{character/string that is the title of the graph output}
+
+\item{layout_by}{character to define the layout style to be used}
 }
 \description{
 plot function for metime_plotter object with different inputs to specialize plots. Used for all calc outputs.

@@ -4,7 +4,7 @@
 \alias{viz_plotter_circos}
 \title{Setting up standard wrapper for all circos plots for a metime_plotter object.}
 \usage{
-viz_plotter_circos(object, aesthetics, outfile)
+viz_plotter_circos(object, aesthetics, outfile, layout_by)
 }
 \arguments{
 \item{object}{S4 object of class metime_plotter}
