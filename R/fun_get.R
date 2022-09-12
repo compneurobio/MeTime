@@ -516,3 +516,5 @@ get_class_info_from_edges <- function(calc_networks, metadata) {
 					}
 					return(class_list)
 	}
+
+
