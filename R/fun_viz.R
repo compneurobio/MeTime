@@ -258,13 +258,14 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, la
             for(i in 1:length(colors_for_nodes)) {
             	colors_new[i] <- colors_code$color[colors_code$group %in% colors_for_nodes[i]]
             }
-            colors_for_nodes <- colors_new
+            color <- colors_new
+            node_list <- as.data.frame(cbind(node_list, color))
         } else {
             shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
             color_for_nodes <- node_list$colors
         }
           
-        ledges <- data.frame(color = c("#920000","#0072b2"), label = c("negative", "positive"), dashes =c(TRUE, FALSE))
+       
         if(length(unique(metadata$class)) > 1) {
         	classes <- unique(metadata$class)
             groups <-  unique(metadata$group)
@@ -272,9 +273,9 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, la
                     visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
                     visPhysics(stabilization = FALSE)
             for(i in 1:length(classes)) {
-                graph <- visGroups(graph=graph, groupname = classes[i], shape = shapes[i])
+                graph <- graph %>% visGroups(graph=graph, groupname = classes[i], shape = shapes[i])
             }
-            graph <- visLegend(addEdges = ledges, useGroups = T) %>% 
+            graph <- graph %>% visLegend(useGroups = T) %>% 
                     visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
                     visEdges(smooth = FALSE, shadow = TRUE) %>%
                         visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
@@ -285,7 +286,7 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, la
         	graph <- visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
                     visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
                     visPhysics(stabilization = FALSE) %>%
-                    visLegend(addEdges = ledges, useGroups = T) %>% 
+                    visLegend(useGroups = T) %>% 
                     visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
                     visEdges(smooth = FALSE, shadow = TRUE) %>%
                     visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
