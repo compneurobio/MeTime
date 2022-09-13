@@ -70,15 +70,18 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
 #' @return List of conservation index results
 #' @export
 
+
 setGeneric("calc_conservation_metabotype", function(object, which_data, timepoints, verbose) standardGeneric("calc_conservation_metabotype"))
 setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, timepoints, verbose=F) {
+
   #define data to be processed
+
   #data_position <- which(names(object@list_of_data) %in% which_data)
   out=list()
   for(i in which_data){
     data_position <- which(names(object@list_of_data) %in% i)
     data_var <- object@list_of_col_data[[data_position]]$id
-    
+
     data_merged <- object@list_of_data[[data_position]] %>% 
       dplyr::mutate(id = rownames(.[])) %>% 
       dplyr::left_join(
@@ -87,68 +90,73 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
           dplyr::select(id, timepoint, rid),
         by="id"
       )
-    
+    rownames(data_merged) = data_merged$id
+
     tp_split <- utils::combn(x = unique(data_merged$timepoint), m=2, simplify = T) %>% 
       base::t() %>% 
       base::as.data.frame()
-    timepoints <- unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2])))
-    tp_split <- tp_split[which(as.character(tp_split$V1) %in% timepoints & as.character(tp_split$V2) %in% timepoints), ]
-    
+    my_timepoints <- unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))) # add more generic approach
+    tp_split <- tp_split[which(as.character(tp_split$V1) %in% my_timepoints & as.character(tp_split$V2) %in% my_timepoints), ]
+
     id_split <- data_merged %>% select(id, rid, timepoint) %>% 
       tidyr::spread(timepoint, id)
-    
-    
+
+
     if(verbose) cat("Processing dataframe", i,": ")
-
     out[[i]] = lapply(1:nrow(tp_split), function(x) {
-      
-      if(verbose) cat(tp_split[x,] %>% paste0(collapse="vs"), "; ")
-
-      v1_data <- data_merged %>% 
-                dplyr::filter(id %in% id_split[,paste0(tp_split$V1[[x]])]) %>% 
-                 dplyr::select(-id, -timepoint,-rid) %>% t() %>% as.data.frame()
-
-      colnames(v1_data) = intersect(id_split[,paste0(tp_split$V1[[x]])], data_merged$id)
-      
-      v2_data <- data_merged %>% dplyr::filter(id %in% id_split[,paste0(tp_split$V2[[x]])]) %>% 
-        dplyr::select(-id, -timepoint,-rid) %>% t() %>% as.data.frame()
-      colnames(v2_data) = intersect(id_split[,paste0(tp_split$V2[[x]])], data_merged$id)
-      
-      cor_mat = cbind(v1_data,v2_data) %>% 
-        cor(use="pairwise.complete.obs")
-      
-      ci_out <- lapply(1:nrow(id_split), function(y) {
-        v2_id = id_split[,paste0(tp_split$V2[[x]])][y]
-        v1_id = id_split[,paste0(tp_split$V1[[x]])][y]
-        if(all(!is.na(c(v2_id, v1_id)))) {
-          
-          ci_info <- cor_mat[intersect(id_split[,paste0(tp_split$V2[[x]])], data_merged$id),v1_id] %>% sort(decreasing = T)
-          rank <- which(names(ci_info)==v2_id)
-          return(data.frame(
-            id=v1_id,
-            from_tp=tp_split[x,"V1"],
-            to_tp=tp_split[x,"V2"],
-            var=id_split$rid[which(id_split[[paste0(tp_split$V2[[x]])]]==v2_id)],
-            nsubject=length(ci_info),
-            rank=ifelse(length(rank)>0, rank, NA),
-            stringsAsFactors = F))
-        } 
-      }) %>% 
-        do.call(what=rbind.data.frame)
-      
-      ci_out = ci_out %>%
-        dplyr::mutate(ci=(1 - ((rank -1)/(nsubject-1)))) %>% 
-        dplyr::arrange(ci) %>% 
-        dplyr::mutate(y=ci, 
-                      x=1:nrow(.[])) %>% 
-        dplyr::select(x,y,ci,id, from_tp, to_tp, nsubject,rank)
-      rownames(ci_out) <- ci_out$id
-      return(ci_out)
-    })
-    
-    names(out[[i]]) = paste0(tp_split$V1,"vs", tp_split$V2)
-  }
   
+        if(verbose) cat(tp_split[x,] %>% paste0(collapse="vs"), "; ")
+
+        v1_data <- data_merged %>% 
+            dplyr::filter(id %in% id_split[,paste0(tp_split$V1[[x]])]) %>% 
+             dplyr::select(-id, -timepoint,-rid) %>% t() %>% as.data.frame()
+
+  
+  
+        v2_data <- data_merged %>% dplyr::filter(id %in% id_split[,paste0(tp_split$V2[[x]])]) %>% 
+              dplyr::select(-id, -timepoint,-rid) %>% t() %>% as.data.frame()
+  
+        cor_mat = cbind(v1_data,v2_data) %>% 
+          cor(use="pairwise.complete.obs")
+  
+        ci_out <- lapply(1:nrow(id_split), function(y) {
+            v2_id = id_split[,paste0(tp_split$V2[[x]])][y]
+            v1_id = id_split[,paste0(tp_split$V1[[x]])][y]
+            if(all(!is.na(c(v2_id, v1_id)))) {
+      
+            ci_info <- data.frame(
+                  cor = as.numeric(cor_mat[intersect(id_split[,paste0(tp_split$V2[[x]])], data_merged$id),v1_id]),
+                  id = names(cor_mat[intersect(id_split[,paste0(tp_split$V2[[x]])], data_merged$id),v1_id])) %>% 
+                  dplyr::arrange(cor) %>% 
+                  dplyr::mutate(rank=nrow(.[]):1)
+
+            return(data.frame(
+                  id=v1_id,
+                  from_tp=tp_split[x,"V1"],
+                  to_tp=tp_split[x,"V2"],
+                  var=id_split$rid[which(id_split[[paste0(tp_split$V2[[x]])]]==v2_id)],
+                  nsubject=nrow(ci_info),
+                  rank=ci_info$rank[which(ci_info$id==v2_id)],
+                  cor=ci_info$cor[which(ci_info$id==v2_id)],
+                  stringsAsFactors = F))
+            } 
+        }) %>% 
+        do.call(what=rbind.data.frame)
+  
+        ci_out = ci_out %>%
+            dplyr::mutate(ci=(1 - ((rank -1)/(nsubject-1)))) %>% 
+            dplyr::arrange(ci) %>% 
+            dplyr::mutate(y=ci, 
+                  x=1:nrow(.[])) %>% 
+            dplyr::select(x,y,ci,id, from_tp, to_tp, nsubject,rank, cor)
+        rownames(ci_out) <- ci_out$id
+        return(ci_out)
+    })
+
+    names(out[[i]]) = paste0(tp_split$V1,"vs", tp_split$V2)
+
+  }
+
   return(out)
 })
 
@@ -780,3 +788,6 @@ setMethod("calc_parafac", "metime_analyser", function(object, which_data, timepo
        rownames(parafac_object$C) <- timepoints
        return(parafac_object)
   })
+
+
+
