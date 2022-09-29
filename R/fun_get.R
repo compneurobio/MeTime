@@ -210,10 +210,15 @@ get_files_and_names <- function(path, annotations_index) {
 	for(i in 1:length(metab_object@list_of_row_data)) {
 			if("subject" %in% colnames(metab_object@list_of_row_data[[i]]) && "time" %in% colnames(metab_object@list_of_row_data[[i]])) {
 					metab_object@list_of_row_data[[i]] <- metab_object@list_of_row_data[[i]] %>% arrange(subject, time)
+			} else {
+					subject <- unlist(lapply(strsplit(rownames(metab_object@list_of_data[[i]]), split="_"), function(x) return(x[1])))
+					time <- unlist(lapply(strsplit(rownames(metab_object@list_of_data[[i]]), split="_"), function(x) return(x[2])))
+					metab_object@list_of_row_data[[i]] <- as.data.frame(cbind(metab_object@list_of_row_data[[i]], subject, time))
 			}
 			metab_object@list_of_data[[i]] <- metab_object@list_of_data[[i]][order(rownames(metab_object@list_of_row_data[[i]])), ]
 	}
-	return(metab_object)
+	out <- metab_object
+	return(out)
 }
 
 #creating reference metime-analyser class that creates an object with full data

@@ -25,19 +25,50 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 setGeneric("add_screening_vars", function(object, vars) standardGeneric("add_screening_vars"))
 
 setMethod("add_screening_vars", "metime_analyser", function(object, vars) {
-		phenotype_name <- object@annotations$phenotype
-		phenotype <- object@list_of_data[[phenotype_name]]
-		screening <- phenotype[grep("-1|-2", rownames(phenotype)), ]
-		new_rows <- as.data.frame(screening[, vars])
-		new_rows <- na.omit(new_rows)
-		sample_names <- unlist(lapply(strsplit(rownames(screening), split="_t"), function(x) return(x[1])))
-		for(i in 1:length(sample_names)) {
-			index <- grep(sample_names[i], rownames(phenotype)) 
-			for(j in index) {
-				phenotype[j, vars] <- screening[rownames(screening)[i], vars]
-			}
+	if(!is.null(which_data) && which_data %in% names(object@list_of_data)){
+
+    my_data <-  object@list_of_data[[which_data]] %>% 
+      dplyr::mutate(id = rownames(.[])) %>% 
+      dplyr::left_join(object@list_of_row_data[[which_data]][,c("RID","id")], by="id")%>% 
+      dplyr::filter(!duplicated(id))
+
+    my_screening <- my_data %>% 
+      dplyr::select(id,any_of(vars)) %>%  # change to all_of at some point with error message
+      dplyr::left_join(object@list_of_row_data[[which_data]], by="id") %>% 
+      dplyr::filter(!duplicated(id))
+
+
+    my_added <- lapply(unique(my_screening$RID), function(x){
+      if(!is.na(x)){
+        out <- my_screening %>% 
+          dplyr::filter(RID==x)
+        for(y in vars){
+          out[[y]] = out[[y]][which(!is.na(out[[y]] ))][1]
+        }
+        out
+      }
+    }) %>% 
+      do.call(what=rbind.data.frame) %>% 
+      dplyr::select(id, any_of(vars))
+
+    for(y in vars) {
+      my_data[[y]]= NULL
+    }
+
+    out <- my_data %>% 
+      		dplyr::left_join(my_added, by="id")
+    		rownames(out) <- out$id
+    		out$id =NULL
+  		}
+  		else {
+    		out <- object
+    		warning("add_screening_vars() was not able to add screening vars")
+  		}
+
+  		object@list_of_data[[which_data]] <- out
+
+  		return(object)
 		}
-		return(phenotype)
 	})
 
 #' Function to check normality and add data to col data
