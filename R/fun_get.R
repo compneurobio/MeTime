@@ -168,6 +168,10 @@ setMethod("get_append_analyser_object", "metime_analyser",function(object, data,
 #' @export
 
 get_files_and_names <- function(path, annotations_index) {
+	#order the names and columns
+	#Add timepoints and subjects to row data
+	#check the order because order subjects first and the timepoints next
+	#Add time column as "time" 
 	#path <- input$files$datapath
 	path <- list.files(path, pattern="[.rds|.RDS]", full.names=TRUE)	
 	data_list <- lapply(path, function(x) {
@@ -192,6 +196,23 @@ get_files_and_names <- function(path, annotations_index) {
 	metab_object <- new("metime_analyser", list_of_data=list_of_data, list_of_col_data=list_of_col_data, 
 										list_of_row_data=list_of_row_data,
 										annotations=annotations_index)
+	#sanity checks for the object created
+	check_rownames_and_colnames(metab_object)
+	#Update subject and time columns in the row data
+	for(i in 1:length(metab_object@list_of_row_data)) {
+			if("rid" %in% colnames(metab_object@list_of_row_data[[i]])) {
+				colnames(metab_object@list_of_row_data[[i]])[colnames(metab_object@list_of_row_data[[i]])=="rid"] <- "subject"
+			}
+			if("timepoint" %in% colnames(metab_object@list_of_row_data[[i]])) {
+				colnames(metab_object@list_of_row_data[[i]])[colnames(metab_object@list_of_row_data[[i]])=="timepoint"] <- "time"
+			} 
+	}
+	for(i in 1:length(metab_object@list_of_row_data)) {
+			if("subject" %in% colnames(metab_object@list_of_row_data[[i]]) && "time" %in% colnames(metab_object@list_of_row_data[[i]])) {
+					metab_object@list_of_row_data[[i]] <- metab_object@list_of_row_data[[i]] %>% arrange(subject, time)
+			}
+			metab_object@list_of_data[[i]] <- metab_object@list_of_data[[i]][order(rownames(metab_object@list_of_row_data[[i]])), ]
+	}
 	return(metab_object)
 }
 
@@ -518,3 +539,14 @@ get_class_info_from_edges <- function(calc_networks, metadata) {
 	}
 
 
+#' Function to get metadata for mean trajectories
+#' @description Function to be applied on the metime analyser object to extract
+#' metadata for the mean trajectories plot
+#' @param object an S4 metime analyser object
+#' @param columns columns of interest for which we need the metadata for
+#' @return a metadata dataframe that will be used for plotting
+#' @export
+setGeneric("get_metadata_for_mean_trajectories", function(object, columns) standardGeneric("get_metadata_for_mean_trajectories"))
+setMethod("get_metadata_for_mean_trajectories", "metime_analyser", function(object, columns) {
+
+	})  

@@ -262,7 +262,6 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, la
             node_list <- as.data.frame(cbind(node_list, color))
         } else {
             shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
-            color_for_nodes <- node_list$colors
         }
           
        
@@ -287,7 +286,7 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, la
                     visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
                     visPhysics(stabilization = FALSE) %>%
                     visLegend(useGroups = T) %>% 
-                    visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
+                    visNodes(borderWidth = 3) %>%
                     visEdges(smooth = FALSE, shadow = TRUE) %>%
                     visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
                     visInteraction(navigationButtons = T) %>%
