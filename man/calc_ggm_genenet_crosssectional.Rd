@@ -10,6 +10,7 @@ calc_ggm_genenet_crosssectional(
   threshold,
   timepoint,
   all,
+  cols_for_meta,
   ...
 )
 }
@@ -23,12 +24,14 @@ allowed inputs are "li", "FDR", "bonferroni"}
 
 \item{all}{Logical to extract all edges without any pval correction}
 
+\item{cols_for_meta}{list of character vector for extracting metadata of metabolites for plotting}
+
 \item{...}{additional arguments for GeneNet}
 
 \item{timepoints}{timepoints of interest that are to be used to build networks(as per timepoints in rows)}
 }
 \value{
-Network data with edgelist, partial correlation values and associated p-values and corrected p-values
+Network data as a plotter object
 }
 \description{
 automated funtion that can be applied on metime_analyser object to obtain geneNet network along with threshold used

@@ -39,7 +39,9 @@ setMethod("mod_split_acc_to_time", "metime_analyser", function(object) {
 		return(list_of_temporals)
 	})
 	names(list_of_data_temporals) <- names(list_of_data)
-	return(list_of_data_temporals)
+	object@list_of_data <- list_of_data_temporals
+	out <- object
+	return(out)
 })
 
 #' Function to get only common samples from the dataframes in list_of_data 
@@ -55,21 +57,20 @@ setMethod("mod_split_acc_to_time", "metime_analyser", function(object) {
 setGeneric("mod_extract_common_samples", function(object, time_splitter=FALSE) standardGeneric("mod_extract_common_samples") )
 
 setMethod("mod_extract_common_samples", "metime_analyser",function(object, time_splitter=FALSE) {
-		list_of_data <- object@list_of_data
 		list_of_names <- lapply(list_of_data, function(x) {
 					return(rownames(x))
 			})
 		common_samples <- Reduce(intersect, list_of_names)
-		list_of_data <- lapply(list_of_data, function(x) {
+		object@list_of_data <- lapply(object@list_of_data, function(x) {
 					x <- x[rownames(x) %in% common_samples, ]
 					x <- x[order(rownames(x)), ]
 					return(x)
 			})
 		if(time_splitter) {
-				list_of_data <- mod_split_acc_to_time(object)
+				object <- mod_split_acc_to_time(object)
 		}
-		object@list_of_data <- list_of_data
-		return(object)
+		out <- object
+		return(out)
 })
 
 #' Function to Convert S4 object of class metime_analyser to an S3 object with same architecture
@@ -83,7 +84,8 @@ setGeneric("mod_convert_s4_to_s3", function(object) standardGeneric("mod_convert
 
 setMethod("mod_convert_s4_to_s3", "metime_analyser", function(object) {
 		#will add based on analysis - make it module wise or open for suggestions
-		return(list(list_of_data=object@list_of_data, list_of_col_data=object@list_of_col_data, list_of_row_data=object@list_of_row_data, annotations=object@annotations))
+		out <- list(list_of_data=object@list_of_data, list_of_col_data=object@list_of_col_data, list_of_row_data=object@list_of_row_data, annotations=object@annotations)
+		return(out)
 	})
 
 
@@ -101,7 +103,8 @@ setMethod("mod_trans_log", "metime_analyser",function(object, which_data, base=2
   #define data to be processed
   data_position <- which(names(object@list_of_data) %in% which_data)
   object@list_of_data[data_position] = lapply(object@list_of_data[data_position] , log, base=base)
-  return(object)
+  out <- object
+  return(out)
 })
 
 #' Function to scale the data
@@ -120,7 +123,8 @@ setMethod("mod_trans_zscore", "metime_analyser", function(object, which_data) {
   object@list_of_data[data_position] = lapply(object@list_of_data[data_position] , scale, center=TRUE, scale=TRUE)
   object@list_of_data[data_position] = lapply(object@list_of_data[data_position] , as.data.frame)
   rownames(object@list_of_data[data_position]) = data_rownames
-  return(object)
+  out <- object
+  return(out)
 })
 
 
@@ -160,7 +164,8 @@ setMethod("mod_filter_tp", "metime_analyser", function(object, timepoints, full=
       object@list_of_data[[i]] = object@list_of_data[[i]][keep_id$id,]
     }
   }
-  return(object)
+  out <- object
+  return(out)
 })
 
 
@@ -182,7 +187,8 @@ setMethod("mod_merge_metime_analysers", "metime_analyser", function(list_of_obje
 						final_object <- new("metime_analyser", list_of_data=list_of_data, 
 							list_of_row_data=list_of_row_data, list_of_col_data=list_of_col_data, annotations=annotations_index)	
 				}
-				return(final_object)
+				out <- final_object
+				return(out)
 	}) 
 
 #' Function to remove NA's from data matrices
@@ -203,27 +209,28 @@ setMethod("mod_remove_nas", "metime_analyser", function(object, which_data) {
 						object@list_of_row_data[[i]] <- rows
 						object@list_of_col_data[[i]] <- cols					
 				}
-				return(object)
+				out <- object
+				return(out)
 	})
 
 #' Function to convert metabolite names to IDs
 #' @description Function to convert metabolite names to IDs 
 #' @param object An S4 object of class metime_analyser
 #' @param which_data character vector to define the datasets to use
-#' @param table logical vector. If TRUE returns table of names to IDs for mapping
 #' @return A list with S4 object and list of mapping tables, the object can be used for GGMs
 #' @export
-setGeneric("mod_code_metab_names", function(object, which_data, table) standardGeneric("mod_code_metab_names"))
-setMethod("mod_code_metab_names", "metime_analyser", function(object, which_data, table) {
+setGeneric("mod_code_metab_names", function(object, which_data) standardGeneric("mod_code_metab_names"))
+setMethod("mod_code_metab_names", "metime_analyser", function(object, which_data) {
 					tables <- list()	
 					for(i in 1:length(which_data)) {
 								data <- object@list_of_data[[which_data[i]]]
-								metabs <- paste(which_data[i], 1:length(colnames(data)), sep="_")
+								metabs <- paste(unlist(strsplit(which_data[i], split=""))[1], 1:length(colnames(data)), sep=".")
 								tables[[i]] <- as.data.frame(cbind(colnames(data), metabs))
 								colnames(tables[[i]]) <- c("id", "metabolite")
 								colnames(data) <- metabs
 								object@list_of_data[[which_data[i]]] <- data
 					}
-					names(tables) <- which_data
-					return(list(object=object, tables=tables))
+					table <- as.data.frame(do.call(rbind, tables))
+					out <- list(object=object, table=table)
+					return(out)
 		}) 

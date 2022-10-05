@@ -23,7 +23,8 @@ get_palette <- function(n) {
   	hue_df$diff <- c(1, diff(hue_df$hue))
   	hue_df <- hue_df[order(-hue_df$diff),]
   	hue_df <- hue_df[-1, ]
-  	return(hue_df$color[1:n])
+  	out <- hue_df$color[1:n]
+  	return(out)
 }
 
 #' Function to Obtain textual information for visualization in interactive plots
@@ -36,7 +37,7 @@ get_palette <- function(n) {
 #' @return a vector with strings that can be parsed into plot_ly text.
 #' @export
 get_text_for_plot <- function(data, colnames) {	
-		strings_vector <- c()
+		out <- c()
 		count <- 1
 		text <- c()
 		for(l in 1:length(rownames(data))) {
@@ -47,10 +48,11 @@ get_text_for_plot <- function(data, colnames) {
 						text <- paste(text, "<br /> ", colnames[m], " : ", data[l, colnames[m]], sep="")
 					}
 				}
-				strings_vector[count] <- text
+				out[count] <- text
 				count <- count + 1
 			} 
-		return(strings_vector)
+
+		return(out)
 	} 
 
 #' Function to know the number of timepoints and the total number of samples available at that point
@@ -74,9 +76,9 @@ setMethod("get_samples_and_timepoints", "metime_analyser", function(object, whic
 						index <- grep(x, rownames(data))
 						return(length(index))
 					}, numeric(1))
-		newdata <- as.data.frame(cbind(as.character(unique_timepoints), samples_count))
-		colnames(newdata) <- c("timepoints", "number of samples")
-		return(newdata)
+		out <- as.data.frame(cbind(as.character(unique_timepoints), samples_count))
+		colnames(out) <- c("timepoints", "number of samples")
+		return(out)
 	})
 
 
@@ -94,10 +96,10 @@ setMethod("get_samples_and_timepoints", "metime_analyser", function(object, whic
 #' @return An object of class metime_analyser
 #' @export
 
-get_make_analyser_object <- function(data, col_data, row_data, annotations_index, name=NULL) {
+get_make_analyser_object <- function(data, col_data, row_data, annotations_index=list(), name=NULL) {
   if(is.null(name)) name <- "set1"
   if(!all(rownames(data) %in% row_data$id) & !all(colnames(data) %in% col_data$id)) stop("id of col or row data do not match dataframe")
-  if(!all(c("id","subject","timepoint") %in% names(row_data))) stop("id, subject or timepoint column missing")
+  if(!all(c("id","subject","time") %in% names(row_data))) stop("id, subject or time column missing")
   
   list_of_data <- list()
   list_of_data[[name]] <- data
@@ -107,20 +109,14 @@ get_make_analyser_object <- function(data, col_data, row_data, annotations_index
   
   list_of_row_data <- list()
   list_of_row_data[[name]] <- row_data
-  if(!is.null(annotations_index)) {
-  	metab_object <- new("metime_analyser", 
+  
+  out <- new("metime_analyser", 
                       list_of_data=list_of_data, 
                       list_of_col_data=list_of_col_data, 
                       list_of_row_data=list_of_row_data,
                       annotations=annotations_index)
-  } else {
-  	metab_object <- new("metime_analyser", 
-                      list_of_data=list_of_data, 
-                      list_of_col_data=list_of_col_data, 
-                      list_of_row_data=list_of_row_data)
-  }
   
-  return(metab_object)
+  return(out)
 }
 
 #' This function appends an object of class metime_analyser with a new dataset.
@@ -138,14 +134,14 @@ setGeneric("get_append_analyser_object", function(object, data, col_data, row_da
 setMethod("get_append_analyser_object", "metime_analyser",function(object, data, col_data, row_data, name=NULL) {
   if(is.null(name)) name <- "set1"
   if(!all(rownames(data) %in% row_data$id) & !all(colnames(data) %in% col_data$id)) stop("id of col or row data do not match dataframe")
-  if(!all(c("id","subject","timepoint") %in% names(row_data))) stop("id, subject or timepoint column missing")
+  if(!all(c("id","subject","time") %in% names(row_data))) stop("id, subject or timepoint column missing")
   
   object@list_of_data[[name]] <- data
   object@list_of_col_data[[name]] <- col_data
   object@list_of_row_data[[name]] <- row_data
   
-
-  return(object)
+  out <- object
+  return(out)
 })
 
 #' Function to pack all the data into a single object of class "metime_analyser" 
@@ -255,7 +251,7 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
 				 	nodes <- unique(c(data$node1, data$node2))
     			node_list <- data.frame(id=1:length(nodes), label=nodes, group=as.character(1:length(nodes)))
     			for(i in 1:length(node_list$label)) {
-          		g <- metadata[as.character(metadata$name) %in% as.character(node_list$label[i]), "group"]
+          		g <- metadata[as.character(metadata$name) %in% as.character(node_list$label[i]), 2]
            		node_list$group[i] <- g
     			}
           
@@ -266,14 +262,14 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
         			edge_list$to[i] <- node_list[as.character(node_list$label) %in% as.character(data$node2[i]), "id"]
    			 	}
    			 	if(calc_type %in% "genenet_ggm") {
-   			 			dashes <- ifelse(data$pcor_val > 0, FALSE, TRUE)
+   			 			dashes <- ifelse(data$pcor > 0, FALSE, TRUE)
    			 			edge_list$dashes <- dashes
-    					edge_list$values <- data$pcor_val
+    					edge_list$values <- data$pcor
    			 	} else if(calc_type %in% "multibipartite_ggm") {
-   			 			dashes <- ifelse(data$coeff1 > 0 & data$coeff2 > 0, FALSE, TRUE)
+   			 			dashes <- ifelse(data$coeffs.1 > 0 & data$coeffs.2 > 0, FALSE, TRUE)
    			 			edge_list$dashes <- dashes
-    					edge_list$values <- data$coeff1
-    					edge_list$title <- paste("coeff1: ", data$coeff1, "<br /> coeff2: ", data$coeff2, sep=" ")
+    					edge_list$values <- (data$coeffs.1 + data$coeffs.2)/2 
+    					edge_list$title <- paste("coeff1: ", data$coeffs.1, "<br /> coeff2: ", data$coeffs.2, sep=" ")
    			 	} else if(calc_type %in% "temporal_network") {
    			 			dashes <- ifelse(data$coeffs > 0, FALSE, TRUE)
    			 			edge_list$dashes <- dashes
@@ -283,10 +279,14 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
 					plot_data[["edge"]] <- edge_list
 					plot_data[["metadata"]] <- metadata
 			} else {
-					data <- data[order(rownames(data)), ]
-					metadata <- metadata[rownames(metadata) %in% rownames(data), ]
-					data <- data[rownames(data) %in% rownames(metadata),]
-					plot_data[[1]] <- as.data.frame(cbind(data, metadata))
+					if(is.null(metadata)) {
+						plot_data[[1]] <- as.data.frame(data)
+					} else {
+						data <- data[order(rownames(data)), ]
+						metadata <- metadata[rownames(metadata) %in% rownames(data), ]
+						data <- data[rownames(data) %in% rownames(metadata),]
+						plot_data[[1]] <- as.data.frame(cbind(data, metadata))
+					}
 			}
 			for(i in 1:length(plot_type)) {
 				if(style %in% "ggplot") {
@@ -297,8 +297,8 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
 						empty_plots[[i]] <- NULL
 				}
 			}
-			object <- new("metime_plotter", plot_data=plot_data, plot=empty_plots, calc_type=calc_type, calc_info=calc_info, plot_type=plot_type, style=style)
-			return(object)
+			out <- new("metime_plotter", plot_data=plot_data, plot=empty_plots, calc_type=calc_type, calc_info=calc_info, plot_type=plot_type, style=style)
+			return(out)
 }
 
 #plotter_baseline_fdr <- get_make_plotter_object(data=baseline_fdr, metadata=metadata, calc_type="genenet_ggm", style="visNetwork", calc_info="baseline_li", plot_type="network")
@@ -329,7 +329,7 @@ setClass("metime_plotter", slots=list(plot_data="list", plot="list", calc_type="
 #' @param which_data Names of dataset/s to be used
 #' @param columns A list of character vectors for the columns of interest. Length of the list should be
 #' same as length of which_data
-#' @param names A Character vector with the new names for the columns mentioned above
+#' @param names A Character vector with the new names for the columns mentioned above id should always be first in order
 #' @param index_of_names character vector to define the name of the column in which names of the variables are stored
 #' @return data.frame with metadata information
 #' @export
@@ -345,20 +345,19 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 								colnames(list_of_metadata_metabs[[i]]) <- names
 								list_of_metadata_metabs[[i]] <- as.data.frame(cbind(list_of_metadata_metabs[[i]], class))
 						}
-						metadata_metabs <- lapply(list_of_metadata_metabs, as.data.frame)
-						metadata_metabs <- do.call(rbind, metadata_metabs)
-						metadata_metabs <- as.data.frame(metadata_metabs)
-						rownames(metadata_metabs) <- metadata_metabs[, names[1]] 
+						out <- lapply(list_of_metadata_metabs, as.data.frame)
+						out <- as.data.frame(do.call(rbind, out))
+						rownames(out) <- out[, names[1]] 
 				} else {
 						col_data <- list_of_col_data[[1]]
 						class <- rep(which_data, each=length(col_data[,1]))
-						metadata_metabs <- col_data[ ,columns[[1]]]
-						metadata_metabs <- as.data.frame(cbind(metadata_metabs, class))
-						metadata_metabs <- metadata_metabs[order(metadata_metabs[,index_of_names]), ]
-						rownames(metadata_metabs) <- metadata_metabs[,index_of_names]
-						colnames(metadata_metabs) <- c(names, "class")
+						out <- col_data[ ,columns[[1]]]
+						out <- as.data.frame(cbind(out, class))
+						out <- out[order(out[,index_of_names]), ]
+						rownames(out) <- out[,index_of_names]
+						colnames(out) <- c(names, "class")
 				}
-				return(metadata_metabs)
+				return(out)
 	})
 
 #metadata <- get_metadata_for_columns(object=object, which_data="lipid_data", columns=list(c("id", "sub_pathway")), 
@@ -379,24 +378,24 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 							object <- mod_extract_common_samples(object)
 							list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 							list_of_data <- lapply(list_of_data, function(x) return(x[order(rownames(x)), ]))
-							metadata_samples <- object@list_of_row_data[[1]][ ,columns]
-							timepoints <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[2])))
-							samples <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[1])))
+							out <- object@list_of_row_data[[1]][ ,columns]
+							timepoints <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[2])))
+							samples <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[1])))
 							levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
 							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
-							metadata_samples <- as.data.frame(cbind(metadata_samples, timepoints, samples))
+							out <- as.data.frame(cbind(out, timepoints, samples))
 					} else {
 							data <- as.data.frame(object@list_of_data[names(object@list_of_data) %in% which_data][[1]])
 							phenotype <- object@list_of_row_data[[which_data]]
-							metadata_samples <- phenotype[rownames(phenotype) %in% rownames(data), columns]
-							metadata_samples <- metadata_samples[order(rownames(metadata_samples)), ]
-							timepoints <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[2])))
-							samples <- unlist(lapply(strsplit(rownames(metadata_samples), split="_"), function(x) return(x[1])))
+							out <- phenotype[rownames(phenotype) %in% rownames(data), columns]
+							out <- out[order(rownames(out)), ]
+							timepoints <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[2])))
+							samples <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[1])))
 							levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
 							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
-							metadata_samples <- as.data.frame(cbind(metadata_samples, timepoints, samples))
+							out <- as.data.frame(cbind(out, timepoints, samples))
 					}
-					return(metadata_samples)
+					return(out)
 	}) 
 
 #metadata_samples <- get_metadata_for_rows(object=data, which_data="lipid_data", 
@@ -464,8 +463,8 @@ get_ggm_genenet <- function(data, threshold=c("bonferroni", "FDR", "li"), all, .
   }
   
   # Remove edges without significant pairwise correlations
-  met.ggm.edges.filtered <- met.ggm.edges.filtered[-edge2rem,]
-  return(met.ggm.edges.filtered)
+  out <- met.ggm.edges.filtered[-edge2rem,]
+  return(out)
 }
 
 #' Function to perform multibipartite style regression on a list of matrices
@@ -482,7 +481,7 @@ get_betas_for_multibipartite_lasso <- function(list_of_mats, # list of matrices 
 					 ) {
 	#creating a list to store the data from glmnet
 	#code exactly similar to the usual MLP 
-	list_with_combos <- list() # list to store the regression information for each metabolte
+	out <- list() # list to store the regression information for each metabolte
 	count <- 1
 	for(i in 1:length(list_of_mats)) {
 		for(j in 1:length(list_of_mats)) {
@@ -494,8 +493,8 @@ get_betas_for_multibipartite_lasso <- function(list_of_mats, # list of matrices 
 					fit_list[[k]] <- cv.glmnet(x=x_mat, y=y_mat[,k], alpha=alpha, nfolds=nfolds)
 					names(fit_list)[k] <- colnames(y_mat)[k]
 				}
-				list_with_combos[[count]] <- fit_list
-				names(list_with_combos)[count] <- paste(names(list_of_mats)[j], names(list_of_mats)[i], sep="-")
+				out[[count]] <- fit_list
+				names(out)[count] <- paste(names(list_of_mats)[j], names(list_of_mats)[i], sep="-")
 				count <- count+1
 			} else {
 				fit_list <- list()
@@ -506,14 +505,14 @@ get_betas_for_multibipartite_lasso <- function(list_of_mats, # list of matrices 
 					fit_list[[k]] <- cv.glmnet(x=x, y=y, alpha=alpha, nfolds=nfolds)
 					names(fit_list)[k] <- colnames(mat)[k]
 				} 
-				list_with_combos[[count]] <- fit_list
-				names(list_with_combos)[count] <- names(list_of_mats)[i]
+				out[[count]] <- fit_list
+				names(out)[count] <- names(list_of_mats)[i]
 				count <- count +1
 			}
 
 		}
 	}
-	return(list_with_combos)
+	return(out)
 }
 
 
@@ -522,13 +521,13 @@ get_betas_for_multibipartite_lasso <- function(list_of_mats, # list of matrices 
 #' respective classes(it could be super-pathway or sub-pathway)
 #' @param calc_networks list of calculated networks
 #' @param metadata metadata of the edges present 
+#' @param phenotypes character vector to define phenotypes that were used for correcting the data
 #' @return table with information on different type of edges present
 #' @export
-get_class_info_from_edges <- function(calc_networks, metadata) {
-					class_list <- list()
+get_class_info_from_edges <- function(calc_networks, metadata, phenotypes) {
+					out <- list()
 					for(i in 1:length(calc_networks)) {
-								rm_phen <- c("Age", "PTGENDER", "BMI", "Total_C", "HDL_C", "Total_TG", "VLDL_TG", "LDL_TG", "HDL_TG")
-								
+								rm_phen <- phenotypes
 								calc_networks[[i]] <- calc_networks[[i]][!calc_networks[[i]]$node1 %in% rm_phen, ]
 								calc_networks[[i]] <- calc_networks[[i]][!calc_networks[[i]]$node2 %in% rm_phen, ]
 								network <- calc_networks[[i]]
@@ -538,9 +537,9 @@ get_class_info_from_edges <- function(calc_networks, metadata) {
 								network <- network[ ,c("node1", "node2")]
 								network <- setDT(network)[ ,list(count=.N), names(network)]
 								network <- na.omit(network)
-								class_list[[i]] <- network
+								out[[i]] <- network
 					}
-					return(class_list)
+					return(out)
 	}
 
 

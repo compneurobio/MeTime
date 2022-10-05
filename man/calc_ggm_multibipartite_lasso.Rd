@@ -4,7 +4,14 @@
 \alias{calc_ggm_multibipartite_lasso}
 \title{An automated fucntion to calculate GGM from multibipartite lasso approach}
 \usage{
-calc_ggm_multibipartite_lasso(object, which_data, alpha, nfolds, timepoints)
+calc_ggm_multibipartite_lasso(
+  object,
+  which_data,
+  alpha,
+  nfolds,
+  timepoints,
+  cols_for_meta
+)
 }
 \arguments{
 \item{object}{S4 object of cĺass metime_analyser}
@@ -16,9 +23,11 @@ calc_ggm_multibipartite_lasso(object, which_data, alpha, nfolds, timepoints)
 \item{nfolds}{nfolds for cv.glmnet}
 
 \item{timepoints}{timepoints of interest that are to be used to build networks(as per timepoints in rows)}
+
+\item{cols_for_meta}{a list of character vectors of column names to be used for visualization of the networks.}
 }
 \value{
-Network data with edges and their respective betas
+list of plotter objects that can be used for plotting.
 }
 \description{
 automated funtion that can be applied on s4 object of class metime_analyser to calculate a network using

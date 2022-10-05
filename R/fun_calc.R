@@ -67,18 +67,19 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
 #' @param which_data Name of the dataset to be used
 #' @param timepoints character vector with timepoints of interest
 #' @param verbose Information provided on steps being processed
+#' @param cols_for_meta Character vector to define column names that are to be used for plotting purposes
 #' @return List of conservation index results
 #' @export
 
 
-setGeneric("calc_conservation_metabotype", function(object, which_data, timepoints, verbose) standardGeneric("calc_conservation_metabotype"))
-setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, timepoints, verbose=F) {
+setGeneric("calc_conservation_metabotype", function(object, which_data, timepoints, verbose, cols_for_meta) standardGeneric("calc_conservation_metabotype"))
+setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, timepoints, verbose=F, cols_for_meta) {
 
   #define data to be processed
 
   #data_position <- which(names(object@list_of_data) %in% which_data)
   out=list()
-  for(i in which_data){
+  for(i in which_data) {
     data_position <- which(names(object@list_of_data) %in% i)
     data_var <- object@list_of_col_data[[data_position]]$id
 
@@ -86,20 +87,20 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
       dplyr::mutate(id = rownames(.[])) %>% 
       dplyr::left_join(
         object@list_of_row_data[[data_position]] %>% 
-          dplyr::mutate(timepoint = as.numeric(timepoint)) %>% 
-          dplyr::select(id, timepoint, rid),
+          dplyr::mutate(time = as.numeric(time)) %>% 
+          dplyr::select(id, time, subject),
         by="id"
       )
     rownames(data_merged) = data_merged$id
 
-    tp_split <- utils::combn(x = unique(data_merged$timepoint), m=2, simplify = T) %>% 
+    tp_split <- utils::combn(x = unique(data_merged$time), m=2, simplify = T) %>% 
       base::t() %>% 
       base::as.data.frame()
     my_timepoints <- unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))) # add more generic approach
     tp_split <- tp_split[which(as.character(tp_split$V1) %in% my_timepoints & as.character(tp_split$V2) %in% my_timepoints), ]
 
-    id_split <- data_merged %>% select(id, rid, timepoint) %>% 
-      tidyr::spread(timepoint, id)
+    id_split <- data_merged %>% select(id, subject, time) %>% 
+      tidyr::spread(time, id)
 
 
     if(verbose) cat("Processing dataframe", i,": ")
@@ -109,12 +110,12 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
 
         v1_data <- data_merged %>% 
             dplyr::filter(id %in% id_split[,paste0(tp_split$V1[[x]])]) %>% 
-             dplyr::select(-id, -timepoint,-rid) %>% t() %>% as.data.frame()
+             dplyr::select(-id, -time,-subject) %>% t() %>% as.data.frame()
 
   
   
         v2_data <- data_merged %>% dplyr::filter(id %in% id_split[,paste0(tp_split$V2[[x]])]) %>% 
-              dplyr::select(-id, -timepoint,-rid) %>% t() %>% as.data.frame()
+              dplyr::select(-id, -time,-subject) %>% t() %>% as.data.frame()
   
         cor_mat = cbind(v1_data,v2_data) %>% 
           cor(use="pairwise.complete.obs")
@@ -134,7 +135,7 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
                   id=v1_id,
                   from_tp=tp_split[x,"V1"],
                   to_tp=tp_split[x,"V2"],
-                  var=id_split$rid[which(id_split[[paste0(tp_split$V2[[x]])]]==v2_id)],
+                  var=id_split$subject[which(id_split[[paste0(tp_split$V2[[x]])]]==v2_id)],
                   nsubject=nrow(ci_info),
                   rank=ci_info$rank[which(ci_info$id==v2_id)],
                   cor=ci_info$cor[which(ci_info$id==v2_id)],
@@ -154,11 +155,21 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
     })
 
     names(out[[i]]) = paste0(tp_split$V1,"vs", tp_split$V2)
-
+    metadata <- get_metadata_for_rows(object=object, which_data=i, columns=cols_for_meta)
+    out[[i]] <- lapply(names(out[[i]]), function(x) {
+            data <- out[[i]][[x]]
+            plotter_object <- get_make_plotter_object(data=data, metadata=metadata,
+                calc_type="CI", calc_info=paste("metabotype_CI_", i, "_", x, sep=""), plot_type="dot", style="ggplot")
+            return(plotter_object)
+      })
   }
 
   return(out)
 })
+
+#lipids_metabotype <- calc_conservation_metabotype(object=data, which_data="lipid_data", 
+#timepoints=c("t0","t12","t24"), verbose=TRUE, 
+#cols_for_meta=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp",  "DXGrp_longi", "PTGENDER", "Age", "BMI"))
 
 
 #' Function to calculate metabolite conservation index
@@ -169,12 +180,13 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
 #' @param which_data Name of the dataset to be used
 #' @param timepoints character vector with timepoints of interest
 #' @param verbose Information provided on steps being processed
+#' @param cols_for_meta Character vector to define column names that are to be used for plotting purposes
 #' @return List of conservation index results
 #' @export
 #' 
 #' 
-setGeneric("calc_conservation_metabolite", function(object, which_data, timepoints, verbose) standardGeneric("calc_conservation_metabolite"))
-setMethod("calc_conservation_metabolite", "metime_analyser", function(object, which_data, timepoints, verbose=F) {
+setGeneric("calc_conservation_metabolite", function(object, which_data, timepoints, verbose, cols_for_meta) standardGeneric("calc_conservation_metabolite"))
+setMethod("calc_conservation_metabolite", "metime_analyser", function(object, which_data, timepoints, verbose=F, cols_for_meta) {
   #define data to be processed
   #data_position <- which(names(object@list_of_data) %in% which_data)
   out=list()
@@ -185,19 +197,19 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
     data_merged <- object@list_of_data[[data_position]] %>% 
       dplyr::mutate(id = rownames(.[])) %>% 
       dplyr::left_join(object@list_of_row_data[[data_position]] %>% 
-          dplyr::mutate(timepoint = as.numeric(timepoint)) %>% 
-          dplyr::select(id, timepoint, rid), 
+          dplyr::mutate(time = as.numeric(time)) %>% 
+          dplyr::select(id, time, subject), 
           by="id")
     
-    tp_split <- utils::combn(x = unique(data_merged$timepoint), m=2, simplify = T) %>% 
+    tp_split <- utils::combn(x = unique(data_merged$time), m=2, simplify = T) %>% 
       base::t() %>% 
       base::as.data.frame()
 
     timepoints <- unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2])))
     tp_split <- tp_split[which(as.character(tp_split$V1) %in% timepoints & as.character(tp_split$V2) %in% timepoints), ]
     
-    id_split <- data.frame(met=rep(data_var, each=length(unique(data_merged$timepoint))),
-      timepoint=rep(unique(data_merged$timepoint), length(data_var)),
+    id_split <- data.frame(met=rep(data_var, each=length(unique(data_merged$time))),
+      timepoint=rep(unique(data_merged$time), length(data_var)),
       stringsAsFactors = F) %>% 
         dplyr::mutate(id=paste0(met, "_",timepoint)) %>% 
           tidyr::spread(timepoint, id)
@@ -210,24 +222,24 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
         
         
 
-        v1_data <- data_merged %>% dplyr::filter(timepoint == tp_split[x,"V1"]) %>% 
-                    dplyr::select(-id, -timepoint) 
+        v1_data <- data_merged %>% dplyr::filter(time == tp_split[x,"V1"]) %>% 
+                    dplyr::select(-id, -time) 
         colnames(v1_data)[-length(colnames(v1_data))]  = paste0(names(v1_data)[-length(names(v1_data))], "_", tp_split$V1[x])
         
-        v2_data <- data_merged %>% dplyr::filter(timepoint == tp_split[x,"V2"])  %>% 
-                    dplyr::select(-id, -timepoint)
+        v2_data <- data_merged %>% dplyr::filter(time == tp_split[x,"V2"])  %>% 
+                    dplyr::select(-id, -time)
         colnames(v2_data)[-length(colnames(v2_data))]  = paste0(names(v2_data)[-length(names(v2_data))], "_",tp_split$V2[x])
 
-        if(length(v1_data$rid) > length(v2_data$rid)) {
-             v1_data <- v1_data[v1_data$rid %in% v2_data$rid, ]
-             v2_data <- v2_data[v2_data$rid %in% v1_data$rid, ]
+        if(length(v1_data$subject) > length(v2_data$subject)) {
+             v1_data <- v1_data[v1_data$subject %in% v2_data$subject, ]
+             v2_data <- v2_data[v2_data$subject %in% v1_data$subject, ]
         } else {
-              v2_data <- v2_data[v2_data$rid %in% v1_data$rid, ]
-              v1_data <- v1_data[v1_data$rid %in% v2_data$rid, ] 
+              v2_data <- v2_data[v2_data$subject %in% v1_data$subject, ]
+              v1_data <- v1_data[v1_data$subject %in% v2_data$subject, ] 
         }
 
-        v1_data <- v1_data %>% dplyr::select(-rid)
-        v2_data <- v2_data %>% dplyr::select(-rid)
+        v1_data <- v1_data %>% dplyr::select(-subject)
+        v2_data <- v2_data %>% dplyr::select(-subject)
 
         cor_mat = cbind(v1_data,v2_data) %>% 
           cor(use="pairwise.complete.obs")
@@ -262,6 +274,14 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
       })
       
       names(out[[i]]) = paste0(tp_split$V1,"vs", tp_split$V2)
+      metadata <- get_metadata_for_columns(object=object, which_data=i, columns=list(cols_for_meta), 
+                 names=c("name", "group"), index_of_names="id")
+      out[[i]] <- lapply(names(out[[i]]), function(x) {
+            data <- out[[i]][[x]]
+            plotter_object <- get_make_plotter_object(data=data, metadata=metadata,
+                calc_type="CI", calc_info=paste("metabolite_CI_", i, "_", x, sep=""), plot_type="dot", style="ggplot")
+            return(plotter_object)
+      })
     }
   
   return(out)
@@ -280,25 +300,27 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
 #' @param object An object of class metime_analyser
 #' @param which_data a character vector - Names of the dataset from which the samples will be extracted
 #' @param type type of the dimensionality reduction method to be applied. Accepted inputs are "UMAP", "tSNE", "PCA"
+#' @param cols_for_metabs a list of character vectors for getting metadata for columns for plotting purposes
+#' @param cols_for_samples a character vector to define the columns to extract metadata for plotting purposes  
 #' @param ... additional arguments that can be passed on to prcomp(), M3C::tsne() and umap::umap()
-#' @return  a list with two dataframes containing the dimensionality reduction information 1) samples - data of the individuals(".$samples")
+#' @return  a list with two plotter objects containing the dimensionality reduction information that can be parsed into plotting function 
+#'                     1) samples - data of the individuals(".$samples")
 #'                     2) metabs - data of the metabolites(".$metabs")
 #' @export
-setGeneric("calc_dimensionality_reduction", function(object, which_data, type, ...) standardGeneric("calc_dimensionality_reduction"))
+setGeneric("calc_dimensionality_reduction", function(object, which_data, type, cols_for_metabs, cols_for_samples, ...) standardGeneric("calc_dimensionality_reduction"))
 
-setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, which_data, type, ...) {
+setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, which_data, type, cols_for_metabs, cols_for_samples, ...) {
       if(length(which_data) > 1) {
         object <- mod_extract_common_samples(object)
         data <- object@list_of_data[names(object@list_of_data) %in% which_data]
         data <- lapply(data, function(x) {
             return(x[sort(rownames(x)),])
           })
-        data <- as.data.frame(do.call(cbind, data))
-        colnames(data) <- unlist(lapply(strsplit(colnames(data), split="_data.", fixed=TRUE), function(x) return(x[2])))
+        data <- as.data.frame(do.call(cbind, unname(data)))
       } else {
         data <- object@list_of_data[names(object@list_of_data) %in% which_data][[1]]
       }
-      rm_col = intersect(names(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
+      rm_col = intersect(names(data), c("time","subject"))
       data <- data %>% select(-c(rm_col))
       data <- na.omit(data)
       if(type %in% "PCA") {
@@ -321,7 +343,19 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
         dr_data_samples <- as.data.frame(tsne_samples$data)
         rownames(dr_data_samples) <- rownames(data)
       }
-      return(list(metabs=dr_data_metabs, samples=dr_data_samples))
+      metadata_metabs <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_metabs, 
+                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
+      metadata_samples <- get_metadata_for_rows(object=object, which_data=which_data, columns=cols_for_samples)
+      plotter_metabs <- get_make_plotter_object(data=dr_data_metabs, metadata=metadata_metabs,
+                calc_type="Dimensionality Reduction", 
+                calc_info=paste("dimensionality reduction method:", type, "for metabolites data", paste(which_data, collapse=" & "), sep=" "), 
+                plot_type="dot", style="ggplot")
+      plotter_samples <- get_make_plotter_object(data=dr_data_samples, metadata=metadata_samples,
+                calc_type="Dimensionality Reduction", 
+                calc_info=paste("dimensionality reduction method:", type, "for samples data", paste(which_data, collapse=" & "), sep=" "), 
+                plot_type="dot", style="ggplot")
+      out <- list(metabs=plotter_metabs, samples=plotter_samples)
+      return(out)
   })
 
 
@@ -426,8 +460,8 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
 setGeneric("calc_ttest", function(object, which_data, timepoints, split_var) standardGeneric("calc_ttest"))
 setMethod("calc_ttest", "metime_analyser", function(object, which_data, timepoints, split_var) {
         if(length(which_data) > 1) object <- mod_extract_common_samples(object)
-        list_of_data <- mod_split_acc_to_time(object)
-        list_of_data <- list_of_data[names(list_of_data) %in% which_data]
+        object <- mod_split_acc_to_time(object)
+        list_of_data <- object@list_of_data[names(list_of_data) %in% which_data]
         list_of_data <- lapply(list_of_data, function(x) {
               x <- x[names(x) %in% timepoints]
               count <- 1
@@ -456,8 +490,10 @@ setMethod("calc_ttest", "metime_analyser", function(object, which_data, timepoin
 #' @param threshold type of threshold to be used for extracting significant edges
 #' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
 #' @param all Logical to get all edges without any cutoff.
+#' @param cols_for_meta a list of character vectors for getting metadata for columns for plotting purposes
+#' @param covariates covariates to be used for this analysis
 #' @param ... addtional arguments for genenet network
-#' @return Network data with edgelist, partial correlation values and associated p-values and corrected p-values 
+#' @return Network data as a plotter object 
 #' @export
 setGeneric("calc_ggm_genenet_longitudnal", function(object, which_data, threshold, timepoints, all, ...) standardGeneric("calc_ggm_genenet_longitudnal"))
 setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, which_data, threshold, timepoints, all, ...) {
@@ -477,31 +513,38 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
     } 
     data <- na.omit(data)
     data$subject <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[1])))
-    data$timepoint <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2])))
-    my_rid <- data %>%     
-              dplyr::select(all_of(c("subject","timepoint"))) %>% 
-              dplyr::filter(get("timepoint") %in% timepoints)%>% 
+    data$time <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2])))
+    my_subjects <- data %>%     
+              dplyr::select(all_of(c("subject","time"))) %>% 
+              dplyr::filter(get("time") %in% timepoints)%>% 
               dplyr::group_by(subject) %>% 
               dplyr::count(subject) %>% 
               dplyr::filter(n == length(timepoints))
                   
     data <- data %>% 
-            dplyr::filter(timepoint %in% timepoints,
-            subject %in% my_rid[["subject"]])
+            dplyr::filter(time %in% timepoints,
+            subject %in% my_subjects[["subject"]])
     rm_col = intersect(names(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
     vars <- data %>% select(-c(all_of(rm_col))) %>% names()
 
 
     # get full data
-    data <- data %>% dplyr::arrange(timepoint, subject) 
+    data <- data %>% dplyr::arrange(time, subject) 
     n_subject = unique(data$subject) %>% length() %>% as.numeric()
-    name_tp = as.numeric(unlist(lapply(strsplit(unique(data$timepoint), split="t"), function(x) return(x[2]))))
+    name_tp = as.numeric(unlist(lapply(strsplit(unique(data$time), split="t"), function(x) return(x[2]))))
 
     data <- longitudinal::as.longitudinal(x=as.matrix(data[,vars]), repeats=n_subject, time=name_tp)
 
     network <- get_ggm_genenet(data=data, threshold=threshold, all=all, ...)
+    network <- network[!network$node1 %in% covariates, ]
+    network <- network[!network$node2 %in% covariates, ]
+    metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta, 
+                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
+    out <- get_make_plotter_object(data=network, metadata=metadata, calc_type="genenet_ggm", 
+      calc_info=paste("Longitudinal GeneNet GGM results for:", paste(which_data, collapse=" & "), sep=" "), plot_type="network",
+      style="visNetwork")
        
-    return(network)
+    return(out)
 })
 
 
@@ -513,13 +556,17 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
 #' @param alpha tuning parameter for lasso + ridge regression in glmnet
 #' @param nfolds nfolds for cv.glmnet
 #' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
-#' @return Network data with edges and their respective betas
+#' @param cols_for_meta a list of character vectors of column names to be used for visualization of the networks.
+#' @return list of plotter objects that can be used for plotting.
 #' @export
-setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha, nfolds, timepoints) standardGeneric("calc_ggm_multibipartite_lasso"))
-setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha, nfolds, timepoints) {
+setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha, nfolds, timepoints, cols_for_meta) standardGeneric("calc_ggm_multibipartite_lasso"))
+setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha, nfolds, timepoints, cols_for_meta) {
           if(length(which_data) > 1) object <- mod_extract_common_samples(object)
-          list_of_data <- mod_split_acc_to_time(object)
-          list_of_data <- list_of_data[names(list_of_data) %in% which_data]
+          object <- mod_split_acc_to_time(object)
+          converted <- mod_code_metab_names(object=object, which_data=which_data)
+          new_object <- converted$object
+          table <- converted$table
+          list_of_data <- new_object@list_of_data[names(list_of_data) %in% which_data]
           list_of_data <- lapply(list_of_data, function(x) return(x[names(x) %in% timepoints]))
           count <- 1
           edge_lists <- list()
@@ -587,7 +634,19 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
             edge_lists[[i]] <- final_edge_list            
           }
           names(edge_lists) <- timepoints
-          return(edge_lists)
+          metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta, 
+                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
+          out <- lapply(edge_lists, function(x) {
+                for(i in 1:length(x$node1)) {
+                  x$node1[i] <- table$metabolite[table$id %in% x$node1[i]]
+                  x$node2[i] <- table$metabolite[table$id %in% x$node2[i]]
+                }
+                plotter_object <- get_make_plotter_object(data=x, metadata=metadata, calc_type="multibipartite_ggm", 
+                  calc_info=paste("multibipartite lasso network for:", paste(which_data, collapse=" & "), sep=" "), 
+                plot_type="network", style="visNetwork")
+                return(plotter_object) 
+            })
+          return(out)
   })
 
 
@@ -601,12 +660,13 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
 #' @param timepoints timepoints of interest that are to be used to build networks(in the order of measurement)
 #' @param alpha parameter for regression coefficient
 #' @param nfolds nfolds parameter for glmnet style of regression
+#' @param cols_for_meta a list of character vectors of column names to be used for visualization of the networks.
 #' @return temporal network data with edgelist and regression values
 #' @export
-setGeneric("calc_temporal_ggm", function(object, which_data, lag, timepoints, alpha, nfolds) standardGeneric("calc_temporal_ggm"))
-setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, lag, timepoints, alpha, nfolds) {
+setGeneric("calc_temporal_ggm", function(object, which_data, lag, timepoints, alpha, nfolds, cols_for_meta) standardGeneric("calc_temporal_ggm"))
+setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, lag, timepoints, alpha, nfolds, cols_for_meta) {
         if(length(which_data) > 1) object <- mod_extract_common_samples(object)
-        object@list_of_data <- mod_split_acc_to_time(object)
+        object <- mod_split_acc_to_time(object)
         list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
         list_of_data <- lapply(list_of_data, function(x) {
               x <- x[names(x) %in% timepoints]
@@ -669,10 +729,17 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
                                       unlist(lapply(strsplit(as.character(models[[i]]$node2), split="_time:"), function(x) return(x[2]))),
                                         sep="-")
             models[[i]]$node1 <- unlist(lapply(strsplit(as.character(models[[i]]$node1), split="_time:"), function(x) return(x[1])))
-            models[[i]]$node2 <- unlist(lapply(strsplit(as.character(models[[i]]$node2), split="_time:"), function(x) return(x[1])))
-            
+            models[[i]]$node2 <- unlist(lapply(strsplit(as.character(models[[i]]$node2), split="_time:"), function(x) return(x[1])))    
         }
-        return(models)
+        metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta, 
+                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
+        out <- lapply(models, function(x) {
+              plotter_object <- get_make_plotter_object(data=x, metadata=metadata, calc_type="temporal_network", 
+                  calc_info=paste("Temporal network for:", paste(which_data, collapse=" & "), sep=" "), 
+                plot_type="network", style="visNetwork")
+              return(plotter_object)
+          })
+        return(out)
   })
 
 
@@ -684,14 +751,15 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
 #'      allowed inputs are "li", "FDR", "bonferroni"
 #' @param timepoints timepoints of interest that are to be used to build networks(as per timepoints in rows)
 #' @param all Logical to extract all edges without any pval correction
+#' @param cols_for_meta list of character vector for extracting metadata of metabolites for plotting
 #' @param ... additional arguments for GeneNet
-#' @return Network data with edgelist, partial correlation values and associated p-values and corrected p-values 
+#' @return Network data as a plotter object
 #' @export
-setGeneric("calc_ggm_genenet_crosssectional", function(object, which_data, threshold, timepoint, all, ...) standardGeneric("calc_ggm_genenet_crosssectional"))
-setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object, which_data, threshold, timepoint, all, ...) {
+setGeneric("calc_ggm_genenet_crosssectional", function(object, which_data, threshold, timepoint, all, cols_for_meta, ...) standardGeneric("calc_ggm_genenet_crosssectional"))
+setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object, which_data, threshold, timepoint, all, cols_for_meta, ...) {
         if(length(which_data) > 1) object <- mod_extract_common_samples(object)
         stopifnot(threshold %in% c("li","bonferroni","FDR", NULL))
-        object@list_of_data <- mod_split_acc_to_time(object)
+        object <- mod_split_acc_to_time(object)
         list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
         list_of_data <- lapply(list_of_data, function(x) return(x[names(x) %in% timepoint]))
         list_of_data <- lapply(list_of_data, function(x) return(x[[1]][order(rownames(x[[1]])),]))
@@ -711,25 +779,30 @@ setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object,
         # extract edge list
         tmp <- pcor_mat %>% graph_from_adjacency_matrix(mode='undirected', weighted = T) %>% igraph::simplify()
         ggm_edges <- cbind.data.frame(get.edgelist(tmp), edge_attr(tmp)$weight)
-        names(ggm_edges) <- c("node1", "node2", "pcor_val")
+        names(ggm_edges) <- c("node1", "node2", "pcor")
         if(all) {
-           return(ggm_edges)
+           ggm_data <- ggm_edges
         } else {
           if(threshold %in% "bonferroni") {
             #filter edges based on p-values - bonferroni
-            ggm_data <-  ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bon<=ggm_thresh]))) 
+            ggm_data <-  ggm_edges %>% filter(abs(pcor)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bon<=ggm_thresh]))) 
           } else if(threshold %in% "FDR"){
            # filter edges based on p-values - BH 
-            ggm_data <-  ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bh<=ggm_thresh])))
+            ggm_data <-  ggm_edges %>% filter(abs(pcor)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bh<=ggm_thresh])))
           } else if(threshold %in% "li") {
             data <- this_mat %>% as.matrix() %>% .[,] %>% as.data.frame()  
             cordat <- cor(data)
             eigenvals <- eigen(cordat)$values
             li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
-            ggm_data <- ggm_edges %>% filter(abs(pcor_val)>=min(abs(pval_mat$pcor[pval_mat$pval<=0.05/li.thresh])))
-          }
-          return(ggm_data)        
+            ggm_data <- ggm_edges %>% filter(abs(pcor)>=min(abs(pval_mat$pcor[pval_mat$pval<=0.05/li.thresh])))
+          }  
         }
+    metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta, 
+                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
+    out <- get_make_plotter_object(data=ggm_data, metadata=metadata, calc_type="genenet_ggm", 
+      calc_info=paste("Cross-sectional GeneNet GGM results for:", paste(which_data, collapse=" & "), "at", timepoint, sep=" "), plot_type="network",
+      style="visNetwork")
+    return(out)
 
   })
 
@@ -755,7 +828,7 @@ setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object,
 #' @export
 setGeneric("calc_parafac", function(object, which_data, timepoints, nfac=3, ...) standardGeneric("calc_parafac"))
 setMethod("calc_parafac", "metime_analyser", function(object, which_data, timepoints, nfac=3, ...) {
-        object@list_of_data <- mod_split_acc_to_time(object)
+        object <- mod_split_acc_to_time(object)
         list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
         list_of_data <- lapply(list_of_data, function(x) {
               x <- x[names(x) %in% timepoints]
@@ -795,7 +868,13 @@ setMethod("calc_parafac", "metime_analyser", function(object, which_data, timepo
 #1 step or 2 step neighbourhood
 #preprocess - imputed and scaled and logtransformed
 
-
+#' Function to get mean trajectories of metabolites and phenotypic traits 
+#' @description function to extract mean trajectories
+#' @param object An S4 object of class metime_analyser
+#' @param which_data Dataset of interest
+#' @param columns Other data that you want to see along with metabolites(column names from rowdata)
+#' @return plot_data table that can be used to make the plotter object without metadata
+#' @export
 setGeneric("calc_trajectories_by_mean", function(object, which_data, columns) standardGeneric("calc_trajectories_by_mean"))
 setMethod("calc_trajectories_by_mean", "metime_analyser", function(object, which_data, columns) {
       #Make sure the data is already scaled
@@ -808,7 +887,7 @@ setMethod("calc_trajectories_by_mean", "metime_analyser", function(object, which
       final <- as.data.frame(cbind(data, rowdata))
       #final <- na.omit(final)
       object@list_of_data[[which_data]] <- final
-      object@list_of_data <- mod_split_acc_to_time(object)
+      object <- mod_split_acc_to_time(object)
       data <- object@list_of_data[[which_data]]
       n_samples <- lapply(data, function(x) {
             return(dim(x)[1])
@@ -820,24 +899,38 @@ setMethod("calc_trajectories_by_mean", "metime_analyser", function(object, which
       means <- do.call(rbind, means)
       timepoints <- rownames(means)
       means <- as.data.frame(cbind(means, n_samples, timepoints))
+      means$timepoints <- as.character(means$timepoints)
+      means$n_samples <- as.character(means$n_samples)
       means <- means[order(as.numeric(rownames(means))), ]
-
+      means <- as.data.frame(apply(means, 2, as.numeric))
+      means <- reshape2::melt(means, id.vars=c("timepoints", "n_samples"))
+      colnames(means) <- c("timepoints", "n_samples", "variables", "means")
       sds <- lapply(data, function(x) {
             y <- apply(x, 2, sd)
             return(y)
         })
       sds <- do.call(rbind, sds)
-      colnames(sds) <- paste(colnames(sds), "_sd", sep="")
+      #colnames(sds) <- paste(colnames(sds), "_sd", sep="")
+      sds <- as.data.frame(cbind(sds, timepoints))
       sds <- sds[order(as.numeric(rownames(sds))), ]
+      sds <- as.data.frame(apply(sds, 2, as.numeric))
+      sds <-  reshape2::melt(sds, id.vars=c("timepoints"))
+      colnames(sds) <- c("timepoints", "variables", "sd")
+      sd <- sds$sd
       vars <- lapply(data, function(x) {
             y <- apply(x, 2, var)
             return(y)
         })
       vars <- do.call(rbind, vars)
-      colnames(vars) <- paste(colnames(vars), "_var", sep="")
+      #colnames(vars) <- paste(colnames(vars), "_var", sep="")
+      vars <- as.data.frame(cbind(vars, timepoints))
       vars <- vars[order(as.numeric(rownames(vars))), ] 
-      metadata <- as.data.frame(cbind(vars, sds)) 
-      return(list(data=means, meta=metadata))  
+      vars <- as.data.frame(apply(vars, 2, as.numeric))
+      vars <- reshape2::melt(vars, id.vars=c("timepoints"))
+      colnames(vars) <- c("timepoints", "variables", "var")
+      variance <- vars$var
+      out <- as.data.frame(cbind(means, sd, variance))
+      return(out)  
   }) 
 #add standard deviation and variance
 #zscore the column of interest and the raw data to line plot the trajectory 

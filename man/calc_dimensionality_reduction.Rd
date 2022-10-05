@@ -4,7 +4,14 @@
 \alias{calc_dimensionality_reduction}
 \title{Function to calculate dimensionality reduction methods such as tsne, umap and pca.}
 \usage{
-calc_dimensionality_reduction(object, which_data, type, ...)
+calc_dimensionality_reduction(
+  object,
+  which_data,
+  type,
+  cols_for_metabs,
+  cols_for_samples,
+  ...
+)
 }
 \arguments{
 \item{object}{An object of class metime_analyser}
@@ -13,10 +20,15 @@ calc_dimensionality_reduction(object, which_data, type, ...)
 
 \item{type}{type of the dimensionality reduction method to be applied. Accepted inputs are "UMAP", "tSNE", "PCA"}
 
+\item{cols_for_metabs}{a list of character vectors for getting metadata for columns for plotting purposes}
+
+\item{cols_for_samples}{a character vector to define the columns to extract metadata for plotting purposes}
+
 \item{...}{additional arguments that can be passed on to prcomp(), M3C::tsne() and umap::umap()}
 }
 \value{
-a list with two dataframes containing the dimensionality reduction information 1) samples - data of the individuals(".$samples")
+a list with two plotter objects containing the dimensionality reduction information that can be parsed into plotting function
+1) samples - data of the individuals(".$samples")
 2) metabs - data of the metabolites(".$metabs")
 }
 \description{

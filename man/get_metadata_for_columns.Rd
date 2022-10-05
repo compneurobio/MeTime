@@ -14,7 +14,7 @@ get_metadata_for_columns(object, which_data, columns, names, index_of_names)
 \item{columns}{A list of character vectors for the columns of interest. Length of the list should be
 same as length of which_data}
 
-\item{names}{A Character vector with the new names for the columns mentioned above}
+\item{names}{A Character vector with the new names for the columns mentioned above id should always be first in order}
 
 \item{index_of_names}{character vector to define the name of the column in which names of the variables are stored}
 }

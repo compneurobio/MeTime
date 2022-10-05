@@ -4,12 +4,14 @@
 \alias{get_class_info_from_edges}
 \title{Function to get information on how many class edges are present}
 \usage{
-get_class_info_from_edges(calc_networks, metadata)
+get_class_info_from_edges(calc_networks, metadata, phenotypes)
 }
 \arguments{
 \item{calc_networks}{list of calculated networks}
 
 \item{metadata}{metadata of the edges present}
+
+\item{phenotypes}{character vector to define phenotypes that were used for correcting the data}
 }
 \value{
 table with information on different type of edges present

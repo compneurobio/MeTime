@@ -75,7 +75,7 @@ setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname
 					geom_bar(stat="identity") + scale_fill_manual(values=palette_timepoints)+ theme_classic()
 		line_plot <- ggplot(plot_data, aes_string(x="Timepoints", y="Frequency", group=colname)) + 
 					 geom_line(aes_string(color=colname)) + geom_point(aes_string(color=colname)) + scale_color_manual(values=palette_line) + theme_classic()
-		return(list_of_plots=list(bar_plot=bar_plot, line_plot=line_plot, var_type=var_type))
+		return(out=list(bar_plot=bar_plot, line_plot=line_plot, var_type=var_type))
 
 	} else {
 		phenotype <- phenotype[rownames(phenotype) %in% rownames(data),]
@@ -112,7 +112,8 @@ setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname
 		}
 		
 		#render table for mean values
-		return(list(table=mu, density_plot=density_plot, var_type=var_type))
+		out <- list(table=mu, density_plot=density_plot, var_type=var_type)
+		return(out)
 	}
 })
 
@@ -183,7 +184,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics, i
 										theme_classic()
 				} else if(object@plot_type[i] %in% "line") {
 					object@plot[[i]] <- object@plot[[i]] + geom_line(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
-										color=aesthetics[[i]]$color)) + facet_wrap(aesthetics[[i]]$strats) +
+										color=aesthetics[[i]]$color)) + facet_wrap(aesthetics[[i]]$strats) + geom_point(aes_string(color=aesthetics[[i]]$color)) +
 										theme_classic()
 				} else if(object@plot_type[i] %in% "box") {
 					object@plot[[i]] <- object@plot[[i]] + geom_boxplot(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
@@ -216,7 +217,8 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics, i
 					}
 				}
 			}
-			return(object)
+			out <- object
+			return(out)
 			
 	})
 
@@ -294,7 +296,8 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, la
   					visConfigure(enabled = TRUE)
         }
         object@plot[[1]] <- graph
-        return(object)
+        out <- object
+        return(out)
 	})
 
 

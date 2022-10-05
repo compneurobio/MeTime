@@ -8,7 +8,7 @@ get_make_analyser_object(
   data,
   col_data,
   row_data,
-  annotations_index,
+  annotations_index = list(),
   name = NULL
 )
 }

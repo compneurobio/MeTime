@@ -25,9 +25,13 @@ calc_ggm_genenet_longitudnal(
 \item{all}{Logical to get all edges without any cutoff.}
 
 \item{...}{addtional arguments for genenet network}
+
+\item{cols_for_meta}{a list of character vectors for getting metadata for columns for plotting purposes}
+
+\item{covariates}{covariates to be used for this analysis}
 }
 \value{
-Network data with edgelist, partial correlation values and associated p-values and corrected p-values
+Network data as a plotter object
 }
 \description{
 automated funtion that can be applied on metime_analyser object to obtain geneNet network along with threshold used

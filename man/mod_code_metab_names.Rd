@@ -4,14 +4,12 @@
 \alias{mod_code_metab_names}
 \title{Function to convert metabolite names to IDs}
 \usage{
-mod_code_metab_names(object, which_data, table)
+mod_code_metab_names(object, which_data)
 }
 \arguments{
 \item{object}{An S4 object of class metime_analyser}
 
 \item{which_data}{character vector to define the datasets to use}
-
-\item{table}{logical vector. If TRUE returns table of names to IDs for mapping}
 }
 \value{
 A list with S4 object and list of mapping tables, the object can be used for GGMs

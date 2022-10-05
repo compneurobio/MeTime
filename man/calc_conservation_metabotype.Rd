@@ -4,7 +4,13 @@
 \alias{calc_conservation_metabotype}
 \title{Function to calculate metabotype conservation index}
 \usage{
-calc_conservation_metabotype(object, which_data, timepoints, verbose)
+calc_conservation_metabotype(
+  object,
+  which_data,
+  timepoints,
+  verbose,
+  cols_for_meta
+)
 }
 \arguments{
 \item{object}{An object of class metime_analyser}
@@ -14,6 +20,8 @@ calc_conservation_metabotype(object, which_data, timepoints, verbose)
 \item{timepoints}{character vector with timepoints of interest}
 
 \item{verbose}{Information provided on steps being processed}
+
+\item{cols_for_meta}{Character vector to define column names that are to be used for plotting purposes}
 }
 \value{
 List of conservation index results

@@ -25,51 +25,22 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 setGeneric("add_screening_vars", function(object, vars) standardGeneric("add_screening_vars"))
 
 setMethod("add_screening_vars", "metime_analyser", function(object, vars) {
-	if(!is.null(which_data) && which_data %in% names(object@list_of_data)){
-
-    my_data <-  object@list_of_data[[which_data]] %>% 
-      dplyr::mutate(id = rownames(.[])) %>% 
-      dplyr::left_join(object@list_of_row_data[[which_data]][,c("RID","id")], by="id")%>% 
-      dplyr::filter(!duplicated(id))
-
-    my_screening <- my_data %>% 
-      dplyr::select(id,any_of(vars)) %>%  # change to all_of at some point with error message
-      dplyr::left_join(object@list_of_row_data[[which_data]], by="id") %>% 
-      dplyr::filter(!duplicated(id))
-
-
-    my_added <- lapply(unique(my_screening$RID), function(x){
-      if(!is.na(x)){
-        out <- my_screening %>% 
-          dplyr::filter(RID==x)
-        for(y in vars){
-          out[[y]] = out[[y]][which(!is.na(out[[y]] ))][1]
-        }
-        out
-      }
-    }) %>% 
-      do.call(what=rbind.data.frame) %>% 
-      dplyr::select(id, any_of(vars))
-
-    for(y in vars) {
-      my_data[[y]]= NULL
-    }
-
-    out <- my_data %>% 
-      		dplyr::left_join(my_added, by="id")
-    		rownames(out) <- out$id
-    		out$id =NULL
-  		}
-  		else {
-    		out <- object
-    		warning("add_screening_vars() was not able to add screening vars")
-  		}
-
-  		object@list_of_data[[which_data]] <- out
-
-  		return(object)
+	phenotype_name <- object@annotations$phenotype
+	phenotype <- object@list_of_data[[phenotype_name]]
+	screening <- phenotype[grep("-1|-2", rownames(phenotype)), ]
+	new_rows <- as.data.frame(screening[, vars])
+	new_rows <- na.omit(new_rows)
+	sample_names <- unlist(lapply(strsplit(rownames(screening), split="_t"), function(x) return(x[1])))
+	for(i in 1:length(sample_names)) {
+		index <- grep(sample_names[i], rownames(phenotype)) 
+		for(j in index) {
+			phenotype[j, vars] <- screening[rownames(screening)[i], vars]
 		}
-	})
+	}
+	object@list_of_data[[phenotype_name]] <- phenotype
+	out <- object
+	return(out)
+})
 
 #' Function to check normality and add data to col data
 #' @description A method applied on the s4 object of class "metime_analyser" to check normality of the metabolites
@@ -125,8 +96,9 @@ setMethod("add_col_stats", "metime_analyser", function(object, which_data, type=
 	    		}  
 	      	}
       		
-    }      	
-	return(object)
+    }  
+    out <- object    	
+	return(out)
   
 })
 
@@ -155,7 +127,8 @@ setMethod("add_distribution_vars_to_rows", "metime_analyser", function(object, s
 			data <- data[order(rownames(data)), ]
 			data <- cbind(data, phenotype[ ,distribution_vars])
 			object@list_of_row_data[[which_data]] <- data
-			return(object)
+			out <- object
+			return(out)
 	})
 
 #' Function to add covariates to the dataset of interest for GGMs
@@ -234,7 +207,8 @@ setMethod("add_phenotypes_as_covariates", "metime_analyser", function(object, wh
 					 object@list_of_data[[which_data[i]]] <- list_of_data[[i]]
 				}
 			}
-			return(object)
+			out <- object
+			return(out)
 	})	
 
 #' Function to add metabolites as covariates for network construction
@@ -267,7 +241,8 @@ setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_
 			metab_matrix <- metab_matrix[rownames(metab_matrix) %in% common_samples, ]
 			metab_matrix <- metab_matrix[order(rownames(metab_matrix)), ]
 			object@list_of_data[[which_data]] <- as.data.frame(cbind(data, metab_matrix))
-			return(object)
+			out <- object
+			return(out)
 	})
 
 

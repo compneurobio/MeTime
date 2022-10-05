@@ -4,7 +4,15 @@
 \alias{calc_temporal_ggm}
 \title{An automated function to caluclate temporal network with lagged model}
 \usage{
-calc_temporal_ggm(object, which_data, lag, timepoints, alpha, nfolds)
+calc_temporal_ggm(
+  object,
+  which_data,
+  lag,
+  timepoints,
+  alpha,
+  nfolds,
+  cols_for_meta
+)
 }
 \arguments{
 \item{object}{S4 object of class metab_analyser}
@@ -18,6 +26,8 @@ calc_temporal_ggm(object, which_data, lag, timepoints, alpha, nfolds)
 \item{alpha}{parameter for regression coefficient}
 
 \item{nfolds}{nfolds parameter for glmnet style of regression}
+
+\item{cols_for_meta}{a list of character vectors of column names to be used for visualization of the networks.}
 }
 \value{
 temporal network data with edgelist and regression values
