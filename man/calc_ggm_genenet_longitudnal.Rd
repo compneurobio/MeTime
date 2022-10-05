@@ -10,6 +10,8 @@ calc_ggm_genenet_longitudnal(
   threshold,
   timepoints,
   all,
+  cols_for_meta,
+  covariates,
   ...
 )
 }
@@ -24,11 +26,11 @@ calc_ggm_genenet_longitudnal(
 
 \item{all}{Logical to get all edges without any cutoff.}
 
-\item{...}{addtional arguments for genenet network}
-
 \item{cols_for_meta}{a list of character vectors for getting metadata for columns for plotting purposes}
 
 \item{covariates}{covariates to be used for this analysis}
+
+\item{...}{addtional arguments for genenet network}
 }
 \value{
 Network data as a plotter object
