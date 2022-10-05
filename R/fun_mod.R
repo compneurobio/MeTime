@@ -57,7 +57,7 @@ setMethod("mod_split_acc_to_time", "metime_analyser", function(object) {
 setGeneric("mod_extract_common_samples", function(object, time_splitter=FALSE) standardGeneric("mod_extract_common_samples") )
 
 setMethod("mod_extract_common_samples", "metime_analyser",function(object, time_splitter=FALSE) {
-		list_of_names <- lapply(list_of_data, function(x) {
+		list_of_names <- lapply(object@list_of_data, function(x) {
 					return(rownames(x))
 			})
 		common_samples <- Reduce(intersect, list_of_names)
