@@ -496,7 +496,7 @@ setMethod("calc_ttest", "metime_analyser", function(object, which_data, timepoin
 #' @return Network data as a plotter object 
 #' @export
 setGeneric("calc_ggm_genenet_longitudnal", function(object, which_data, threshold, timepoints, all, cols_for_meta, covariates, ...) standardGeneric("calc_ggm_genenet_longitudnal"))
-setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, which_data, threshold, timepoints, all, cols_for_meta, covaraites,...) {
+setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, which_data, threshold, timepoints, all, cols_for_meta, covariates,...) {
     #sanity checks
     stopifnot(timepoints %in% c("t0","t12","t24"))
     stopifnot(threshold %in% c("li","bonferroni","FDR", NULL))
