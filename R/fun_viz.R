@@ -246,7 +246,6 @@ setMethod("viz_plotter_circos", "metime_plotter", function(object, aesthetics, o
 #' @export
 setGeneric("viz_plotter_visNetwork", function(object, title, layout_by) standardGeneric("viz_plotter_visNetwork"))
 setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, layout_by) {
-		stopifnot(colnames(object@plot_data[["metadata"]]) %in% c("name","group","class"))
 		metadata <- object@plot_data[["metadata"]]
 		node_list <- object@plot_data[["node"]]
 		edge_list <- object@plot_data[["edge"]]
