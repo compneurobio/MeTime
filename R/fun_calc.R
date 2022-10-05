@@ -524,7 +524,7 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
     data <- data %>% 
             dplyr::filter(time %in% timepoints,
             subject %in% my_subjects[["subject"]])
-    rm_col = intersect(names(data), c("adni_id","RID","rid","timepoint","tp","subject", "id"))
+    rm_col = intersect(names(data), c("adni_id","RID","rid","time","tp","subject", "id"))
     vars <- data %>% select(-c(all_of(rm_col))) %>% names()
 
 
