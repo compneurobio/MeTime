@@ -245,7 +245,7 @@ setMethod("viz_plotter_circos", "metime_plotter", function(object, aesthetics, o
 #' @param layout_by character to define the layout style to be used
 #' @export
 setGeneric("viz_plotter_visNetwork", function(object, title, layout_by) standardGeneric("viz_plotter_visNetwork"))
-setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, layout_by) {
+setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, layout_by) { 
 		metadata <- object@plot_data[["metadata"]]
 		node_list <- object@plot_data[["node"]]
 		edge_list <- object@plot_data[["edge"]]

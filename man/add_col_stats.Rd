@@ -4,7 +4,7 @@
 \alias{add_col_stats}
 \title{Function to check normality and add data to col data}
 \usage{
-add_col_stats(object, which_data, type, metab_names)
+add_col_stats(object, which_data, type, metab_names, all)
 }
 \arguments{
 \item{object}{An object of class metime_analyser}

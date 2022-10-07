@@ -11,6 +11,7 @@ calc_ggm_genenet_crosssectional(
   timepoint,
   all,
   cols_for_meta,
+  covariates,
   ...
 )
 }
@@ -25,6 +26,8 @@ allowed inputs are "li", "FDR", "bonferroni"}
 \item{all}{Logical to extract all edges without any pval correction}
 
 \item{cols_for_meta}{list of character vector for extracting metadata of metabolites for plotting}
+
+\item{covariates}{covariates to be used for this analysis}
 
 \item{...}{additional arguments for GeneNet}
 

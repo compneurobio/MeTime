@@ -54,8 +54,8 @@ setMethod("add_screening_vars", "metime_analyser", function(object, vars) {
 #' @param all logical to add all kinds of available stats.
 #' @return S4 object with shapiro wilk test related data in the col_data
 #' @export
-setGeneric("add_col_stats", function(object, which_data, type, metab_names) standardGeneric("add_col_stats"))
-setMethod("add_col_stats", "metime_analyser", function(object, which_data, type="shapiro", metab_names) {
+setGeneric("add_col_stats", function(object, which_data, type, metab_names, all) standardGeneric("add_col_stats"))
+setMethod("add_col_stats", "metime_analyser", function(object, which_data, type="shapiro", metab_names, all) {
 	  stopifnot(type %in% c("shapiro", "kruskal"))
       for(i in 1:length(which_data)) {
       		out <- lapply(names(object@list_of_data[[which_data[i]]]), function(x) {
@@ -246,3 +246,4 @@ setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_
 	})
 
 
+# In study characteristics add a table to see col normality before and after log transformation
