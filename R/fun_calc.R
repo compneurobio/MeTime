@@ -809,6 +809,7 @@ setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object,
     return(out)
 
   })
+#lol <- calc_ggm_genenet_crosssectional(object=data, which_data="lipid_data", threshold="li", all=FALSE, cols_for_meta=list(c("id", "sub_pathway")), timepoint="t0", covariates=c("Total_C", "HDL_C", "Total_TG", "VLDL_TG", "LDL_TG", "HDL_TG", "Age", "PTGENDER", "BMI"))
 
 
 ##search for metabolic networks in ad

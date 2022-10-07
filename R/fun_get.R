@@ -554,3 +554,12 @@ setGeneric("get_metadata_for_mean_trajectories", function(object, columns) stand
 setMethod("get_metadata_for_mean_trajectories", "metime_analyser", function(object, columns) {
 
 	})  
+
+
+#' Function to get the R environment
+#' @description function to print the R environment
+#' @return null
+#' @export 
+get_environment <- function() {
+		x <- sapply(ls(), function(x) get(x, envir=.GlobalEnv))
+}

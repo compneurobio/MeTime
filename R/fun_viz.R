@@ -280,8 +280,7 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, la
                     visEdges(smooth = FALSE, shadow = TRUE) %>%
                         visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
                         visInteraction(navigationButtons = T) %>%
-                       	visExport(type="pdf", name=title, float="right")%>%
- 						visConfigure(enabled = TRUE)
+                       	visExport(type="pdf", name=title, float="right")
         } else {
         	graph <- visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
                     visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
@@ -291,8 +290,7 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, la
                     visEdges(smooth = FALSE, shadow = TRUE) %>%
                     visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
                     visInteraction(navigationButtons = T) %>%
-                    visExport(type="pdf", name=title, float="right")%>%
-  					visConfigure(enabled = TRUE)
+                    visExport(type="pdf", name=title, float="right")		
         }
         object@plot[[1]] <- graph
         out <- object
