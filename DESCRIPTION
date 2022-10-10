@@ -31,4 +31,5 @@ Depends:
     RColorBrewer,
     shiny,
     tidyverse,
-    umap
+    umap,
+    xlsx

@@ -10,6 +10,8 @@ save_analyser_object(object, which_data)
 \item{object}{An object of class metime_plotter}
 
 \item{which_data}{Character to specify the dataset}
+
+\item{type}{which type of output file. Can be "csv", "tsv" and "xlsx"}
 }
 \value{
 saves the data in the working directory as a csv and returns nothing

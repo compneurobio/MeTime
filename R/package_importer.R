@@ -18,6 +18,7 @@ usethis::use_package("multiway", type="depends")
 usethis::use_package("generics", type="depends")
 usethis::use_package("DT", type="depends")
 usethis::use_package("data.table", type="depends")
+usethis::use_package("xlsx", type="depends")
 
 #' Setting new structure definition for the metime_analyser object
 #' @description function to see the structure of metime_analyser object

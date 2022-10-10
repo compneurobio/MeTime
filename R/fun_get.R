@@ -542,20 +542,6 @@ get_class_info_from_edges <- function(calc_networks, metadata, phenotypes) {
 					return(out)
 	}
 
-
-#' Function to get metadata for mean trajectories
-#' @description Function to be applied on the metime analyser object to extract
-#' metadata for the mean trajectories plot
-#' @param object an S4 metime analyser object
-#' @param columns columns of interest for which we need the metadata for
-#' @return a metadata dataframe that will be used for plotting
-#' @export
-setGeneric("get_metadata_for_mean_trajectories", function(object, columns) standardGeneric("get_metadata_for_mean_trajectories"))
-setMethod("get_metadata_for_mean_trajectories", "metime_analyser", function(object, columns) {
-
-	})  
-
-
 #' Function to get the R environment
 #' @description function to print the R environment
 #' @return null

@@ -4,12 +4,14 @@
 \alias{save_plotter_object}
 \title{Function to extract plot data into a csv}
 \usage{
-save_plotter_object(object, out)
+save_plotter_object(object, out, type)
 }
 \arguments{
 \item{object}{An object of class metime_plotter}
 
 \item{out}{Character to specify path of the output file or character vector in case of visNetwork}
+
+\item{type}{character to define outfile type that is "csv", "xlsx" or "tsv"}
 }
 \value{
 saves the data into a csv and returns nothing
@@ -18,7 +20,8 @@ saves the data into a csv and returns nothing
 extracts information from plotter object and saves it as a csv
 }
 \examples{
-see examples here
-Network : save_plotter_object(object, out=c("edge.csv", "node.csv", "meta.csv"))
-Others : save_plotter_object(object, out="outfile.csv")
+see examples here and maintain the order
+If type is xlsx one out file is enough and the network data will be stored in different sheets
+Network : save_plotter_object(object, out=c("edge", "node", "meta"), type="csv")
+Others : save_plotter_object(object, out="outfile", type="tsv")
 }
