@@ -34,7 +34,23 @@ setMethod("structure", "metime_analyser", function(object) return(str(object, ma
 #' @examples structure(object)
 #' @return structure of the S4 object
 #' @export
-setMethod("show", "metime_analyser", function(object) return(str(object, max.level=3)))
+setMethod("show", "metime_analyser", function(object) {
+		for(i in 1:length(object@list_of_data)) {
+			if(names(object@list_of_data)[i] %in% object@annotations$phenotype) {
+				cat(paste("Dataset:", names(object@list_of_data)[i], "with", 
+				dim(object@list_of_data[[i]])[1], "samples", "and", dim(object@list_of_data[[i]])[2], "phenotypes",sep=" "))
+				cat("\n")
+			} else if(names(object@list_of_data)[i] %in% object@annotations$medication) {
+				cat(paste("Dataset:", names(object@list_of_data)[i], "with", 
+				dim(object@list_of_data[[i]])[1], "samples", "and", dim(object@list_of_data[[i]])[2], "medicines", sep=" "))
+				cat("\n")
+			} else {
+				cat(paste("Dataset:", names(object@list_of_data)[i], "with", 
+				dim(object@list_of_data[[i]])[1], "samples", "and", dim(object@list_of_data[[i]])[2], "metabolites",sep=" "))
+				cat("\n")
+			}
+		}
+	})
 
 
 #' Setting new print definition for the metime_plotter object

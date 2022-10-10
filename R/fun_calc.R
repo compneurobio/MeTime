@@ -970,3 +970,20 @@ setMethod("calc_trajectories_by_samples", "metime_analyser", function(object, wh
       plot_data <- reshape2::melt(plot_data, id.vars=c("samples", "timepoints"))
       return(plot_data)
   }) 
+
+
+#' Function to calculate multiple tests using method described by li
+#' @description li test to check for colinearlity and use it for feature selection
+#' @param object an S4 object of class metime_analyser
+#' @param which_data dataset to be used for testing
+#' @return li threshold value
+#' @export
+setGeneric("calc_li_thresh", function(object, which_data) standardGeneric("calc_li_thresh"))
+setMethod("calc_li_thresh", "metime_analyser", function(object, which_data) {
+        data <- object@list_of_data[[which_data]]
+        data <- data %>% as.matrix() %>% .[,] %>% as.data.frame()  
+        cordat <- cor(data)
+        eigenvals <- eigen(cordat)$values
+        li.thresh <- sum(as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)))
+        return(li.thresh)
+  }) 
