@@ -4,12 +4,14 @@
 \alias{calc_li_thresh}
 \title{Function to calculate multiple tests using method described by li}
 \usage{
-calc_li_thresh(object, which_data)
+calc_li_thresh(object, which_data, verbose)
 }
 \arguments{
 \item{object}{an S4 object of class metime_analyser}
 
 \item{which_data}{dataset to be used for testing}
+
+\item{verbose}{Logical to print out the number of independent tests}
 }
 \value{
 li threshold value
