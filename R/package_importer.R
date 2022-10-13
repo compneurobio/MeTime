@@ -1,3 +1,4 @@
+usethis::use_package("rstatix", type="depends")
 usethis::use_package("tidyverse", type="depends")
 usethis::use_package("igraph", type="depends")
 usethis::use_package("plyr", type="depends")
@@ -69,5 +70,4 @@ setMethod("show", "metime_plotter", function(object) return(str(object, max.leve
 #' @return structure of the S4 object
 #' @export
 setMethod("structure", "metime_plotter", function(object) return(str(object, max.level = 3)))
-
 

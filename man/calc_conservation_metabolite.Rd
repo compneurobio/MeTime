@@ -21,7 +21,7 @@ calc_conservation_metabolite(
 
 \item{verbose}{Information provided on steps being processed}
 
-\item{cols_for_meta}{Character vector to define column names that are to be used for plotting purposes}
+\item{cols_for_meta}{A list of a Character vector to define column names that are to be used for plotting purposes}
 }
 \value{
 List of conservation index results

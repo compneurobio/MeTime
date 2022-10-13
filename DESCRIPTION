@@ -29,6 +29,7 @@ Depends:
     plotly,
     plyr,
     RColorBrewer,
+    rstatix,
     shiny,
     tidyverse,
     umap,

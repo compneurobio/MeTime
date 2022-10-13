@@ -180,7 +180,7 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
 #' @param which_data Name of the dataset to be used
 #' @param timepoints character vector with timepoints of interest
 #' @param verbose Information provided on steps being processed
-#' @param cols_for_meta Character vector to define column names that are to be used for plotting purposes
+#' @param cols_for_meta A list of a Character vector to define column names that are to be used for plotting purposes
 #' @return List of conservation index results
 #' @export
 #' 
@@ -274,7 +274,7 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
       })
       
       names(out[[i]]) = paste0(tp_split$V1,"vs", tp_split$V2)
-      metadata <- get_metadata_for_columns(object=object, which_data=i, columns=list(cols_for_meta), 
+      metadata <- get_metadata_for_columns(object=object, which_data=i, columns=cols_for_meta, 
                  names=c("name", "group"), index_of_names="id")
       out[[i]] <- lapply(names(out[[i]]), function(x) {
             data <- out[[i]][[x]]
@@ -449,38 +449,77 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
 })
 
 
-#' Function to calculate students t-test
+#' Function to calculate students t-test between metabolites at different timepoints
 #' @description Method for S4 object of class metime_analyser for performing t-test
 #' @param object S4 object of class metime_analyser
 #' @param which_data dataset or datasets to be used for the analysis
-#' @param timepoints two timepoints of interest to perform the test on
+#' @param timepoints timepoints of interest to perform the test on
 #' @param split_var split variable for testing such as diagnostic group etc
-#' @return t-test result as a list or a list of t-test results 
+#' @param type type of ttest to be used either "two.sided", "less", or "greater"
+#' @param paired Logical to perform paired t.test or not
+#' @return plotter object with t-test results
 #' @export
-setGeneric("calc_ttest", function(object, which_data, timepoints, split_var) standardGeneric("calc_ttest"))
-setMethod("calc_ttest", "metime_analyser", function(object, which_data, timepoints, split_var) {
-        if(length(which_data) > 1) object <- mod_extract_common_samples(object)
-        object <- mod_split_acc_to_time(object)
-        list_of_data <- object@list_of_data[names(list_of_data) %in% which_data]
-        list_of_data <- lapply(list_of_data, function(x) {
-              x <- x[names(x) %in% timepoints]
-              count <- 1
-              x <- lapply(x, function(a) {
-                    a <- a[ ,order(colnames(a))]
-                    colnames(a) <- paste(colnames(a), "_time:", timepoints[count], sep="")
-                    count <- count + 1
-                    return(a)
-              })
-              return(x)
-        })
-        if(!is.null(split_var)) {
-            for(i in 1:length(list_of_data)) {
-
+setGeneric("calc_ttest_metabolites", function(object, which_data, timepoints, split_var, type, paired) standardGeneric("calc_ttest_metabolites"))
+setMethod("calc_ttest_metabolites", "metime_analyser", function(object, which_data, timepoints, split_var, type, paired) {
+      if(length(which_data) > 1) {
+        object <- mod_extract_common_samples(object)
+        combinations <- as.data.frame(t(combn(timepoints, 2)))
+        list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+        data <- do.call(unname(list_of_data), cbind)
+        name_combs <- as.data.frame(cbind(names(data), names(data)))
+        colnames(name_combs) <- c("m1", "m2")
+        timepoints <- as.character(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2]))))
+        samples <- as.character(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[1]))))
+        data <- as.data.frame(cbind(data, timepoints, samples))
+      } else {
+        combinations <- as.data.frame(t(combn(timepoints, 2)))
+        data <- object@list_of_data[[which_data]]
+        name_combs <- as.data.frame(cbind(names(data), names(data)))
+        colnames(name_combs) <- c("m1", "m2")
+        timepoints <- as.character(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2]))))
+        samples <- as.character(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[1]))))
+        data <- as.data.frame(cbind(data, timepoints, samples))
+      }
+      out <- lapply(1:nrow(combinations), function(x) {
+            t1 <- as.character(combinations[x, 1])
+            t2 <- as.character(combinations[x, 2])
+            t1_data <- data %>% filter(timepoints==t1)
+            t2_data <- data %>% filter(timepoints==t2)
+            if(paired) {
+                common_samples <- intersect(t1_data$samples, t2_data$samples)
+                t1_data <- t1_data[t1_data$samples %in% common_samples, ]
+                t2_data <- t2_data[t2_data$samples %in% common_samples, ]
             }
-        }
-        
+            results <- parallel::mclapply(name_combs, function(x) {
+                  m1 <- t1_data[ ,x$V1]
+                  m2 <- t2_data[ ,x$V2]
+                  result <- rstatix::t_test(m1, m2, paired=paired, alternative=type)
+                  return(result)
+              }, max.cores=4) %>% do.call(what=rbind.data.frame)
+            return(out)
+        })
+        return(out)
+  })
+
+
+#' Function to calculate students t-test between samples at different timepoints
+#' @description Method for S4 object of class metime_analyser for performing t-test
+#' @param object S4 object of class metime_analyser
+#' @param which_data dataset or datasets to be used for the analysis
+#' @param timepoints timepoints of interest to perform the test on
+#' @param type type of ttest to be used either "two.sided", "less", or "greater"
+#' @param paired Logical to perform paired t.test or not
+#' @return plotter object with t-test results
+#' @export
+setGeneric("calc_ttest_samples", function(object, which_data, timepoints, type, paired) standardGeneric("calc_ttest_samples"))
+setMethod("calc_ttest_samples", "metime_analyser", function(object, which_data, timepoints, type, paired) {
+        if(length(which_data) > 1) object <- mod_extract_common_samples(object)
+        combinations <- as.data.frame(t(combn(timepoints, 2)))
+        list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+        data <- do.call(unname(list_of_data), cbind)
 
   })
+
 
 
 #' An automated fucntion to calculate GGM from genenet longitudnal version
@@ -1010,18 +1049,18 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
       stopifnot(length(names(object@list_of_data[[which_data]]))==length(unique(names(object@list_of_data[[which_data]]))))
       my_combn <- combn(names(object@list_of_data[[which_data]]),2) %>% t() %>% as.data.frame() # setup combinations for later pairwise calculation
 
-      out <- lapply(1:nrow(my_combn), function(i){
+      out <- lapply(1:nrow(my_combn), function(i) {
           my_x=as.numeric(object@list_of_data[[which_data]][,my_combn$V1[i]])
           my_y=as.numeric(object@list_of_data[[which_data]][,my_combn$V2[i]])
           chi_test = stats::chisq.test(x = my_x, 
                                  y = my_y, 
                                  correct=FALSE)
-      out = data.frame(
-          med_class_1=my_combn$V1[i],
-          med_class_2= my_combn$V2[i],
-          chi_statistic=chi_test$statistic,
-          Cramers_V= chi_test$statistic / (length(my_x) * (min(length(unique(my_x)),length(unique(my_y))) - 1)),
-          stringsAsFactors = F
+          out = data.frame(
+            med_class_1=my_combn$V1[i],
+            med_class_2= my_combn$V2[i],
+            chi_statistic=chi_test$statistic,
+            Cramers_V= chi_test$statistic / (length(my_x) * (min(length(unique(my_x)),length(unique(my_y))) - 1)),
+            stringsAsFactors = F
           )
       }) %>%
       do.call(what=rbind.data.frame) %>% 
@@ -1062,3 +1101,9 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
           }
       }
   })
+
+
+
+
+
+

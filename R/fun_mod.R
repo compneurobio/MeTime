@@ -146,8 +146,8 @@ setMethod("mod_filter_tp", "metime_analyser", function(object, timepoints, full=
   
   for(i in data_position){
     keep_id <- object@list_of_row_data[[i]] %>% 
-      dplyr::select(id, timepoint, rid) %>% 
-      dplyr::mutate(timepoint = as.numeric(timepoint)) %>% 
+      dplyr::select(id, time, subject) %>% 
+      dplyr::mutate(timepoint = as.numeric(unlist(lapply(strsplit(time, split="t"), function(x) return(x[2]))))) %>% 
       dplyr::filter(timepoint %in% timepoints)
     if(full){
       full_rid <- keep_id %>% 

@@ -201,7 +201,9 @@ get_files_and_names <- function(path, annotations_index) {
 			}
 			if("timepoint" %in% colnames(metab_object@list_of_row_data[[i]])) {
 				colnames(metab_object@list_of_row_data[[i]])[colnames(metab_object@list_of_row_data[[i]])=="timepoint"] <- "time"
-			} 
+			} else if("time" %in% colnames(object@list_of_row_data[[i]])) {
+					next
+			}
 	}
 	for(i in 1:length(metab_object@list_of_row_data)) {
 			if("subject" %in% colnames(metab_object@list_of_row_data[[i]]) && "time" %in% colnames(metab_object@list_of_row_data[[i]])) {
@@ -337,25 +339,35 @@ setGeneric("get_metadata_for_columns", function(object, which_data, columns, nam
 setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_data, columns, names, index_of_names) {
 				list_of_col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% which_data]
 				if(length(which_data)>1) {
-						list_of_metadata_metabs <- list()
-						for(i in 1:length(columns)) {
-								list_of_metadata_metabs[[i]] <- as.matrix(list_of_col_data[[i]][, columns[[i]]])
-								class <- rep(which_data[i], each=length(list_of_metadata_metabs[[i]][,1]))
-								list_of_metadata_metabs[[i]] <- list_of_metadata_metabs[[i]][order(list_of_metadata_metabs[[i]][ ,index_of_names[i]]), ]
-								colnames(list_of_metadata_metabs[[i]]) <- names
-								list_of_metadata_metabs[[i]] <- as.data.frame(cbind(list_of_metadata_metabs[[i]], class))
+						if(is.null(columns)) {
+								out <- NULL
+								return(out)
+						} else {
+								list_of_metadata_metabs <- list()
+								for(i in 1:length(columns)) {
+										list_of_metadata_metabs[[i]] <- as.matrix(list_of_col_data[[i]][, columns[[i]]])
+										class <- rep(which_data[i], each=length(list_of_metadata_metabs[[i]][,1]))
+										list_of_metadata_metabs[[i]] <- list_of_metadata_metabs[[i]][order(list_of_metadata_metabs[[i]][ ,index_of_names[i]]), ]
+										colnames(list_of_metadata_metabs[[i]]) <- names
+										list_of_metadata_metabs[[i]] <- as.data.frame(cbind(list_of_metadata_metabs[[i]], class))
+								}
+								out <- lapply(list_of_metadata_metabs, as.data.frame)
+								out <- as.data.frame(do.call(rbind, out))
+								rownames(out) <- out[, names[1]] 
 						}
-						out <- lapply(list_of_metadata_metabs, as.data.frame)
-						out <- as.data.frame(do.call(rbind, out))
-						rownames(out) <- out[, names[1]] 
 				} else {
-						col_data <- list_of_col_data[[1]]
-						class <- rep(which_data, each=length(col_data[,1]))
-						out <- col_data[ ,columns[[1]]]
-						out <- as.data.frame(cbind(out, class))
-						out <- out[order(out[,index_of_names]), ]
-						rownames(out) <- out[,index_of_names]
-						colnames(out) <- c(names, "class")
+						if(is.null(columns)) {
+								out <- NULL
+								return(out)
+						} else {
+								col_data <- list_of_col_data[[1]]
+								class <- rep(which_data, each=length(col_data[,1]))
+								out <- col_data[ ,columns[[1]]]
+								out <- as.data.frame(cbind(out, class))
+								out <- out[order(out[,index_of_names]), ]
+								rownames(out) <- out[,index_of_names]
+								colnames(out) <- c(names, "class")
+						}
 				}
 				return(out)
 	})
@@ -375,16 +387,25 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 setGeneric("get_metadata_for_rows", function(object, which_data, columns) standardGeneric("get_metadata_for_rows"))
 setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_data, columns) {
 					if(length(which_data) > 1) {
-							object <- mod_extract_common_samples(object)
-							list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
-							list_of_data <- lapply(list_of_data, function(x) return(x[order(rownames(x)), ]))
-							out <- object@list_of_row_data[[1]][ ,columns]
-							timepoints <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[2])))
-							samples <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[1])))
-							levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
-							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
-							out <- as.data.frame(cbind(out, timepoints, samples))
+							if(is.null(columns)) {
+									out <- NULL
+									return(out)
+							} else {
+									object <- mod_extract_common_samples(object)
+									list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+									list_of_data <- lapply(list_of_data, function(x) return(x[order(rownames(x)), ]))
+									out <- object@list_of_row_data[[1]][ ,columns]
+									timepoints <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[2])))
+									samples <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[1])))
+									levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
+									timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
+									out <- as.data.frame(cbind(out, timepoints, samples))
+							}
 					} else {
+						if(is.null(columns)) {
+							out <- NULL
+							return(NULL)
+						} else {
 							data <- as.data.frame(object@list_of_data[names(object@list_of_data) %in% which_data][[1]])
 							phenotype <- object@list_of_row_data[[which_data]]
 							out <- phenotype[rownames(phenotype) %in% rownames(data), columns]
@@ -394,6 +415,7 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 							levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
 							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
 							out <- as.data.frame(cbind(out, timepoints, samples))
+						}
 					}
 					return(out)
 	}) 
