@@ -496,7 +496,7 @@ setMethod("calc_ttest_metabolites", "metime_analyser", function(object, which_da
                   result <- rstatix::t_test(m1 ~ m2, paired=paired, alternative=type)
                   return(result)
               }, max.cores=4) %>% do.call(what=rbind.data.frame)
-            return(out)
+            return(results)
         })
         return(out)
   })
@@ -511,8 +511,8 @@ setMethod("calc_ttest_metabolites", "metime_analyser", function(object, which_da
 #' @param paired Logical to perform paired t.test or not
 #' @return plotter object with t-test results
 #' @export
-setGeneric("calc_ttest_samples", function(object, which_data, timepoints, type, paired) standardGeneric("calc_ttest_samples"))
-setMethod("calc_ttest_samples", "metime_analyser", function(object, which_data, timepoints, type, paired) {
+setGeneric("calc_ttest_samples", function(object, which_data, timepoints, type, paired=TRUE) standardGeneric("calc_ttest_samples"))
+setMethod("calc_ttest_samples", "metime_analyser", function(object, which_data, timepoints, type, paired=TRUE) {
         if(length(which_data) > 1) {
           object <- mod_extract_common_samples(object)
           combinations <- as.data.frame(t(combn(timepoints, 2)))
@@ -527,12 +527,29 @@ setMethod("calc_ttest_samples", "metime_analyser", function(object, which_data, 
           timepoints <- as.character(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2]))))
           samples <- as.character(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[1]))))
           data <- as.data.frame(cbind(data, timepoints, samples))
+          name_combs <- cbind(unique(data$samples), unique(data$samples))
+          colnames(name_combs) <- c("s1", "s2")
         }
         out <- lapply(1:nrow(combinations), function(x) {
-                
+              t1 <- as.character(combinations[x, 1])
+              t2 <- as.character(combinations[x, 2])
+              t1_data <- data %>% filter(timepoints==t1) 
+              t2_data <- data %>% filter(timepoints==t2)
+              rownames(t1_data) <- t1_data$samples
+              rownames(t2_data) <- t2_data$samples
+              t1_data <- t1_data %>% dplyr::select(-samples, -timepoints) %>% t()
+              t2_data <- t2_data %>% dplyr::select(-samples, -timepoints) %>% t()
+              common_samples <- intersect(colnames(t1_data), colnames(t2_data))
+              name_combs <- cbind(common_samples, common_samples)
+              out <- parallel::mclapply(name_combs, function(x) {
+                  s1 <- t1_data[ ,x$V1]
+                  s2 <- t2_data[ ,x$V2]
+                  result <- rstatix::t_test(s1 ~ s2, paired=paired, alternative=type)
+                  return(result)
+                }, max.cores=4) %>% do.call(what=rbind.data.frame)
+              return(results)
           })
-
-
+        return(out)
   })
 
 

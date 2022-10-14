@@ -4,7 +4,7 @@
 \alias{calc_ttest_samples}
 \title{Function to calculate students t-test between samples at different timepoints}
 \usage{
-calc_ttest_samples(object, which_data, timepoints, type, paired)
+calc_ttest_samples(object, which_data, timepoints, type, paired = TRUE)
 }
 \arguments{
 \item{object}{S4 object of class metime_analyser}
