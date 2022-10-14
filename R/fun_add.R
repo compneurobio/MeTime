@@ -59,7 +59,7 @@ setMethod("add_col_stats", "metime_analyser", function(object, which_data, type=
 	  stopifnot(type %in% c("shapiro", "kruskal"))
       for(i in 1:length(which_data)) {
       		out <- lapply(names(object@list_of_data[[which_data[i]]]), function(x) {
-      					my_model <- shapiro.test(object@list_of_data[[which_data[i]]][[x]])
+      					my_model <- shapiro.test(object@list_of_data[[which_data[i]]][, x])
       					return(data.frame(id=x,
                  				shapiro_pval=as.numeric(my_model$p.value),
                  				shapiro_statistic=as.numeric(my_model$statistic),
@@ -70,7 +70,7 @@ setMethod("add_col_stats", "metime_analyser", function(object, which_data, type=
 	      	shapiro_statistic <- dummy$shapiro_statistic
 	      	shapiro_normal <- ifelse(dummy$shapiro_pval>0.05, TRUE,FALSE)
 	      	out <- lapply(names(object@list_of_data[[which_data[i]]]), function(x) {
-      						my_model <- shapiro.test(object@list_of_data[[which_data[i]]][[x]])
+      						my_model <- shapiro.test(object@list_of_data[[which_data[i]]][ ,x])
       						return(data.frame(id=x,
                  				kruskal_pval=as.numeric(my_model$p.value),
                  				kruskal_statistic=as.numeric(my_model$statistic),
@@ -82,6 +82,15 @@ setMethod("add_col_stats", "metime_analyser", function(object, which_data, type=
 	      	kruskal_normal <- ifelse(dummy$kruskal_pval>0.05, TRUE,FALSE)
 	      	col_data <- object@list_of_col_data[[which_data[i]]]
 	    	col_data <- col_data[order(col_data[ ,metab_names[i]]), ]
+	    	out <- lapply(names(object@list_of_data[[which_data[i]]]), function(x) {
+	    				data <- object@list_of_data[[which_data[i]]][ ,x]
+	    				names(data) <- rownames(object@list_of_data[[which_data[i]]])
+	    				times <- unlist(lapply(strsplit(names(data), split="_"), function(x) return(x[2])))
+	    				out <- ifelse(length(unique(times))>1, TRUE, FALSE)
+	    				return(out)
+	    		})
+	    	longitudinal <- unlist(out)
+	    	object@list_of_col_data[[which_data[i]]]$longitudinal <- longitudinal
 	      	if(all) {
 	      		col_data <- as.data.frame(cbind(col_data, kruskal_pval, kruskal_statistic, kruskal_normal, 
 	      										shapiro_pval, shapiro_statistic, shapiro_normal))
@@ -246,4 +255,3 @@ setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_
 	})
 
 
-# In study characteristics add a table to see col normality before and after log transformation

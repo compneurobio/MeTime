@@ -216,6 +216,10 @@ get_files_and_names <- function(path, annotations_index) {
 			}
 			metab_object@list_of_data[[i]] <- metab_object@list_of_data[[i]][order(rownames(metab_object@list_of_row_data[[i]])), ]
 	}
+	for(i in 1:length(metab_object@list_of_col_data)) {
+			metab_object@list_of_data[[i]] <- metab_object@list_of_data[[i]][ ,order(colnames(metab_object@list_of_data[[i]]))]
+			metab_object@list_of_col_data[[i]] <- metab_object@list_of_col_data[[i]][order(metab_object@list_of_col_data[[i]]$id), ]
+	}
 	out <- metab_object
 	return(out)
 }
