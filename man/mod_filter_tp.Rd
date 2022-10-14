@@ -9,7 +9,7 @@ mod_filter_tp(object, timepoints, full, which_data)
 \arguments{
 \item{object}{An object of class metime_analyser}
 
-\item{timepoints}{time points to be selected}
+\item{timepoints}{time points to be selected.}
 
 \item{full}{if TRUE subjects are only selected if measured in all selected time points}
 
@@ -23,5 +23,5 @@ a method applied onto class metime_analyser in order to extract timepoints of in
 }
 \examples{
 #example to use this function
-object <- mod_filter_tp(object, timepoints=c(0,12,24), full=TRUE, which_data="Name of the dataset")
+object <- mod_filter_tp(object, timepoints=c("t0","t12","t24"), full=TRUE, which_data="Name of the dataset")
 }

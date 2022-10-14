@@ -197,12 +197,13 @@ get_files_and_names <- function(path, annotations_index) {
 	#Update subject and time columns in the row data
 	for(i in 1:length(metab_object@list_of_row_data)) {
 			if("rid" %in% colnames(metab_object@list_of_row_data[[i]])) {
-				colnames(metab_object@list_of_row_data[[i]])[colnames(metab_object@list_of_row_data[[i]])=="rid"] <- "subject"
+				metab_object@list_of_row_data[[i]]$rid <- NULL
 			}
 			if("timepoint" %in% colnames(metab_object@list_of_row_data[[i]])) {
-				colnames(metab_object@list_of_row_data[[i]])[colnames(metab_object@list_of_row_data[[i]])=="timepoint"] <- "time"
-			} else if("time" %in% colnames(object@list_of_row_data[[i]])) {
-					next
+				metab_object@list_of_row_data[[i]]$timepoint <- NULL
+			}
+			if("RID" %in% colnames(metab_object@list_of_row_data[[i]])) {
+				metab_object@list_of_row_data[[i]]$RID <- NULL
 			}
 	}
 	for(i in 1:length(metab_object@list_of_row_data)) {

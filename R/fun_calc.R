@@ -493,7 +493,7 @@ setMethod("calc_ttest_metabolites", "metime_analyser", function(object, which_da
             results <- parallel::mclapply(name_combs, function(x) {
                   m1 <- t1_data[ ,x$V1]
                   m2 <- t2_data[ ,x$V2]
-                  result <- rstatix::t_test(m1, m2, paired=paired, alternative=type)
+                  result <- rstatix::t_test(m1 ~ m2, paired=paired, alternative=type)
                   return(result)
               }, max.cores=4) %>% do.call(what=rbind.data.frame)
             return(out)
@@ -513,10 +513,25 @@ setMethod("calc_ttest_metabolites", "metime_analyser", function(object, which_da
 #' @export
 setGeneric("calc_ttest_samples", function(object, which_data, timepoints, type, paired) standardGeneric("calc_ttest_samples"))
 setMethod("calc_ttest_samples", "metime_analyser", function(object, which_data, timepoints, type, paired) {
-        if(length(which_data) > 1) object <- mod_extract_common_samples(object)
-        combinations <- as.data.frame(t(combn(timepoints, 2)))
-        list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
-        data <- do.call(unname(list_of_data), cbind)
+        if(length(which_data) > 1) {
+          object <- mod_extract_common_samples(object)
+          combinations <- as.data.frame(t(combn(timepoints, 2)))
+          list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+          data <- do.call(unname(list_of_data), cbind)
+          timepoints <- as.character(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2]))))
+          samples <- as.character(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[1]))))
+          data <- as.data.frame(cbind(data, timepoints, samples))
+        } else {
+          data <- as.data.frame(object@list_of_data[[which_data]])
+          combinations <- as.data.frame(t(combn(timepoints, 2)))
+          timepoints <- as.character(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2]))))
+          samples <- as.character(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[1]))))
+          data <- as.data.frame(cbind(data, timepoints, samples))
+        }
+        out <- lapply(1:nrow(combinations), function(x) {
+                
+          })
+
 
   })
 

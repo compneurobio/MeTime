@@ -131,9 +131,9 @@ setMethod("mod_trans_zscore", "metime_analyser", function(object, which_data) {
 #' Functions for selecting time points
 #' @description a method applied onto class metime_analyser in order to extract timepoints of interest from a dataset
 #' @examples #example to use this function
-#' object <- mod_filter_tp(object, timepoints=c(0,12,24), full=TRUE, which_data="Name of the dataset")
+#' object <- mod_filter_tp(object, timepoints=c("t0","t12","t24"), full=TRUE, which_data="Name of the dataset")
 #' @param object An object of class metime_analyser
-#' @param timepoints time points to be selected
+#' @param timepoints time points to be selected. 
 #' @param which_data Name of the dataset to be used
 #' @param full if TRUE subjects are only selected if measured in all selected time points
 #' @return An object of class metime_analyser with processed data
@@ -146,19 +146,18 @@ setMethod("mod_filter_tp", "metime_analyser", function(object, timepoints, full=
   
   for(i in data_position){
     keep_id <- object@list_of_row_data[[i]] %>% 
-      dplyr::select(id, time, subject) %>% 
-      dplyr::mutate(timepoint = as.numeric(unlist(lapply(strsplit(time, split="t"), function(x) return(x[2]))))) %>% 
-      dplyr::filter(timepoint %in% timepoints)
-    if(full){
+      dplyr::select(id, time, subject) %>%  
+      dplyr::filter(time %in% timepoints)
+    if(full) {
       full_rid <- keep_id %>% 
-        dplyr::count(rid) %>% 
+        dplyr::count(subject) %>% 
         dplyr::filter(n==length(timepoints))
       keep_id <- keep_id %>% 
-        dplyr::filter(rid %in% full_rid$rid)
+        dplyr::filter(subject %in% full_rid$subject)
       object@list_of_row_data[[i]] = object@list_of_row_data[[i]] %>% 
         dplyr::filter(id %in% keep_id$id)
       object@list_of_data[[i]] = object@list_of_data[[i]][keep_id$id,]
-    }else{
+    } else {
       object@list_of_row_data[[i]] = object@list_of_row_data[[i]] %>% 
         dplyr::filter(id %in% keep_id$id)
       object@list_of_data[[i]] = object@list_of_data[[i]][keep_id$id,]
