@@ -552,7 +552,7 @@ setMethod("calc_ttest_samples", "metime_analyser", function(object, which_data, 
         return(out)
   })
 
-
+#Metabolites with pvalues, fold change(statistic) and timepoints information
 
 #' An automated fucntion to calculate GGM from genenet longitudnal version
 #' @description automated funtion that can be applied on metime_analyser object to obtain geneNet network along with threshold used

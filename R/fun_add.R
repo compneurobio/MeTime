@@ -30,11 +30,12 @@ setMethod("add_screening_vars", "metime_analyser", function(object, vars) {
 	screening <- phenotype[grep("-1|-2", rownames(phenotype)), ]
 	new_rows <- as.data.frame(screening[, vars])
 	new_rows <- na.omit(new_rows)
-	sample_names <- unlist(lapply(strsplit(rownames(screening), split="_t"), function(x) return(x[1])))
+	sample_names <- unlist(lapply(strsplit(rownames(new_rows), split="_"), function(x) return(x[1])))
 	for(i in 1:length(sample_names)) {
-		index <- grep(sample_names[i], rownames(phenotype)) 
+		samples <- unlist(lapply(strsplit(rownames(phenotype), split="_"), function(x) return(x[1])))
+		index <- which(samples %in% sample_names[i], arr.ind=TRUE)
 		for(j in index) {
-			phenotype[j, vars] <- screening[rownames(screening)[i], vars]
+			phenotype[j, vars] <- new_rows[rownames(new_rows)[i], vars]
 		}
 	}
 	object@list_of_data[[phenotype_name]] <- phenotype
@@ -253,5 +254,6 @@ setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_
 			out <- object
 			return(out)
 	})
+
 
 

@@ -256,14 +256,33 @@ setMethod("mod_remove_duplicates", "metime_analyser", function(object) {
 				return(out)
 	})
 
-#' Function to combine replicates in the data
-#' @description Function to combine two data points of a sample in a dataset
-#' @param object An S4 object of class metime_analyser
-#' @param which_data The dataset in which the data points are to be combined
-#' @return object with combined information
+
+
+#' Function to stratify data in the metime analyser object
+#' @description Function to stratify the data of interest into different objects that can be used
+#' to perform calculations according the said stratification variable
+#' @param object S4 object of class metime_analyser
+#' @param which_data Dataset/datasets to be used for stratification
+#' @param variable Phenotype based on which the stratification would be performed
+#' @return list of metime_analyser objects which are stratified based on the variable chosen
 #' @export
-setGeneric("mod_average_combine", function(object, which_data) standardGeneric("mod_average_combine")) 
-setMethod("mod_average_combine", "metime_analyser", function(object, which_data) {
-				#Function needs to be completed
-				#Have doubts as rownames cannot be duplicated anymore
+setGeneric("mod_stratify_analyser", function(object, which_data, variable) standardGeneric("mod_stratify_analyser"))
+setMethod("mod_stratify_analyser", "metime_analyser", function(object, which_data, variable) {
+				out <- lapply(which_data, function(x) {
+								data <- object@list_of_data[[x]]
+								row_data <- object@list_of_row_data[[x]]
+								strat <- as.data.frame(nnet::class.ind(row_data[ ,variable]))
+								rownames(strat) <- rownames(row_data)
+								strat_list <- lapply(colnames(strat), function(y) {
+												strat_samples <- ifelse(strat[,y]==1, rownames(strat), NA)
+												strat_samples <- na.omit(strat_samples)
+												strat_data <- data[rownames(data) %in% strat_samples, ]
+												strat_row_data <- row_data[rownames(row_data) %in% strat_samples, ]
+												object@list_of_data[[x]] <- strat_data
+												object@list_of_row_data[[x]] <- strat_row_data
+												return(object)
+									})
+								return(strat_list)
+					})
+				return(out)
 	})
