@@ -517,7 +517,7 @@ get_betas_for_multibipartite_lasso <- function(list_of_mats, # list of matrices 
 				y_mat <- as.matrix(list_of_mats[[j]])
 				fit_list <- list()
 				for(k in 1:ncol(y_mat)) {
-					fit_list[[k]] <- cv.glmnet(x=x_mat, y=y_mat[,k], alpha=alpha, nfolds=nfolds)
+					fit_list[[k]] <- glmnet::cv.glmnet(x=x_mat, y=y_mat[,k], alpha=alpha, nfolds=nfolds)
 					names(fit_list)[k] <- colnames(y_mat)[k]
 				}
 				out[[count]] <- fit_list
@@ -529,7 +529,7 @@ get_betas_for_multibipartite_lasso <- function(list_of_mats, # list of matrices 
 				for(k in 1:ncol(mat)) {
 					y <- as.matrix(mat[,k])
 					x <- as.matrix(mat[,-k])
-					fit_list[[k]] <- cv.glmnet(x=x, y=y, alpha=alpha, nfolds=nfolds)
+					fit_list[[k]] <- glmnet::cv.glmnet(x=x, y=y, alpha=alpha, nfolds=nfolds)
 					names(fit_list)[k] <- colnames(mat)[k]
 				} 
 				out[[count]] <- fit_list

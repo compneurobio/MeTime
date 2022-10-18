@@ -117,41 +117,7 @@ setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname
 	}
 })
 
-# #' Function to dot plot any kind of dot_plotter including for dimensionality reduction
-# #' @description General function to be implemented on data_list that is obtained after applying a dimensionality reduction method
-# #' @param data_list list obtained after applying calc_dimensionality_reduction() on metime_analyse object
-# #' @param metadata_list list obtained after applying get_metadata_for_plotting() on metime_analyse object
-# #' @param axes_labels character vector to specify the labels of the axes in the order x and y.
-# #' @param title_metabs character to specify the title of the plot of metabolites
-# #' @param title_metabs character to specify the title of the plot of metabolites
-# #' @return a list with both the plots of samples and metabolites. Can be accessed by using ".$samples" and ".$metabs"
-# #' @export
-# viz_dimensionality_reduction <- function(data_list, metadata_list, axes_labels, title_metabs, title_samples) {
-# 	palette <- get_palette(30)
-# 	if(is.null(metadata_list)) {
-# 		return(list(metabs=plot(data_list$metabs), samples=plot(data_list$samples)))
-# 	} else {
-# 		plot <- list()
-# 		data_list <- lapply(data_list, function(x) return(x[sort(rownames(x)),]))
-# 		plot_data_metabs <- as.data.frame(cbind(data_list$metabs, metadata_list$metabs))
-# 		plot_data_samples <- as.data.frame(cbind(data_list$samples, metadata_list$samples))
-# 		plot_metabs <- ggplot(plot_data_metabs, aes_string(x=colnames(plot_data_metabs)[1], y=colnames(plot_data_metabs)[2], 
-# 							color="groups", shape="class", text=paste("metab_name :", plot_data_metabs$name, sep="")))  
-# 						+ geom_point() + labs(x=axes_labels[1], y=axes_labels[2], subtitle=title_metabs) 
-# 		plot_metabs <- ggplotly(metabs)
-# 		timepoints <- unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2])))
-# 		levels <- unique(sort(as.numeric(unlist(lapply(strsplit(timepoints, split="t", fixed=TRUE), function(x) return(x[2]))))))
-# 		plot_data_samples$timepoints <- factor(timepoints, levels=paste("t", levels, sep=""))
-# 		plot_samples <- ggplot(plot_data_samples, aes_string(x=colnames(plot_data_samples)[1], y=colnames(plot_data_samples)[2], 
-# 						color="timepoints", 
-# 						text=get_text_for_plot(data=plot_data_samples, colnames=colnames(plot_data_samples)[3:length(colnames(plot_data_samples))]))) +
-# 						geom_point() + labs(x=axes_labels[1], y=axes_labels[2], subtitle=title_samples)
-# 		plot_samples <- ggplotly(plot_samples)
-# 		return(list(metabs=plot_metabs, samples=plot_samples))
-# 	}
-# }
- 
-#viz_conversation_index()
+
 
 #Create an S4 class for plotting
 #analysis - needs ids or names, col_id data, row_data, col_data
@@ -208,7 +174,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics, i
 				}
 
 				if(interactive) {
-					object@plot[[i]] <- ggplotly(object@plot[[i]], width = 800, height = 600)
+					object@plot[[i]] <- plotly::ggplotly(object@plot[[i]], width = 800, height = 600)
 					for(j in 1:length(object@plot[[i]]$x$data)) {
 						x <- object@plot[[i]]$x$data[[j]]$x
 						data <- object@plot_data[[1]]
@@ -269,28 +235,28 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, la
         if(length(unique(metadata$class)) > 1) {
         	classes <- unique(metadata$class)
             groups <-  unique(metadata$group)
-            graph <- visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
-                    visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
-                    visPhysics(stabilization = FALSE)
+            graph <- visNetwork::visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
+                    visNetwork::visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
+                    visNetwork::visPhysics(stabilization = FALSE)
             for(i in 1:length(classes)) {
-                graph <- graph %>% visGroups(graph=graph, groupname = classes[i], shape = shapes[i])
+                graph <- graph %>% visNetwork::visGroups(graph=graph, groupname = classes[i], shape = shapes[i])
             }
-            graph <- graph %>% visLegend(useGroups = T) %>% 
-                    visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
-                    visEdges(smooth = FALSE, shadow = TRUE) %>%
-                        visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
-                        visInteraction(navigationButtons = T) %>%
-                       	visExport(type="pdf", name=title, float="right")
+            graph <- graph %>% visNetwork::visLegend(useGroups = T) %>% 
+                    visNetwork::visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
+                    visNetwork::visEdges(smooth = FALSE, shadow = TRUE) %>%
+                        visNetwork::visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
+                        visNetwork::visInteraction(navigationButtons = T) %>%
+                       	visNetwork::visExport(type="pdf", name=title, float="right")
         } else {
-        	graph <- visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
-                    visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
-                    visPhysics(stabilization = FALSE) %>%
-                    visLegend(useGroups = T) %>% 
-                    visNodes(borderWidth = 3) %>%
-                    visEdges(smooth = FALSE, shadow = TRUE) %>%
-                    visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
-                    visInteraction(navigationButtons = T) %>%
-                    visExport(type="pdf", name=title, float="right")		
+        	graph <- visNetwork::visNetwork(nodes=object@plot_data[["node"]], edges=object@plot_data[["edge"]], main=title) %>%
+                    visNetwork::visIgraphLayout(layout=layout_by, physics = F, smooth = F) %>%
+                    visNetwork::visPhysics(stabilization = FALSE) %>%
+                    visNetwork::visLegend(useGroups = T) %>% 
+                    visNetwork::visNodes(borderWidth = 3) %>%
+                    visNetwork::visEdges(smooth = FALSE, shadow = TRUE) %>%
+                    visNetwork::visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
+                    visNetwork::visInteraction(navigationButtons = T) %>%
+                    visNetwork::visExport(type="pdf", name=title, float="right")		
         }
         object@plot[[1]] <- graph
         out <- object

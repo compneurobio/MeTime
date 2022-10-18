@@ -12,18 +12,18 @@ License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
-Depends: 
+Imports: 
     abind,
     Boruta,
-    data.table,
     DT,
     GeneNet,
-    generics,
     ggplot2,
     glmnet,
     igraph,
+    lme4,
     longitudinal,
     M3C,
+    mgcv,
     multiway,
     nnet,
     plotly,
@@ -31,6 +31,8 @@ Depends:
     RColorBrewer,
     rstatix,
     shiny,
-    tidyverse,
     umap,
+    visNetwork,
     xlsx
+Depends: 
+    tidyverse

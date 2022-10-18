@@ -87,7 +87,7 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
       dplyr::mutate(id = rownames(.[])) %>% 
       dplyr::left_join(
         object@list_of_row_data[[data_position]] %>% 
-          dplyr::mutate(time = as.numeric(time)) %>% 
+          dplyr::mutate(time = as.numeric(unlist(lapply(strsplit(time, split="t"), function(x) return(x[2]))))) %>% 
           dplyr::select(id, time, subject),
         by="id"
       )
@@ -197,7 +197,7 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
     data_merged <- object@list_of_data[[data_position]] %>% 
       dplyr::mutate(id = rownames(.[])) %>% 
       dplyr::left_join(object@list_of_row_data[[data_position]] %>% 
-          dplyr::mutate(time = as.numeric(time)) %>% 
+          dplyr::mutate(time = as.numeric(unlist(lapply(strsplit(time, split="t"), function(x) return(x[2]))))) %>% 
           dplyr::select(id, time, subject), 
           by="id")
     
@@ -336,8 +336,8 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
         dr_data_metabs <- as.data.frame(umap_metabs$layout)
         colnames(dr_data_metabs) <- c("UMAP1", "UMAP2")
       } else if(type %in% "tSNE") {
-        tsne_samples <- tsne(t(data), ...)
-        tsne_metabs <- tsne(data, ...)
+        tsne_samples <- M3C::tsne(t(data), ...)
+        tsne_metabs <- M3C::tsne(data, ...)
         dr_data_metabs <- as.data.frame(tsne_metabs$data)
         rownames(dr_data_metabs) <- colnames(data)
         dr_data_samples <- as.data.frame(tsne_samples$data)
@@ -784,7 +784,7 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
             xmat <- as.matrix(na.omit(xmat))
             fit_list <- list()
             for(k in 1:ncol(ymat)) {
-                fit_list[[k]] <- cv.glmnet(x=xmat, y=ymat[,k], alpha=alpha, nfolds=nfolds)
+                fit_list[[k]] <- glmnet::cv.glmnet(x=xmat, y=ymat[,k], alpha=alpha, nfolds=nfolds)
                 coeffs <- coef(fit_list[[k]])[,1]
                 coeffs <- coeffs[!(coeffs==0)]
                 coeffs <- coeffs[-1]

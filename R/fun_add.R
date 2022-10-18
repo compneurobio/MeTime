@@ -30,6 +30,7 @@ setMethod("add_screening_vars", "metime_analyser", function(object, vars) {
 	screening <- phenotype[grep("-1|-2", rownames(phenotype)), ]
 	new_rows <- as.data.frame(screening[, vars])
 	new_rows <- na.omit(new_rows)
+	new_rows <- new_rows[order(rownames(new_rows)), ]
 	sample_names <- unlist(lapply(strsplit(rownames(new_rows), split="_"), function(x) return(x[1])))
 	for(i in 1:length(sample_names)) {
 		samples <- unlist(lapply(strsplit(rownames(phenotype), split="_"), function(x) return(x[1])))
@@ -133,9 +134,9 @@ setMethod("add_distribution_vars_to_rows", "metime_analyser", function(object, s
 			}
 			data <- as.data.frame(object@list_of_row_data[[which_data]])
 			phenotype <- phenotype[rownames(phenotype) %in% rownames(data), ]
-			phentoype <- phenotype[order(rownames(phenotype)),]
+			phen_data <- phenotype[order(rownames(phenotype)),]
 			data <- data[order(rownames(data)), ]
-			data <- cbind(data, phenotype[ ,distribution_vars])
+			data <- cbind(data, phen_data[ ,distribution_vars])
 			object@list_of_row_data[[which_data]] <- data
 			out <- object
 			return(out)
