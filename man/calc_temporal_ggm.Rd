@@ -11,7 +11,8 @@ calc_temporal_ggm(
   timepoints,
   alpha,
   nfolds,
-  cols_for_meta
+  cols_for_meta,
+  cores
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ calc_temporal_ggm(
 \item{nfolds}{nfolds parameter for glmnet style of regression}
 
 \item{cols_for_meta}{a list of character vectors of column names to be used for visualization of the networks.}
+
+\item{cores}{Number of cores to be used for the process}
 }
 \value{
 temporal network data with edgelist and regression values

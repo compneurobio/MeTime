@@ -38,7 +38,7 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
   y_data <- y_data[rownames(x_data),]
   
   
-  for(i in sample(colnames(y_data))){
+  for(i in sample(colnames(y_data))) {
     if(verbose) cat(i, "; ")
     if(paste0(file_name, ".rds") %in% list.files(output_loc)) my_results=readRDS(file=paste0(output_loc, "/", file_name, ".rds"))
       else my_results = data.frame()
@@ -53,8 +53,27 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
                     id_y=rownames(.[]))
     
     saveRDS(object=rbind(my_results, my_stats),file=paste0(output_loc, "/", file_name, ".rds")) 
-    
   }
+  count <- 1
+  for(i in colnames(y_data)) {
+    if(i %in% my_results$id_x) {
+      dummy <- my_results$id_y[results$id_x %in% i]
+      dummy <- paste(dummy, collapse="###")
+      final <- data.frame()
+      final$id[count] <- i
+      final$covarites[count] <- dummy
+      count <- count +1
+    } else {
+      dummy <- NA
+      final$id[count] <- i
+      final$covariates[count] <- dummy
+      count <- count +1
+    }
+  }
+  final <- final[order(final$id), ]
+  object@list_of_col_data[[which_y]] <- object@list_of_col_data[[which_y]][order(object@list_of_data[[which_y]]$id), ]
+  object@list_of_col_data[[which_y]]$covariates <- final$covariates
+  return(object)
 })
 
 
@@ -732,10 +751,11 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
 #' @param alpha parameter for regression coefficient
 #' @param nfolds nfolds parameter for glmnet style of regression
 #' @param cols_for_meta a list of character vectors of column names to be used for visualization of the networks.
+#' @param cores Number of cores to be used for the process
 #' @return temporal network data with edgelist and regression values
 #' @export
-setGeneric("calc_temporal_ggm", function(object, which_data, lag, timepoints, alpha, nfolds, cols_for_meta) standardGeneric("calc_temporal_ggm"))
-setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, lag, timepoints, alpha, nfolds, cols_for_meta) {
+setGeneric("calc_temporal_ggm", function(object, which_data, lag, timepoints, alpha, nfolds, cols_for_meta, cores) standardGeneric("calc_temporal_ggm"))
+setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, lag, timepoints, alpha, nfolds, cols_for_meta, cores) {
         if(length(which_data) > 1) object <- mod_extract_common_samples(object)
         object <- mod_split_acc_to_time(object)
         list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
@@ -758,50 +778,52 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
             count <- count + 1
         }
         models <- list()
-        for(i in 1:length(model_seqs)) {
-            network_data <- final_data[names(final_data) %in% model_seqs[[i]]]
-            count <- 1
-            network_data <- lapply(network_data, function(x) {
-                    colnames(x) <- paste(colnames(x), model_seqs[[i]][count], sep="_time:")
-                    rownames(x) <- unlist(lapply(strsplit(rownames(x), split="_"), function(x) return(x[1])))
-                    count <<- count +1 
-                    return(x) 
-              })
-            network_data <- unname(network_data)
-            list_of_names <- lapply(network_data, function(x) {
-                return(rownames(x))
+        out <- lapply(seq_along(model_seqs), function(x) {
+                   network_data <- final_data[names(final_data) %in% model_seqs[[x]]]
+                   count <- 1
+                   network_data <- lapply(network_data, function(y) {
+                           colnames(y) <- paste(colnames(y), model_seqs[[x]][count], sep="_time:")
+                           rownames(y) <- unlist(lapply(strsplit(rownames(x), split="_"), function(x) return(x[1])))
+                           count <<- count +1 
+                           return(x) 
+                     })
+                   network_data <- unname(network_data)
+                   list_of_names <- lapply(network_data, function(y) {
+                       return(rownames(y))
+                   })
+                   common_samples <- Reduce(intersect, list_of_names)
+                   network_data <- lapply(network_data, function(y) {
+                       y <- y[rownames(y) %in% common_samples, ]
+                       y <- y[order(rownames(y)), ]
+                       return(y)
+                   })
+                   network_data <- do.call(cbind, network_data)
+                   ymat <- network_data[ ,grep(model_seqs[[x]][1] ,colnames(network_data), value=TRUE)]
+                   xmat <- network_data[ ,!(colnames(network_data) %in% colnames(ymat))]
+                   ymat <- as.matrix(na.omit(ymat))
+                   xmat <- as.matrix(na.omit(xmat))
+                   results <- parallel::mclapply(seq_along(colnames(a)), function(y) {
+                            result <- glmnet::cv.glmnet(x=xmat, y=ymat[,y], alpha=alpha, nfolds=nfolds)
+                            coeffs <- coef(result)[,1]
+                            coeffs <- coeffs[!(coeffs==0)]
+                            coeffs <- coeffs[-1]
+                            target <- names(coeffs)
+                            source <- rep(colnames(ymat)[y], each=length(coeffs))
+                            result <- as.data.frame(cbind(source, target, coeffs))
+                            return(result)
+                    }, max.cores=cores) %>% do.call(what=rbind.data.frame)
+                   colnames(results) <- c("node1", "node2", "coeffs")
+                   results$label <- paste(unlist(lapply(strsplit(as.character(results$node1), split="_time:"), function(x) return(x[2]))),
+                                              unlist(lapply(strsplit(as.character(results$node2), split="_time:"), function(x) return(x[2]))),
+                                                sep="-")
+                   results$node1 <- unlist(lapply(strsplit(as.character(results$node1), split="_time:"), function(x) return(x[1])))
+                   results[[i]]$node2 <- unlist(lapply(strsplit(as.character(results$node2), split="_time:"), function(x) return(x[1])))  
+                   return(results)
             })
-            common_samples <- Reduce(intersect, list_of_names)
-            network_data <- lapply(network_data, function(x) {
-                x <- x[rownames(x) %in% common_samples, ]
-                x <- x[order(rownames(x)), ]
-                return(x)
+        models <- lapply(seq_along(model_seqs), function(x) {
+                    names(out)[x] <- paste(model_seqs[[x]], collapse="-")
+                    return(out)
             })
-            network_data <- do.call(cbind, network_data)
-            ymat <- network_data[ ,grep(model_seqs[[i]][1] ,colnames(network_data), value=TRUE)]
-            xmat <- network_data[ ,!(colnames(network_data) %in% colnames(ymat))]
-            ymat <- as.matrix(na.omit(ymat))
-            xmat <- as.matrix(na.omit(xmat))
-            fit_list <- list()
-            for(k in 1:ncol(ymat)) {
-                fit_list[[k]] <- glmnet::cv.glmnet(x=xmat, y=ymat[,k], alpha=alpha, nfolds=nfolds)
-                coeffs <- coef(fit_list[[k]])[,1]
-                coeffs <- coeffs[!(coeffs==0)]
-                coeffs <- coeffs[-1]
-                target <- names(coeffs)
-                source <- rep(colnames(ymat)[k], each=length(coeffs))
-                fit_list[[k]] <- as.data.frame(cbind(source, target, coeffs))
-            }
-            fit_list <- unname(fit_list)
-            models[[i]] <- as.data.frame(do.call(rbind, fit_list))
-            names(models)[i] <- paste(model_seqs[[i]], collapse="-")
-            colnames(models[[i]]) <- c("node1", "node2", "coeffs")
-            models[[i]]$label <- paste(unlist(lapply(strsplit(as.character(models[[i]]$node1), split="_time:"), function(x) return(x[2]))),
-                                      unlist(lapply(strsplit(as.character(models[[i]]$node2), split="_time:"), function(x) return(x[2]))),
-                                        sep="-")
-            models[[i]]$node1 <- unlist(lapply(strsplit(as.character(models[[i]]$node1), split="_time:"), function(x) return(x[1])))
-            models[[i]]$node2 <- unlist(lapply(strsplit(as.character(models[[i]]$node2), split="_time:"), function(x) return(x[1])))    
-        }
         metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta, 
                  names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
         out <- lapply(models, function(x) {
@@ -841,15 +863,15 @@ setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object,
         data <- data %>% select(-c(all_of(rm_col)))
         data <- na.omit(data)
         this_mat <- as.matrix(apply(data, 2, as.numeric))
-        pcor_mat <- ggm.estimate.pcor(as.matrix(this_mat), method = "dynamic", verbose = F)
+        pcor_mat <- GeneNet::ggm.estimate.pcor(as.matrix(this_mat), method = "dynamic", verbose = F)
         # compute p-values of edges
-        pval_mat <- network.test.edges(pcor_mat, plot = F, verbose = F)
+        pval_mat <- GeneNet::network.test.edges(pcor_mat, plot = F, verbose = F)
         # p-value correction of edges
         pval_mat$p.adj.bh <- p.adjust(pval_mat$pval, method="BH")
         pval_mat$p.adj.bon <- p.adjust(pval_mat$pval, method="bonferroni")    
         ggm_thresh <- 0.05
         # extract edge list
-        tmp <- pcor_mat %>% graph_from_adjacency_matrix(mode='undirected', weighted = T) %>% igraph::simplify()
+        tmp <- pcor_mat %>% igraph::graph_from_adjacency_matrix(mode='undirected', weighted = T) %>% igraph::simplify()
         ggm_edges <- cbind.data.frame(get.edgelist(tmp), edge_attr(tmp)$weight)
         names(ggm_edges) <- c("node1", "node2", "pcor")
         if(all) {
@@ -1135,7 +1157,87 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
   })
 
 
+#' Function to perform Linear Mixed Models
+#' @description Function to perform linear mixed models on dataset of interest
+#' @param object An S4 object of class metime_analyser
+#' @param which_data Dataset to be used 
+#' @param formula Formulae to define the equation to be used in linear mixed models
+#' @param cores Numeric to define the number of cores to be used 
+#' @return Returns a plotter object for plotting forest plots of the results
+#' @export 
+setGeneric("calc_lmm", function(object, which_data, formula=NULL, cores=NULL) standardGeneric("calc_lmm"))
+setMethod("calc_lmm" , "metime_analyser", function(object, which_data, formula=NULL, cores=NULL){
+  #define number of cores
+  if(is.null(cores)){
+    ncores = parallel::detectCores()-1
+  }else{
+    ncores = as.numeric(cores)
+  }
+  
+  # add sanity checks 
+  if(is.null(formula) || !which_data %in% names(object@list_of_data)){
+    my_results = data.frame()
+    warning("calc_lmm() could not match formula or data")
+  }
+  
+  # add check if all variables are in formula
+  
+  my_results=lapply(formula, function(x){
+    cat(x)
+    my_var = x %>% 
+      gsub(pattern=" ", replacement="") %>% 
+      strsplit(x, split="[+]|~") %>% 
+      unlist()
+    my_var[length(my_var)] =  my_var[length(my_var)] %>% gsub(pattern="[(1|)]| [)]", replacement="")
+    my_data <- object@list_of_data[[which_data]] %>% 
+      dplyr::select(all_of(my_var)) %>% 
+      na.omit() %>% 
+      as.data.frame() 
+    
+    if(length(unique(my_data$timepoint))==1){
+      model_out=data.frame(
+        met=my_var[1],
+        trait=my_var[2],
+        beta = NA,
+        pval = NA,
+        stringsAsFactors = F
+      )
+    }else{
+      my_model <- lmerTest::lmer(data=my_data,
+                                           formula = as.formula(x)
+      )
+      my_model <- summary(my_model)
+      model_out=data.frame(
+        met=my_var[1],
+        trait=my_var[2],
+        beta = my_model[["coefficients"]][2,1],
+        pval = my_model[["coefficients"]][2,5],
+        stringsAsFactors = F
+      )
+    }
+  })
+  my_results_formated = my_results %>% 
+    do.call(what=rbind.data.frame) %>% 
+    dplyr::mutate(x = beta, 
+                  y = met,
+                  color=NA,
+                  split=trait)
+  out <- get_make_plotter_object(
+    data = my_results_formated,
+    metadata = NULL,
+    calc_type="regression",
+    calc_info="lmerTest::lmer",
+    plot_type="forest",
+    style="ggplot"
+  )
+  return(out)
+})
 
 
+#' Function to perform Generalized additive models
+#' @description Function to perform Generalized additive models
+#' @param
+#' @return plotter object with GAM results
+#' @export
 
 

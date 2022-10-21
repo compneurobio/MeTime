@@ -10,8 +10,8 @@ get_palette <- function(n) {
 	#loading the package to get colors 
 	#require(RColorBrewer)
 	#extracting all the colorblind friendly colors
-	colors <- brewer.pal.info[brewer.pal.info$colorblind == TRUE, ]
-	col_vec <- unlist(mapply(brewer.pal, colors$maxcolors, rownames(colors)))
+	colors <- RColorBrewer::brewer.pal.info[brewer.pal.info$colorblind == TRUE, ]
+	col_vec <- unlist(mapply(RColorBrewer::brewer.pal, colors$maxcolors, rownames(colors)))
 	col_vec <- unique(col_vec)
 	#get distinct colors by converting the hex to rgb and then to HSL values
 	#We then order the colors based on hue and the differences between each are ranked
@@ -105,6 +105,9 @@ get_make_analyser_object <- function(data, col_data, row_data, annotations_index
   list_of_data[[name]] <- data
   
   list_of_col_data <- list()
+  if(!("covariates" %in% colnames(col_data))) {
+  		col_data$covariates <- rep(NA, each=length(col_data$id))
+  }
   list_of_col_data[[name]] <- col_data 
   
   list_of_row_data <- list()
@@ -135,6 +138,10 @@ setMethod("get_append_analyser_object", "metime_analyser",function(object, data,
   if(is.null(name)) name <- "set1"
   if(!all(rownames(data) %in% row_data$id) & !all(colnames(data) %in% col_data$id)) stop("id of col or row data do not match dataframe")
   if(!all(c("id","subject","time") %in% names(row_data))) stop("id, subject or timepoint column missing")
+
+  if(!("covariates" %in% colnames(col_data))) {
+  		col_data$covariates <- rep(NA, each=length(col_data$id))
+  }
   
   object@list_of_data[[name]] <- data
   object@list_of_col_data[[name]] <- col_data
@@ -219,6 +226,11 @@ get_files_and_names <- function(path, annotations_index) {
 	for(i in 1:length(metab_object@list_of_col_data)) {
 			metab_object@list_of_data[[i]] <- metab_object@list_of_data[[i]][ ,order(colnames(metab_object@list_of_data[[i]]))]
 			metab_object@list_of_col_data[[i]] <- metab_object@list_of_col_data[[i]][order(metab_object@list_of_col_data[[i]]$id), ]
+			if(colnames(metab_object@list_of_col_data[[i]]) %in% "covariates") {
+					next
+			} else {
+					metab_object@list_of_col_data[[i]]$covariates <- rep(NA, each=length(metab_object@list_of_col_data[[i]]$id))
+			}
 	}
 	out <- metab_object
 	return(out)
@@ -562,7 +574,7 @@ get_class_info_from_edges <- function(calc_networks, metadata, phenotypes) {
 								network$node2 <- metadata[as.character(calc_networks[[i]]$node2) %in% metadata$name, "group"]
 								
 								network <- network[ ,c("node1", "node2")]
-								network <- setDT(network)[ ,list(count=.N), names(network)]
+								network <- data.table::setDT(network)[ ,list(count=.N), names(network)]
 								network <- na.omit(network)
 								out[[i]] <- network
 					}

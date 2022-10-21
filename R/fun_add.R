@@ -256,5 +256,10 @@ setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_
 			return(out)
 	})
 
-
+#' Function to add medication results as covariates for regression
+#' @description Function to name the medications that are to be used as confounders for 
+#' linear mixed models and Generalized Additivie Models
+#' @param object An s4 object of class metime analyser
+#' @param which_data Dataset to which these results are to be added
+#' @param
 
