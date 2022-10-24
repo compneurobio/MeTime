@@ -10,7 +10,8 @@ get_palette <- function(n) {
 	#loading the package to get colors 
 	#require(RColorBrewer)
 	#extracting all the colorblind friendly colors
-	colors <- RColorBrewer::brewer.pal.info[brewer.pal.info$colorblind == TRUE, ]
+	colors <- RColorBrewer::brewer.pal.info
+	colors <- colors[colors$colorblind == TRUE, ]
 	col_vec <- unlist(mapply(RColorBrewer::brewer.pal, colors$maxcolors, rownames(colors)))
 	col_vec <- unique(col_vec)
 	#get distinct colors by converting the hex to rgb and then to HSL values
