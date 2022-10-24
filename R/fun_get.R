@@ -226,7 +226,7 @@ get_files_and_names <- function(path, annotations_index) {
 	for(i in 1:length(metab_object@list_of_col_data)) {
 			metab_object@list_of_data[[i]] <- metab_object@list_of_data[[i]][ ,order(colnames(metab_object@list_of_data[[i]]))]
 			metab_object@list_of_col_data[[i]] <- metab_object@list_of_col_data[[i]][order(metab_object@list_of_col_data[[i]]$id), ]
-			if(colnames(metab_object@list_of_col_data[[i]]) %in% "covariates") {
+			if("covariates" %in% colnames(metab_object@list_of_col_data[[i]])) {
 					next
 			} else {
 					metab_object@list_of_col_data[[i]]$covariates <- rep(NA, each=length(metab_object@list_of_col_data[[i]]$id))
