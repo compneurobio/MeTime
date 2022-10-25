@@ -89,8 +89,6 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
 #' @param cols_for_meta Character vector to define column names that are to be used for plotting purposes
 #' @return List of conservation index results
 #' @export
-
-
 setGeneric("calc_conservation_metabotype", function(object, which_data, timepoints, verbose, cols_for_meta) standardGeneric("calc_conservation_metabotype"))
 setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, timepoints, verbose=F, cols_for_meta) {
 
@@ -202,8 +200,6 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
 #' @param cols_for_meta A list of a Character vector to define column names that are to be used for plotting purposes
 #' @return List of conservation index results
 #' @export
-#' 
-#' 
 setGeneric("calc_conservation_metabolite", function(object, which_data, timepoints, verbose, cols_for_meta) standardGeneric("calc_conservation_metabolite"))
 setMethod("calc_conservation_metabolite", "metime_analyser", function(object, which_data, timepoints, verbose=F, cols_for_meta) {
   #define data to be processed
@@ -432,7 +428,6 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
 #' "manhattan","canberra","minkowski" are also possible
 #' @return data.frame with pairwise results
 #' @export
-
 setGeneric("calc_distance_pairwise", function(object, which_data, method) standardGeneric("calc_distance_pairwise"))
 setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_data, method="euclidean") {
   stopifnot(all(which_data %in% names(object@list_of_data)))
@@ -962,10 +957,6 @@ setMethod("calc_parafac", "metime_analyser", function(object, which_data, timepo
 
 
 
-#cognition - take all the ones that are maximum
-#1 step or 2 step neighbourhood
-#preprocess - imputed and scaled and logtransformed
-
 #' Function to get mean trajectories of metabolites and phenotypic traits 
 #' @description function to extract mean trajectories
 #' @param object An S4 object of class metime_analyser
@@ -977,12 +968,16 @@ setGeneric("calc_trajectories_by_mean", function(object, which_data, columns) st
 setMethod("calc_trajectories_by_mean", "metime_analyser", function(object, which_data, columns) {
       #Make sure the data is already scaled
       data <- object@list_of_data[[which_data]]
-      rowdata <- object@list_of_row_data[[which_data]]
-      rowdata <- rowdata[ ,columns]
-      rowdata <- scale(rowdata, center=TRUE, scale=TRUE)
       data <- data[order(rownames(data)), ]
-      rowdata <- rowdata[order(rownames(data)), ]
-      final <- as.data.frame(cbind(data, rowdata))
+      if(!is.null(columns)) {
+        rowdata <- object@list_of_row_data[[which_data]]
+        rowdata <- rowdata[ ,columns]
+        rowdata <- scale(rowdata, center=TRUE, scale=TRUE)
+        rowdata <- rowdata[order(rownames(data)), ]
+        final <- as.data.frame(cbind(data, rowdata))
+      } else {
+        final <- data
+      }
       #final <- na.omit(final)
       object@list_of_data[[which_data]] <- final
       object <- mod_split_acc_to_time(object)
@@ -1236,8 +1231,87 @@ setMethod("calc_lmm" , "metime_analyser", function(object, which_data, formula=N
 
 #' Function to perform Generalized additive models
 #' @description Function to perform Generalized additive models
-#' @param
+#' @param object An S4 object of class metime_analyser
+#' @param which_data Dataset to be used for this analysis
+#' @param formula A dataframe listing the formulae of the gamms to be used
+#' @param cores number of cores of the system to be used. Can also be set to NULL
 #' @return plotter object with GAM results
 #' @export
-
-
+setGeneric("calc_gamm", function(object, which_data, formula, cores) standardGeneric("calc_gamm"))
+setMethod("calc_gamm", "metime_analyser", function(object, which_data, formula, cores) {
+  if(is.null(cores)) {
+    ncores=parallel::detectCores()-1
+  } else {
+    ncores=as.numeric(cores)
+  }
+  
+  # add sanity checks 
+  if(is.null(formula) || !which_data %in% names(object@list_of_data)) {
+    my_results = data.frame()
+    warning("calc_gamm() could not match formula or data")
+  }
+  
+  # add check if all variables are in formula
+  my_results <- parallel::mclapply(formula, mc.cores=ncores, function(x) {
+      cat(which(formula==x), "; ")
+      my_var = x %>% 
+      gsub(pattern=" ", replacement="") %>% 
+      gsub(pattern="s(", replacement="", fixed = T) %>% 
+      strsplit(x, split="[+]|~") %>% 
+      unlist() %>% 
+      gsub(pattern=")", replacement="", fixed = T) %>%
+      gsub(pattern=',bs=\"re\"', replacement="", fixed = T)
+    
+      my_data <- object@list_of_data[[which_data]] %>% 
+      dplyr::select(all_of(my_var))
+    
+      if(length(unique(my_data$time)) == 1) {
+        model_out <- data.frame(
+          met = my_var[1],
+          trait = my_var[2],
+          beta = NA,
+          pval = NA,
+          stringsAsFactors = F)
+      } else {
+        this_model <-try(mgcv::gamm(data = my_data,
+                              formula= as.formula(x), 
+                              method="REML"),
+                          silent = T)
+        if(class(this_model) == "try-error") {
+          model_out <- data.frame(
+            met = my_var[1],
+            trait = my_var[2],
+            beta = NA,
+            pval = NA,
+            stringsAsFactors = F)
+        } else {
+          my_model <- summary(this_model$gam)
+          model_out = data.frame(
+            met=my_var[1],
+            trait=my_var[2],
+            beta = my_model[["p.coeff"]][[2]],
+            pval = my_model[["p.pv"]][[2]],
+            stringsAsFactors = F)
+        }
+      }
+      return(model_out)
+  })
+  my_results_formated <- my_results %>% 
+      do.call(what=rbind.data.frame) %>% 
+      dplyr::mutate(x = beta, 
+                  y = met,
+                  color=NA,
+                  split=trait) %>% 
+      dplyr::select(x, y, color, split)
+  rownames(my_results_formated) = 1:nrow(my_results_formated)
+  
+  out <- get_make_plotter_object(
+    data = my_results_formated,
+    metadata = NULL,
+    calc_type="regression",
+    calc_info="mgcv::gamm",
+    plot_type="forest",
+    style="ggplot"
+  )
+  return(out)
+})

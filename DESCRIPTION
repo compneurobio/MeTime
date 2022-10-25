@@ -25,6 +25,7 @@ Imports:
     lmerTest,
     longitudinal,
     M3C,
+    MatrixEQTL,
     mgcv,
     multiway,
     nnet,
