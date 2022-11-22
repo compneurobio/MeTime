@@ -140,7 +140,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics, i
 			stopifnot(object@plot_type %in% c("dot", "heatmap", "line", "box", "bar", "forest", "QQ"))
 			for(i in 1:length(object@plot_type)) {
 				if(object@plot_type[i] %in% "dot") {
-					object@plot[[i]] <- object@plot[[i]] + geom_point(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
+					object@plot[[i]] <- object@plot[[i]] + geom_point(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y,
 										color=aesthetics[[i]]$color, shape=aesthetics[[i]]$shape)) + 
 										facet_wrap(aesthetics[[i]]$strats) +
 										theme_classic()
@@ -167,7 +167,7 @@ setMethod("viz_plotter_ggplot", "metime_plotter", function(object, aesthetics, i
 															shape=aesthetics[[i]]$shape)) + facet_wrap(aesthetics[[i]]$strats) + theme_classic()	
 				} else if(object@plot_type[i] %in% "bar") {
 					object@plot[[i]] <- object@plot[[i]] + geom_bar(aes_string(x=aesthetics[[i]]$x, y=aesthetics[[i]]$y, 
-										fill=aesthetics[[i]]$fill), stat="identity", position=aesthetics[[i]]$postion) + 
+										fill=aesthetics[[i]]$fill), stat="identity", position=aesthetics[[i]]$position) + 
 										facet_wrap(aesthetics[[i]]$strats) + theme_classic()
 				} else {
 					stop("input for plot_type is either wrong or such a plot is not available")
@@ -216,7 +216,7 @@ setMethod("viz_plotter_visNetwork", "metime_plotter", function(object, title, la
 		node_list <- object@plot_data[["node"]]
 		edge_list <- object@plot_data[["edge"]]
 		#Choosing colors and shapes for visualization
-        if(is.null(node_list$colors)) {
+        if(is.null(node_list$color)) {
             shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
             colors_for_nodes <- node_list$group
             colors_code <- as.data.frame(cbind(unique(node_list$group), get_palette(length(unique(node_list$group)))))

@@ -13,6 +13,19 @@
 setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
 								 annotations="list")) 
 
+
+#' creating metime_plotter class that converts calculations and metadata as a plotable object to parse 
+#' into viz_plotter
+#' Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
+#' 				  - plot: ggplot(), circos() or visNetwork() object with predefined aesthetics 
+#'                - calc_type: A vector to specify type of calculation - will be used for comp_ functions
+#'                - calc_info: string to define the information about calculation
+#' 				  - plot_type: A character vector to define the type of plots that are needed.
+#' @rdname metime_plotter
+#' @export
+setClass("metime_plotter", slots=list(plot_data="list", plot="list", calc_type="character", calc_info="character", plot_type="character", style="character"))
+
+
 #' Function to add measurements taken at screening time for samples to be added to all timepoints
 #' @description A method applied on the s4 object of class "metime_analyser" to add all those datapoints that were measured only during screening
 #' to all the respective samples at all timepoints
@@ -256,10 +269,30 @@ setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_
 			return(out)
 	})
 
-#' Function to add medication results as covariates for regression
-#' @description Function to name the medications that are to be used as confounders for 
-#' linear mixed models and Generalized Additivie Models
-#' @param object An s4 object of class metime analyser
-#' @param which_data Dataset to which these results are to be added
-#' @param
 
+#' Function to add features to visnetwork plot from another plotter object
+#' @description Function to add node features to see the nodes in the network that affected differently
+#' @param network_plotter_object plotter object with network information
+#' @param guide_plotter_object guide from which the colors are to be extracted
+#' @param which_type type of the guide plotter object to be used. Current options are "regression" and "conservation"
+#' @param metab_colname name of the column in guide plotter object that represents the metabolites
+#' @return network plotter object with new node colors/features
+#' @export
+setGeneric("add_node_features", function(network_plotter_object, guide_plotter_object, which_type, metab_colname) standardGeneric("add_node_features"))
+setMethod("add_node_features", "metime_plotter", function(network_plotter_object, guide_plotter_object, which_type, metab_colname) {
+		network_plotter_object@plot_data[["node"]] <- network_plotter_object@plot_data[["node"]][order(network_plotter_object@plot_data[["node"]]$label), ]
+		guide_plotter_object@plot_data[[1]] <- guide_plotter_object@plot_data[[1]][guide_plotter_object@plot_data[[1]][ ,metab_colname] %in% network_plotter_object@plot_data[[1]]$label, ]
+		guide_plotter_object@plot_data[[1]] <- guide_plotter_object@plot_data[[1]][order(guide_plotter_object@plot_data[[1]][ ,metab_colname]), ]
+		if(which_type %in% "regression") {
+			column_for_colors <- guide_plotter_object@plot_data[[1]][ ,c("beta", "pval")]
+			column_for_colors <- sign(column_for_colors$beta) * -log10(column_for_colors$pval)
+		} else if(which_type %in% "conservation") {
+			column_for_colors <- guide_plotter_object@plot_data[[1]][ ,"ci"]
+		}
+		color.gradient <- function(x, colors=c("blue","gray","red"), colsteps=50) {
+  			return(colorRampPalette(colors) (colsteps)[findInterval(x, seq(-1, 1, length.out=colsteps))] )
+		}
+		gradient <- color.gradient(column_for_colors)
+		network_plotter_object@plot_data[["node"]]$color <- gradient
+		return(network_plotter_object)
+	}) 

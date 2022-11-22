@@ -11,12 +11,13 @@ License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Imports: 
     abind,
     Boruta,
     data.table,
     DT,
+    dynamicTreeCut,
     GeneNet,
     ggplot2,
     glmnet,
@@ -38,6 +39,7 @@ Imports:
     shiny,
     umap,
     visNetwork,
+    WGCNA,
     xlsx
 Depends: 
     tidyverse

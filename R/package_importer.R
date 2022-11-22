@@ -24,6 +24,8 @@ usethis::use_import_from("parallel", fun="mclapply")
 usethis::use_import_from("reshape2", fun="melt")
 usethis::use_import_from("data.table", fun="setDT")
 usethis::use_package("MatrixEQTL", type="Imports")
+usethis::use_package("WGCNA", type="Imports")
+usethis::use_import_from("dynamicTreeCut", fun="cutreeDynamic")
 
 #' Setting new structure definition for the metime_analyser object
 #' @description function to see the structure of metime_analyser object

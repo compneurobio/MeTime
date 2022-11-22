@@ -104,7 +104,7 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
       dplyr::mutate(id = rownames(.[])) %>% 
       dplyr::left_join(
         object@list_of_row_data[[data_position]] %>% 
-          dplyr::mutate(time = as.numeric(unlist(lapply(strsplit(time, split="t"), function(x) return(x[2]))))) %>% 
+          dplyr::mutate(time = time %>% gsub(pattern="t", replacement="") %>% as.numeric()) %>% 
           dplyr::select(id, time, subject),
         by="id"
       )
@@ -176,7 +176,7 @@ setMethod("calc_conservation_metabotype", "metime_analyser", function(object, wh
     out[[i]] <- lapply(names(out[[i]]), function(x) {
             data <- out[[i]][[x]]
             plotter_object <- get_make_plotter_object(data=data, metadata=metadata,
-                calc_type="CI", calc_info=paste("metabotype_CI_", i, "_", x, sep=""), plot_type="dot", style="ggplot")
+                calc_type="metabotype_CI", calc_info=paste("metabotype_CI_", i, "_", x, sep=""), plot_type="dot", style="ggplot")
             return(plotter_object)
       })
   }
@@ -212,7 +212,7 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
     data_merged <- object@list_of_data[[data_position]] %>% 
       dplyr::mutate(id = rownames(.[])) %>% 
       dplyr::left_join(object@list_of_row_data[[data_position]] %>% 
-          dplyr::mutate(time = as.numeric(unlist(lapply(strsplit(time, split="t"), function(x) return(x[2]))))) %>% 
+          dplyr::mutate(time = time %>% gsub(pattern="t", replacement="") %>% as.numeric()) %>% 
           dplyr::select(id, time, subject), 
           by="id")
     
@@ -294,7 +294,7 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
       out[[i]] <- lapply(names(out[[i]]), function(x) {
             data <- out[[i]][[x]]
             plotter_object <- get_make_plotter_object(data=data, metadata=metadata,
-                calc_type="CI", calc_info=paste("metabolite_CI_", i, "_", x, sep=""), plot_type="dot", style="ggplot")
+                calc_type="metabolite_CI", calc_info=paste("metabolite_CI_", i, "_", x, sep=""), plot_type="dot", style="ggplot")
             return(plotter_object)
       })
     }
@@ -624,7 +624,7 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
     network <- network[!network$node1 %in% covariates, ]
     network <- network[!network$node2 %in% covariates, ]
     metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta, 
-                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
+                 names=c("name", "pathway"), index_of_names="id")
     out <- get_make_plotter_object(data=network, metadata=metadata, calc_type="genenet_ggm", 
       calc_info=paste("Longitudinal GeneNet GGM results for:", paste(which_data, collapse=" & "), sep=" "), plot_type="network",
       style="visNetwork")
@@ -1315,3 +1315,122 @@ setMethod("calc_gamm", "metime_analyser", function(object, which_data, formula, 
   )
   return(out)
 })
+
+
+#' Function to extract eigenmetabolites and modules from WGCNA
+#' @description Function to calculate modules and eigenmetabolites
+#' @param object An s4 object of class metime_analyser
+#' @param which_data Dataset to be used for the analysis
+#' @param baseline baseline timepoint
+#' @return plotter object with dendogram results
+#' @export
+setGeneric("calc_wgcna_eigenmetabolites", function(object, which_data, baseline, ...) standardGeneric("calc_wgcna_eigenmetabolites"))
+setMethod("calc_wgcna_eigenmetabolites", "metime_analyser", function(object, which_data, baseline, ...) {
+        data <- object@list_of_data[[which_data]]
+        col_data <- object@list_of_col_data[[which_data]]
+        data <- data[grep(baseline, rownames(data)), ]
+        lnames <- names(data)
+        # Choose a set of soft-thresholding powers
+        powers = c(c(1:10), seq(from = 12, to=20, by=2))
+        # Call the network topology analysis function
+        sft = WGCNA::pickSoftThreshold(data, powerVector = powers, verbose = 5)
+        res <- sft$fitIndices[,1][which(-sign(sft$fitIndices[,3])*sft$fitIndices[,2] > 0.88)] 
+        softPower <- res[1] 
+        adjacency <- WGCNA::adjacency(data, power=softPower)
+        # Turn adjacency into topological overlap
+        TOM = WGCNA::TOMsimilarity(adjacency)
+        dissTOM = 1-TOM
+        # Call the hierarchical clustering function
+        geneTree = hclust(as.dist(dissTOM), method = "average")  
+        dynamicMods_wo_respect = dynamicTreeCut::cutreeDynamic(dendro = geneTree, distM = dissTOM,
+                    deepSplit = TRUE, pamRespectsDendro = FALSE)
+        dynamicMods_w_respect = dynamicTreeCut::cutreeDynamic(dendro = geneTree, distM = dissTOM,
+                    deepSplit = TRUE, pamRespectsDendro = TRUE)
+        #module data
+        modules_w_respect <- cbind.data.frame(lnames, dynamicMods_w_respect)
+        modules_wo_respect <- cbind.data.frame(lnames, dynamicMods_wo_respect)
+        modules_w_respect <- modules_w_respect[order(modules_w_respect$lnames), ]
+        modules_wo_respect <- modules_wo_respect[order(modules_wo_respect$lnames), ]
+        object@list_of_col_data[[which_data]]$cluster_wgcna_true <- modules_w_respect[ ,2]
+        object@list_of_col_data[[which_data]]$cluster_wgcna_false <- modules_wo_respect[ ,2]
+
+        #splitting data into modules
+        data_list_with_respect <- split(modules_w_respect, f = modules_w_respect[ ,2])
+        data_list_wo_respect <- split(modules_wo_respect, f = modules_wo_respect[ ,2])
+
+        #making new data with eigenmetabolite calculation for each cluster
+        newdata <- object@list_of_data[[which_data]]
+        final_data_true <- lapply(names(data_list_with_respect), function(x) {
+                  modules <- data_list_with_respect[[x]]
+                  if(x %in% "0") {
+                      dummy <- newdata[ ,modules[,1]]
+                  } else {
+                      dummy <- newdata[ ,modules[ ,1]]
+                      pca <- prcomp(dummy, scale.=T, center=T)
+                      dummy <- as.data.frame(pca$x[,1])
+                      colnames(dummy) <- c(paste("eigenmetabolite_cluster_", x, sep=""))
+                  }
+                  return(dummy)
+          }) %>% do.call(what=cbind.data.frame)
+
+          final_data_false <- lapply(names(data_list_wo_respect), function(x) {
+                  modules <- data_list_wo_respect[[x]]
+                  if(x %in% "0") {
+                      dummy <- newdata[ ,modules[,1]]
+                  } else {
+                      dummy <- newdata[ ,modules[ ,1]]
+                      pca <- prcomp(dummy, scale.=T, center=T)
+                      dummy <- as.data.frame(pca$x[,1])
+                      colnames(dummy) <- c(paste("eigenmetabolite_cluster_", x, sep=""))
+                  }
+                  return(dummy)
+          }) %>% do.call(what=cbind.data.frame)
+
+          col_data <- get_metadata_for_columns(object=object, which_data=which_data, columns=list(c("id", "sub_pathway")), 
+                 names=c("id", "pathway"), index_of_names=rep("id", each=length(which_data)))
+          col_data_true <- col_data[col_data$id %in% colnames(final_data_true), ]
+          col_data_false <- col_data[col_data$id %in% colnames(final_data_false), ]
+          col_data_true <- col_data_true[order(col_data_true$id), ]
+          col_data_false <- col_data_false[order(col_data_false$id), ]
+          col_data_true <- col_data_true[,1:2]
+          col_data_false <- col_data_false[,1:2]
+          colnames(col_data_true)[2] <- "pathway"
+          colnames(col_data_false)[2] <- "pathway"
+          truedata <- data.frame(table(col_data_true[ ,2]))
+          falsedata <- data.frame(table(col_data_false[ ,2]))
+          truedata <- cbind.data.frame(truedata, rep("True", each=length(truedata[,1])))
+          falsedata <- cbind.data.frame(falsedata, rep("False", each=length(falsedata[,1])))
+          colnames(truedata) <- c("group", "count", "type")
+          colnames(falsedata) <- c("group", "count", "type")
+          fin_data <- rbind.data.frame(truedata, falsedata)
+
+          barplot <- ggplot(fin_data, aes(x=group, y=count, fill=type)) + geom_bar(stat="identity", position=position_dodge()) + coord_flip()
+
+          cluster_data_true <- colnames(final_data_true)[grep("eigen*", colnames(final_data_true))]
+          cluster_data_false <- colnames(final_data_false)[grep("eigen*", colnames(final_data_false))]
+          cluster_data_false <- data.frame(id=cluster_data_false, pathway=cluster_data_false)
+          cluster_data_true <- data.frame(id=cluster_data_true, pathway=cluster_data_true)
+          rownames(cluster_data_true) <- cluster_data_true$id
+          rownames(cluster_data_false) <- cluster_data_false$id
+
+          col_data_true <- rbind.data.frame(col_data_true, cluster_data_true)
+          col_data_false <- rbind.data.frame(col_data_false, cluster_data_false)
+
+          object <- get_append_analyser_object(object, data=final_data_true, col_data=col_data_true, 
+                    row_data=object@list_of_row_data[[which_data]], name=paste(which_data, "with_eigenmetabs_and_TRUE", sep="_"))
+          object <- get_append_analyser_object(object, data=final_data_false, col_data=col_data_false, 
+                    row_data=object@list_of_row_data[[which_data]], name=paste(which_data, "with_eigenmetabs_and_FALSE", sep="_"))
+        
+        #table(dynamicMods)
+        #dynamicColors <- labels2colors(dynamicMods)
+        #plotDendroAndColors(geneTree, dynamicColors, "Dynamic Tree Cut",
+        #        dendroLabels = FALSE, hang = 0.03,
+        #        addGuide = TRUE, guideHang = 0.05,
+        #        main = "Metabolites dendrogram and module colors")  
+
+        return(list(object=object, plot=barplot))
+  })
+
+
+
+#' function to calculate HTS clusters

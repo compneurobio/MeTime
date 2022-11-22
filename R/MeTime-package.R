@@ -5,6 +5,7 @@
 #' @importFrom abind abind
 #' @importFrom data.table setDT
 #' @importFrom DT datatable
+#' @importFrom dynamicTreeCut cutreeDynamic
 #' @importFrom lmerTest lmer
 #' @importFrom M3C tsne
 #' @importFrom multiway parafac
