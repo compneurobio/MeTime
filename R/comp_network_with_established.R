@@ -1,4 +1,6 @@
+
 #' Function to compare the network generated from data to an existing network
+#' @include package_importer.R
 #' @description function to perform fishers exact test to decide which network is the best.
 #' @param calc_networks list of networks calculated from data
 #' @param est_network established network to compare with the established network results
