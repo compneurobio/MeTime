@@ -16,6 +16,7 @@ setMethod("mod_trans_zscore", "metime_analyser", function(object, which_data) {
   object@list_of_data[data_position] = lapply(object@list_of_data[data_position] , as.data.frame)
   rownames(object@list_of_data[data_position]) = data_rownames
   out <- object
+  out <- add_function_info(object=out, function_name="mod_trans_zscore", params=list(which_data=which_data))
   return(out)
 })
 

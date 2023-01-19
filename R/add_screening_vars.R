@@ -16,16 +16,19 @@ setMethod("add_screening_vars", "metime_analyser", function(object, vars) {
 	new_rows <- as.data.frame(screening[, vars])
 	new_rows <- na.omit(new_rows)
 	new_rows <- new_rows[order(rownames(new_rows)), ]
-	sample_names <- unlist(lapply(strsplit(rownames(new_rows), split="_"), function(x) return(x[1])))
-	for(i in 1:length(sample_names)) {
-		samples <- unlist(lapply(strsplit(rownames(phenotype), split="_"), function(x) return(x[1])))
+	sample_names <- rownames(new_rows) %>% gsub(pattern="_[a-z|A-Z][0-9]+", replacement="")
+	test <- lapply(seq_along(sample_names), function(i) {
+		samples <- rownames(phenotype) %>% gsub(pattern="_[a-z|A-Z][0-9]+", replacement="")
 		index <- which(samples %in% sample_names[i], arr.ind=TRUE)
-		for(j in index) {
-			phenotype[j, vars] <- new_rows[rownames(new_rows)[i], vars]
-		}
-	}
+		phenotype <- lapply(index, function(j) {
+				phenotype[j, vars] <- new_rows[rownames(new_rows)[i], vars]
+			}) 
+		})
 	object@list_of_data[[phenotype_name]] <- phenotype
 	out <- object
 	return(out)
 })
+
+
+
 

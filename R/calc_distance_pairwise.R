@@ -38,9 +38,12 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
       as.matrix() %>% 
       as.data.frame() %>% 
       flattenCorrMatrix() %>% 
-      dplyr::mutate(type=method)
+      dplyr::mutate(type=method) %>%
+      get_make_plotter_object(metadata=NULL, calc_type="pairwise_distance", 
+                      calc_info = paste(which_data, "and" , method, "pairwise_distance", sep=" "),
+                      plot_type="heatmap", style="ggplot", aesthetics=list(x="row", y="column", fill="dist"))
   }
-  else{
+  else {
     out=NA
   }
   return(out)

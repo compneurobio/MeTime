@@ -61,7 +61,7 @@ setMethod("calc_ggm_genenet_crosssectional", "metime_analyser", function(object,
                  names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
     out <- get_make_plotter_object(data=ggm_data, metadata=metadata, calc_type="genenet_ggm", 
       calc_info=paste("Cross-sectional GeneNet GGM results for:", paste(which_data, collapse=" & "), "at", timepoint, sep=" "), plot_type="network",
-      style="visNetwork")
+      style="visNetwork", aesthetics=NULL)
     return(out)
 
   })

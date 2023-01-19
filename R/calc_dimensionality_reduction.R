@@ -34,11 +34,22 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
       rm_col = intersect(names(data), c("time","subject"))
       data <- data %>% select(-c(rm_col))
       data <- na.omit(data)
+      metadata_metabs <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_metabs, 
+                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
+      metadata_samples <- get_metadata_for_rows(object=object, which_data=which_data, columns=cols_for_samples)
       if(type %in% "PCA") {
         pca_metabs <- prcomp(t(data), scale.=T, center=T, ...)
         pca_individuals <- prcomp(data, scale.=T, center=T, ...)
         dr_data_metabs <- as.data.frame(pca_metabs$x[,1:2])
         dr_data_samples <- as.data.frame(pca_individuals$x[,1:2])
+        plotter_metabs <- get_make_plotter_object(data=dr_data_metabs, metadata=metadata_metabs,
+                calc_type="Dimensionality Reduction", 
+                calc_info=paste("dimensionality reduction method:", type, "for metabolites data", paste(which_data, collapse=" & "), sep=" "), 
+                plot_type="dot", style="ggplot", aesthetics=list(x="PC1", y="PC2"))
+        plotter_samples <- get_make_plotter_object(data=dr_data_samples, metadata=metadata_samples,
+                calc_type="Dimensionality Reduction", 
+                calc_info=paste("dimensionality reduction method:", type, "for samples data", paste(which_data, collapse=" & "), sep=" "), 
+                plot_type="dot", style="ggplot", aesthetics=list(x="PC1", y="PC2"))
       } else if(type %in% "UMAP") {
         umap_individuals <- umap::umap(data, ...)
         dr_data_samples <- as.data.frame(umap_individuals$layout)
@@ -46,6 +57,14 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
         umap_metabs <- umap::umap(t(data), ...)
         dr_data_metabs <- as.data.frame(umap_metabs$layout)
         colnames(dr_data_metabs) <- c("UMAP1", "UMAP2")
+        plotter_metabs <- get_make_plotter_object(data=dr_data_metabs, metadata=metadata_metabs,
+                calc_type="Dimensionality Reduction", 
+                calc_info=paste("dimensionality reduction method:", type, "for metabolites data", paste(which_data, collapse=" & "), sep=" "), 
+                plot_type="dot", style="ggplot", aesthetics=list(x="UMAP1", y="UMAP2"))
+        plotter_samples <- get_make_plotter_object(data=dr_data_samples, metadata=metadata_samples,
+                calc_type="Dimensionality Reduction", 
+                calc_info=paste("dimensionality reduction method:", type, "for samples data", paste(which_data, collapse=" & "), sep=" "), 
+                plot_type="dot", style="ggplot", aesthetics=list(x="UMAP1", y="UMAP2"))
       } else if(type %in% "tSNE") {
         tsne_samples <- M3C::tsne(t(data), ...)
         tsne_metabs <- M3C::tsne(data, ...)
@@ -53,18 +72,15 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
         rownames(dr_data_metabs) <- colnames(data)
         dr_data_samples <- as.data.frame(tsne_samples$data)
         rownames(dr_data_samples) <- rownames(data)
-      }
-      metadata_metabs <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_metabs, 
-                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
-      metadata_samples <- get_metadata_for_rows(object=object, which_data=which_data, columns=cols_for_samples)
-      plotter_metabs <- get_make_plotter_object(data=dr_data_metabs, metadata=metadata_metabs,
+        plotter_metabs <- get_make_plotter_object(data=dr_data_metabs, metadata=metadata_metabs,
                 calc_type="Dimensionality Reduction", 
                 calc_info=paste("dimensionality reduction method:", type, "for metabolites data", paste(which_data, collapse=" & "), sep=" "), 
-                plot_type="dot", style="ggplot")
-      plotter_samples <- get_make_plotter_object(data=dr_data_samples, metadata=metadata_samples,
+                plot_type="dot", style="ggplot", aesthetics=list(x="X1", y="X2"))
+        plotter_samples <- get_make_plotter_object(data=dr_data_samples, metadata=metadata_samples,
                 calc_type="Dimensionality Reduction", 
                 calc_info=paste("dimensionality reduction method:", type, "for samples data", paste(which_data, collapse=" & "), sep=" "), 
-                plot_type="dot", style="ggplot")
+                plot_type="dot", style="ggplot", aesthetics=list(x="X1", y="X2"))
+      }
       out <- list(metabs=plotter_metabs, samples=plotter_samples)
       return(out)
   })

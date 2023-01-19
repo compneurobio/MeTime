@@ -10,17 +10,16 @@
 #' @param plot_type type of the plot you want to build. eg: "box", "dot" etc. Its a character vector
 #' @param style Style of plot, accepted inputs are "ggplot", "circos" and "visNetwork". Is a singular option.
 #' @export
-get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_type, style) {
+get_make_results <- function(object, data, metadata, calc_type, calc_info, plot_type, style, aesthetics) {
 			plot_data <- list()
 			empty_plots <- list()
 			if(style %in% "visNetwork") {
-				 	nodes <- unique(c(data$node1, data$node2))
+				nodes <- unique(c(data$node1, data$node2))
     			node_list <- data.frame(id=1:length(nodes), label=nodes, group=as.character(1:length(nodes)))
     			for(i in 1:length(node_list$label)) {
-          		g <- metadata[as.character(metadata$name) %in% as.character(node_list$label[i]), 2]
-           		node_list$group[i] <- g
+          			g <- metadata[as.character(metadata$name) %in% as.character(node_list$label[i]), 2]
+           			node_list$group[i] <- g
     			}
-          
     			#Getting edge list
     			edge_list <- data.frame(from=1:length(data$node1), to=1:length(data$node2))
     			for(i in 1:length(data$node1)) {
@@ -41,9 +40,9 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
    			 			edge_list$dashes <- dashes
    			 			edge_list$arrows <- rep("from", each=length(edge_list$dashes))
    			 	}
-					plot_data[["node"]] <- node_list
-					plot_data[["edge"]] <- edge_list
-					plot_data[["metadata"]] <- metadata
+					object@results[[length(object@results)]][["plot_data"]][["node"]] <- node_list
+					object@results[[length(object@results)]][["plot_data"]][["edge"]] <- edge_list
+					object@results[[length(object@results)]][["plot_data"]][["metadata"]] <- metadata
 			} else {
 					if(is.null(metadata)) {
 						plot_data[[1]] <- as.data.frame(data)
@@ -51,19 +50,24 @@ get_make_plotter_object <- function(data, metadata, calc_type, calc_info, plot_t
 						data <- data[order(rownames(data)), ]
 						metadata <- metadata[rownames(metadata) %in% rownames(data), ]
 						data <- data[rownames(data) %in% rownames(metadata),]
-						plot_data[[1]] <- as.data.frame(cbind(data, metadata))
+						object@results[[length(object@results)]][["plot_data"]] <- as.data.frame(cbind(data, metadata))
 					}
 			}
-			for(i in 1:length(plot_type)) {
-				if(style %in% "ggplot") {
-						empty_plots[[i]] <- ggplot(plot_data[[i]])
-				} else if(style %in% "circos") {
-						empty_plots[[i]] <- NULL
-				} else if(style %in% "visNetwork") {
-						empty_plots[[i]] <- NULL
+			if(style %in% "ggplot") {
+				if(plot_type %in% "dot") {
+					object@results[[length(object@results)]][["plots"]] <- ggplot(object@results[[length(object@results)]][["plot_data"]], aes_string(x=aesthetics$x, y=aesthetics$y)) +
+												geom_point()
+				} else if(plot_type %in% "heatmap") {
+					object@results[[length(object@results)]][["plot"]] <- ggplot(object@results[[length(object@results)]][["plot_data"]], aes_string(x=aesthetics$x, y=aesthetics$y)) +
+												geom_tile(aes_string(fill=aesthetics$fill))
+				} else {
+					object@results[[length(object@results)]][["plot"]] <- ggplot(object@results[[length(object@results)]][["plot_data"]])
 				}
+			} else if(style %in% "circos") {
+						empty_plots[[i]] <- NULL
+			} else if(style %in% "visNetwork") {
+						empty_plots[[i]] <- NULL
 			}
-			out <- new("metime_plotter", plot_data=plot_data, plot=empty_plots, calc_type=calc_type, calc_info=calc_info, plot_type=plot_type, style=style)
-			return(out)
+			return(object)
 }
 

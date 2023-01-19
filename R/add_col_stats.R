@@ -13,7 +13,7 @@
 setGeneric("add_col_stats", function(object, which_data, type, metab_names, all) standardGeneric("add_col_stats"))
 setMethod("add_col_stats", "metime_analyser", function(object, which_data, type="shapiro", metab_names, all) {
 	  stopifnot(type %in% c("shapiro", "kruskal"))
-      for(i in 1:length(which_data)) {
+      add <- lapply(seq_along(which_data), function(i) {
       		out <- lapply(names(object@list_of_data[[which_data[i]]]), function(x) {
       					my_model <- shapiro.test(object@list_of_data[[which_data[i]]][, x])
       					return(data.frame(id=x,
@@ -60,8 +60,9 @@ setMethod("add_col_stats", "metime_analyser", function(object, which_data, type=
 	      			object@list_of_col_data[[which_data[i]]] <- col_data
 	    		}  
 	      	}
+	      	return(NULL)
       		
-    }  
+    })  
     out <- object    	
 	return(out)
   

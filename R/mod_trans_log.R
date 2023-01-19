@@ -14,6 +14,7 @@ setMethod("mod_trans_log", "metime_analyser",function(object, which_data, base=2
   data_position <- which(names(object@list_of_data) %in% which_data)
   object@list_of_data[data_position] = lapply(object@list_of_data[data_position] , log, base=base)
   out <- object
+  out <- add_function_info(object=out, function_name="mod_trans_log", params=list(which_data=which_data, base=base))
   return(out)
 })
 

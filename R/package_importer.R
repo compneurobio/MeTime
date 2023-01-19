@@ -28,6 +28,20 @@ usethis::use_package("WGCNA", type="Imports")
 usethis::use_import_from("dynamicTreeCut", fun="cutreeDynamic")
 
 
+#' Validity function to check if the object is valid or not
+#' @description Function to check the validity of metime_analyser 
+#' @param object An S4 object of class metime_analyser
+#' @examples validObject(object)
+#' @returns logical suggesting if the object is intact or not
+#' @export
+validity <- function(object) {
+		out <- TRUE
+		if(!check_rownames_and_columns(object)) out <- FALSE 
+		if(!check_ids_and_classes(object)) out <- FALSE
+		if(!check_results(object)) out <- FALSE
+		return(out) 
+	}
+
 #creating reference metime-analyser class that creates an object with full data
 
 #' Constructor to generate an object of class metime_analyser. 
@@ -40,19 +54,25 @@ usethis::use_import_from("dynamicTreeCut", fun="cutreeDynamic")
 #' @rdname metime_analyser
 #' @export 
 setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
-								 annotations="list")) 
+								 annotations="list", results="list"), validity=validity) 
 
 
-#' creating metime_plotter class that converts calculations and metadata as a plotable object to parse 
-#' into viz_plotter
-#' Contains slots - plot_data: Dataframe with plotting data and metadata for visualization
-#' 				  - plot: ggplot(), circos() or visNetwork() object with predefined aesthetics 
-#'                - calc_type: A vector to specify type of calculation - will be used for comp_ functions
-#'                - calc_info: string to define the information about calculation
-#' 				  - plot_type: A character vector to define the type of plots that are needed.
-#' @rdname metime_plotter
+
+# add a function to generate Rmarkdown directly from the analyser object - viz_analyser()
+# create another function which add the function applied on the analyser_object - ongoing
+# Try to improve the code of all functions and then Matthias will check it
+
+#' Setting a plotting method for the metime_analyser class
+#' @description Function to plot results of a certain calculation 
+#' @param object An S4 object of class metime_analyser
+#' @param results_index Index/name of the results to be plotted
+#' @return plots for a certain set of results
 #' @export
-setClass("metime_plotter", slots=list(plot_data="list", plot="list", calc_type="character", calc_info="character", plot_type="character", style="character"))
+setGeneric("plot", function(object, results_index, ...) standardGeneric("plot"))
+setMethod("plot", "metime_analyser", function(object, results_index, ...) {
+			results <- object@results[[results_index]]
+	})
+
 
 #' Setting new structure definition for the metime_analyser object
 #' @description function to see the structure of metime_analyser object
@@ -70,7 +90,7 @@ setMethod("structure", "metime_analyser", function(object) return(str(object, ma
 #' @return structure of the S4 object
 #' @export
 setMethod("show", "metime_analyser", function(object) {
-		for(i in 1:length(object@list_of_data)) {
+		out <- lapply(seq_along(object@list_of_data), function(i) {
 			if(names(object@list_of_data)[i] %in% object@annotations$phenotype) {
 				cat(paste("Dataset:", names(object@list_of_data)[i], "with", 
 				dim(object@list_of_data[[i]])[1], "samples", "and", dim(object@list_of_data[[i]])[2], "phenotypes",sep=" "))
@@ -84,23 +104,6 @@ setMethod("show", "metime_analyser", function(object) {
 				dim(object@list_of_data[[i]])[1], "samples", "and", dim(object@list_of_data[[i]])[2], "metabolites",sep=" "))
 				cat("\n")
 			}
-		}
+			return(NULL)
+		})
 	})
-
-
-#' Setting new print definition for the metime_plotter object
-#' @description function to see the structure of metime_plotter object
-#' @param object S4 object of class metime_plotter
-#' @examples structure(object)
-#' @return structure of the S4 object
-#' @export
-setMethod("show", "metime_plotter", function(object) return(str(object, max.level=4)))
-
-#' Setting new structure definition for the metime_plotter object
-#' @description function to see the structure of metime_plotter object
-#' @param object S4 object of class metime_plotter
-#' @examples structure(object)
-#' @return structure of the S4 object
-#' @export
-setMethod("structure", "metime_plotter", function(object) return(str(object, max.level = 3)))
-

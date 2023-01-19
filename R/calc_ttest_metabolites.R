@@ -48,7 +48,7 @@ setMethod("calc_ttest_metabolites", "metime_analyser", function(object, which_da
                   return(result)
               }, max.cores=4) %>% do.call(what=rbind.data.frame)
             return(results)
-        })
+      })
         return(out)
   })
 

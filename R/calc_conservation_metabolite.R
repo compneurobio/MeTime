@@ -71,12 +71,15 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
         dplyr::select(x,y, ci, id, time_from, time_to, n, rank, cor, id_from,id_to) %>% 
         `rownames<-`(.[,"id_from"])
     })
-    
-    metadata <- get_metadata_for_columns(object = object, 
+    if(is.null(cols_for_meta)) {
+       metadata <- NULL
+    } else {
+       metadata <- get_metadata_for_columns(object = object, 
                                          which_data = i, 
                                          columns = cols_for_meta, 
                                          names = c("name", "group"), 
                                          index_of_names = "id")
+    }
     out <- list()
     out[[i]]<- lapply(1:ncol(index_time_combinations), function(x) {
       get_make_plotter_object(data = out_sum[[x]], 
@@ -84,7 +87,8 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
                               calc_type = "CI", 
                               calc_info = paste("metabotype_CI_", i, "_", x, sep = ""), 
                               plot_type = "dot", 
-                              style = "ggplot")
+                              style = "ggplot",
+                              aesthetics = list(x="x", y="ci"))
     })
   }
   return(out)

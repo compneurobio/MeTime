@@ -10,7 +10,9 @@ setGeneric("mod_convert_s4_to_s3", function(object) standardGeneric("mod_convert
 
 setMethod("mod_convert_s4_to_s3", "metime_analyser", function(object) {
 		#will add based on analysis - make it module wise or open for suggestions
-		out <- list(list_of_data=object@list_of_data, list_of_col_data=object@list_of_col_data, list_of_row_data=object@list_of_row_data, annotations=object@annotations)
+		out <- list(list_of_data=object@list_of_data, list_of_col_data=object@list_of_col_data, 
+			list_of_row_data=object@list_of_row_data, annotations=object@annotations,
+			results=object@results)
 		return(out)
 	})
 

@@ -78,3 +78,6 @@ setMethod("add_phenotypes_as_covariates", "metime_analyser", function(object, wh
 			return(out)
 	})	
 
+
+
+

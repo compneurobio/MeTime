@@ -9,10 +9,11 @@
 #' @param object S4 Object of class metime_analyser
 #' @param which_data specify datasets to calculate on. One or more possible
 #' @param method default setting: method="pearson", Alternative "spearman" also possible
+#' @param cols_for_meta list equal to length of which_data defining the columns for metadata
 #' @return data.frame with pairwise results
 #' @export
-setGeneric("calc_correlation_pairwise", function(object, which_data, method) standardGeneric("calc_correlation_pairwise"))
-setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which_data, method="pearson"){
+setGeneric("calc_correlation_pairwise", function(object, which_data, method, cols_for_meta) standardGeneric("calc_correlation_pairwise"))
+setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which_data, method="pearson", cols_for_meta){
   stopifnot(all(which_data %in% names(object@list_of_data)))
   flattenCorrMatrix <- function(cormat, pmat) {
     ut <- upper.tri(cormat)
@@ -22,6 +23,15 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
       cor  =(cormat)[ut],
       p = pmat[ut]
     ))
+  }
+  if(is.null(cols_for_meta)) {
+      metadata <- NULL
+  } else {
+       metadata <- get_metadata_for_columns(object = object, 
+                                         which_data = which_data, 
+                                         columns = cols_for_meta, 
+                                         names = c("name", "group"), 
+                                         index_of_names = "id")
   }
     
   my_data <-  lapply(which_data, function(x) object@list_of_data[[x]] %>% 
@@ -36,7 +46,10 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
       Hmisc::rcorr(type=method)
     out=flattenCorrMatrix(cor_mat$r, cor_mat$P) %>% 
       dplyr::mutate(type="cor") %>% 
-      dplyr::rename("dist"="cor", "cut_p"="p") 
+      dplyr::rename("dist"="cor", "cut_p"="p") %>%
+      MeTime::get_make_plotter_object(metadata=metadata, calc_type="pairwise_correlation", 
+                      calc_info = paste(which_data, "and" ,method, "pairwise_correlation", sep=" "),
+                      plot_type="heatmap", style="ggplot", aesthetics=list(x="row", y="column", fill="dist")) 
     return(out)
 })
 

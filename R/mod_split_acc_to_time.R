@@ -28,6 +28,7 @@ setMethod("mod_split_acc_to_time", "metime_analyser", function(object) {
 	names(list_of_data_temporals) <- names(list_of_data)
 	object@list_of_data <- list_of_data_temporals
 	out <- object
+	out <- add_function_info(object=out, function_name="mod_split_acc_to_time", params=list(param="split each data into a list w.r.t. time"))
 	return(out)
 })
 

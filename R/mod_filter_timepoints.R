@@ -10,12 +10,12 @@
 #' @return An object of class metime_analyser with processed data
 #' @export 
 
-setGeneric("mod_filter_tp", function(object, timepoints, complete, which_data) standardGeneric("mod_filter_tp"))
-setMethod("mod_filter_tp", "metime_analyser", function(object, timepoints, complete=TRUE, which_data) {
+setGeneric("mod_filter_timepoints", function(object, timepoints, complete, which_data) standardGeneric("mod_filter_timepoints"))
+setMethod("mod_filter_timepoints", "metime_analyser", function(object, timepoints, complete=TRUE, which_data) {
   # define data to be processed
   data_position <- which(names(object@list_of_data) %in% which_data)
   
-  for(i in data_position) {
+  test <- lapply(data_position, function(i) {
     keep_id <- object@list_of_row_data[[i]] %>% 
       dplyr::select(id, time, subject) %>%  
       dplyr::filter(time %in% timepoints)
@@ -33,8 +33,11 @@ setMethod("mod_filter_tp", "metime_analyser", function(object, timepoints, compl
         dplyr::filter(id %in% keep_id$id)
       object@list_of_data[[i]] = object@list_of_data[[i]][keep_id$id,]
     }
-  }
+    return(NULL)
+  })
   out <- object
+  out <- add_function_info(object=out, function_name="mod_filter_timepoints",
+      params=list(timepoints=timepoints, complete=complete, which_data=which_data))
   return(out)
 })
 

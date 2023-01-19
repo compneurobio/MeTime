@@ -43,42 +43,43 @@ get_files_and_names <- function(path, annotations_index) {
 	names(list_of_col_data) <- gsub("_col_data", "_data", names(list_of_col_data))
 	names(list_of_row_data) <- names_list[row_data_index]
 	names(list_of_row_data) <- gsub("_row_data", "_data", names(list_of_row_data))
+	annotations_index <- list(annotations_index, modifications=list())
 	metab_object <- new("metime_analyser", list_of_data=list_of_data, list_of_col_data=list_of_col_data, 
 										list_of_row_data=list_of_row_data,
-										annotations=annotations_index)
+										annotations=annotations_index,
+										results=list())
 	#sanity checks for the object created
 	check_rownames_and_colnames(metab_object)
 	#Update subject and time columns in the row data
-	for(i in 1:length(metab_object@list_of_row_data)) {
-			if("rid" %in% colnames(metab_object@list_of_row_data[[i]])) {
-				metab_object@list_of_row_data[[i]]$rid <- NULL
-			}
-			if("timepoint" %in% colnames(metab_object@list_of_row_data[[i]])) {
-				metab_object@list_of_row_data[[i]]$timepoint <- NULL
-			}
-			if("RID" %in% colnames(metab_object@list_of_row_data[[i]])) {
-				metab_object@list_of_row_data[[i]]$RID <- NULL
-			}
-	}
-	for(i in 1:length(metab_object@list_of_row_data)) {
-			if("subject" %in% colnames(metab_object@list_of_row_data[[i]]) && "time" %in% colnames(metab_object@list_of_row_data[[i]])) {
-					metab_object@list_of_row_data[[i]] <- metab_object@list_of_row_data[[i]] %>% arrange(subject, time)
-			} else {
-					subject <- unlist(lapply(strsplit(rownames(metab_object@list_of_data[[i]]), split="_"), function(x) return(x[1])))
-					time <- unlist(lapply(strsplit(rownames(metab_object@list_of_data[[i]]), split="_"), function(x) return(x[2])))
-					metab_object@list_of_row_data[[i]] <- as.data.frame(cbind(metab_object@list_of_row_data[[i]], subject, time))
-			}
-			metab_object@list_of_data[[i]] <- metab_object@list_of_data[[i]][order(rownames(metab_object@list_of_row_data[[i]])), ]
-	}
-	for(i in 1:length(metab_object@list_of_col_data)) {
-			metab_object@list_of_data[[i]] <- metab_object@list_of_data[[i]][ ,order(colnames(metab_object@list_of_data[[i]]))]
-			metab_object@list_of_col_data[[i]] <- metab_object@list_of_col_data[[i]][order(metab_object@list_of_col_data[[i]]$id), ]
-			if("covariates" %in% colnames(metab_object@list_of_col_data[[i]])) {
-					next
-			} else {
-					metab_object@list_of_col_data[[i]]$covariates <- rep(NA, each=length(metab_object@list_of_col_data[[i]]$id))
-			}
-	}
 	out <- metab_object
+	out@list_of_row_data <- lapply(seq_len(out@list_of_row_data), function(x) {
+			a <- out@list_of_row_data[[x]]
+			if("rid" %in% colnames(a)) {
+				a$rid <- NULL
+			} else if("timepoint" %in% colnames(a)) {
+				a$timepoint <- NULL
+			} else if("RID" %in% colnames(a)) {
+				a$RID <- NULL
+			}
+			if(colnames(a) %in% "subject" && colnames(a) %in% "time") {
+				a <- a %>% dplyr::arrange(subject, time)
+			} else {
+				a$subject <- rownames(a) %>% gsub(pattern="_[a-z|A-Z][0-9]+", replacement="")
+				a$time <- rownames(a) %>% gsub(pattern="[a-z|A-Z][0-9]+_", replacement="")
+			}
+			a <- a[order(rownames(a)), ]
+			return(a)
+	})
+	names(out@list_of_row_data) <- names(out@list_of_data)
+	out@list_of_col_data <- lapply(seq_len(out@list_of_col_data),function(x) {
+			a <- out@list_of_col_data[[x]]
+			if(!colnames(a) %in% "covariates") {
+				a$covariates <- rep(NA, each=length(a$id))
+			}
+	})
+	names(out@list_of_col_data) <- names(out@list_of_data)
 	return(out)
 }
+
+
+

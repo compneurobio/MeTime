@@ -60,7 +60,7 @@ setMethod("calc_ggm_genenet_longitudnal", "metime_analyser", function(object, wh
                  names=c("name", "pathway"), index_of_names="id")
     out <- get_make_plotter_object(data=network, metadata=metadata, calc_type="genenet_ggm", 
       calc_info=paste("Longitudinal GeneNet GGM results for:", paste(which_data, collapse=" & "), sep=" "), plot_type="network",
-      style="visNetwork")
+      style="visNetwork", aesthetics=NULL)
        
     return(out)
 })

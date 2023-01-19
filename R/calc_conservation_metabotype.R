@@ -45,9 +45,9 @@ for (i in which_data) {
                                    y=this_data[this_data$time == index_time_combinations[2,x],c("id","subject","time")],
                                    by="subject") %>% 
          dplyr::rename("id_from"="id.x","id_to"="id.y", "time_from"="time.x","time_to"="time.y")
-        
+       this_out <- na.omit(this_out) # Fixed bug below by adding this line
        #add results 
-       this_out$cor <- data_cor[this_out$id_from,this_out$id_to] %>% diag()
+       this_out$cor <- data_cor[this_out$id_from,this_out$id_to] %>% diag() # Throws error
        this_out$rank <- as.data.frame(data_cor[this_out$id_from,this_out$id_to]* -1)%>% 
          dplyr::mutate_all(~ rank(.x,ties.method = "min")) %>%
          as.matrix() %>% 
@@ -75,7 +75,8 @@ for (i in which_data) {
                               calc_type = "CI", 
                               calc_info = paste("metabotype_CI_", i, "_", x, sep = ""), 
                               plot_type = "dot", 
-                              style = "ggplot")
+                              style = "ggplot", 
+                              aesthetics = list(x="x", y="ci"))
     })
   }
   return(out)

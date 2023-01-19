@@ -10,12 +10,12 @@ setGeneric("add_metabs_as_covariates", function(object, which_data, which_metabs
 setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_data, which_metabs) {
 			data <- object@list_of_data[[which_data]]
 			list_of_metabs <- list()
-			for(i in 1:length(which_metabs)) {
+			list_of_metabs <- lapply(seq_along(which_metabs), function(i) {
 				dat <- object@list_of_data[[names(which_metabs)[i]]]
 				dat <- dat[ ,which_metabs[[i]]]
 				dat <- dat[order(rownames(dat)), ]
-				list_of_metabs[[i]] <- dat
-			}
+				return(dat)
+			})
 			if(length(which_data) > 1) {
 				metab_matrix <- do.call(cbind, list_of_metabs)
 			} else {

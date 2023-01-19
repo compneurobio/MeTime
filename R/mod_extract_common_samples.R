@@ -25,6 +25,8 @@ setMethod("mod_extract_common_samples", "metime_analyser",function(object, time_
 				object <- mod_split_acc_to_time(object)
 		}
 		out <- object
+		out <- add_function_info(object=out, function_name="mod_extract_common_samples", 
+			params=list(param1="no_additional_information"))
 		return(out)
 })
 

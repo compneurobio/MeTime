@@ -7,18 +7,19 @@
 #' @export
 setGeneric("mod_code_metab_names", function(object, which_data) standardGeneric("mod_code_metab_names"))
 setMethod("mod_code_metab_names", "metime_analyser", function(object, which_data) {
-					tables <- list()	
-					for(i in 1:length(which_data)) {
-								data <- object@list_of_data[[which_data[i]]]
-								metabs <- paste(unlist(strsplit(which_data[i], split=""))[1], 1:length(colnames(data)), sep=".")
-								tables[[i]] <- as.data.frame(cbind(colnames(data), metabs))
-								colnames(tables[[i]]) <- c("id", "metabolite")
-								colnames(data) <- metabs
-								object@list_of_data[[which_data[i]]] <- data
-					}
-					table <- as.data.frame(do.call(rbind, tables))
-					out <- list(object=object, table=table)
-					return(out)
-		})
-
+		tables <- list()	
+					
+		object@list_of_data[names(object@list_of_data) %in% which_data] <- lapply(seq_along(which_data), function(i) {
+		data <- object@list_of_data[[which_data[i]]]
+		metabs <- paste(unlist(strsplit(which_data[i], split=""))[1], 1:length(colnames(data)), sep=".")
+		tables[[i]] <- as.data.frame(cbind(colnames(data), metabs))
+		colnames(tables[[i]]) <- c("id", "metabolite")
+		colnames(data) <- metabs
+		return(data) 
+	})
+	object <- add_function_info(object=object, function_name="mod_code_metab_names", params=list(param="no_additional_information"))
+	table <- as.data.frame(do.call(rbind, tables))
+	out <- list(object=object, table=table)
+	return(out)
+})
 

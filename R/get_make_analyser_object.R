@@ -12,7 +12,7 @@
 #' @return An object of class metime_analyser
 #' @export
 
-get_make_analyser_object <- function(data, col_data, row_data, annotations_index=list(), name=NULL) {
+get_make_analyser_object <- function(data, col_data, row_data, annotations_index=list(), name=NULL, results=list()) {
   if(is.null(name)) name <- "set1"
   if(!all(rownames(data) %in% row_data$id) & !all(colnames(data) %in% col_data$id)) stop("id of col or row data do not match dataframe")
   if(!all(c("id","subject","time") %in% names(row_data))) stop("id, subject or time column missing")
@@ -28,13 +28,14 @@ get_make_analyser_object <- function(data, col_data, row_data, annotations_index
   
   list_of_row_data <- list()
   list_of_row_data[[name]] <- row_data
+  annotations_index <- list(annotations_index, modifications=list())
   
   out <- new("metime_analyser", 
                       list_of_data=list_of_data, 
                       list_of_col_data=list_of_col_data, 
                       list_of_row_data=list_of_row_data,
-                      annotations=annotations_index)
-  
+                      annotations=annotations_index,
+                      results=results)
   return(out)
 }
 
