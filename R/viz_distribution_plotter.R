@@ -11,8 +11,7 @@
 #' @return a list with either 1) density plot, mean table acc to timepoint and variable type or 
 #'								2) bar plot, line plot, and variable type
 #' @export
-setGeneric("viz_distribution_plotter", function(object, colname, which_data, strats, phenotype) standardGeneric("viz_distribution_plotter") )
-
+setGeneric("viz_distribution_plotter", function(object, colname, which_data, strats, phenotype) standardGeneric("viz_distribution_plotter"))
 setMethod("viz_distribution_plotter", "metime_analyser",function(object, colname, which_data, strats=NULL, phenotype) {
 	data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 	data <- data[[1]]

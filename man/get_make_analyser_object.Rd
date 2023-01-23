@@ -9,7 +9,8 @@ get_make_analyser_object(
   col_data,
   row_data,
   annotations_index = list(),
-  name = NULL
+  name = NULL,
+  results = list()
 )
 }
 \arguments{
@@ -22,14 +23,12 @@ get_make_analyser_object(
 \item{annotations_index}{a list to be filled as follows = list(phenotype="Name or index of the file/list", medication="Name or index of the files/list")}
 
 \item{name}{character. Name you want to assign to the new dataset that is being added on}
+
+\item{results}{list set to empty but can add any existing results}
 }
 \value{
 An object of class metime_analyser
 }
 \description{
 This function creates an object of class metime_analyser from a dataset.
-}
-\examples{
-# new_metime_analyser_object <- get_make_metab_object(data=data_frame, col_data=col_data_frame, row_data=row_data, name="name of the new dataset", 
-                               annotations_index=list(phenotype="name of phenotype", medication="name of medication"))
 }

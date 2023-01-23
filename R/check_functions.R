@@ -10,7 +10,7 @@ setMethod("check_ids_and_classes", "metime_analyser", function(object) {
 									col_data=object@list_of_col_data, 
 									row_data=object@list_of_row_data)
 			names <- names(object@list_of_data)
-			type <- unlist(lapply(strsplit(names(object), split="list_of_"), function(x) return(x[2])))
+			type <- unlist(lapply(strsplit(names(list_of_interest), split="list_of_"), function(x) return(x[2])))
 			out <- TRUE
 			test <- lapply(seq_along(list_of_interest), function(x) {
 						lapply(seq_along(list_of_interest[[x]]), function(y) {
@@ -20,9 +20,9 @@ setMethod("check_ids_and_classes", "metime_analyser", function(object) {
 										" class of data should be data.frame only")
 									out <- FALSE
 								})
-							tryCatch(all(rownames(list_of_interest[[x]][[y]] == list_of_interest[[x]][[y]]$id)), 
+							tryCatch(all(rownames(list_of_interest[[x]][[y]]) == list_of_interest[[x]][[y]]$id), 
 								error=function(e) {
-									message("In dataset", names[y], "datatype", type[i], 
+									message("In dataset", names[y], "datatype", type[x], 
 										"rownames and ids are not mapped correctly")
 									out <- FALSE
 								})

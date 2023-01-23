@@ -19,7 +19,7 @@ setMethod("mod_filter_timepoints", "metime_analyser", function(object, timepoint
     keep_id <- object@list_of_row_data[[i]] %>% 
       dplyr::select(id, time, subject) %>%  
       dplyr::filter(time %in% timepoints)
-    if(full) {
+    if(complete) {
       full_rid <- keep_id %>% 
         dplyr::count(subject) %>% 
         dplyr::filter(n==length(timepoints))

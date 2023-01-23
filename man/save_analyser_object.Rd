@@ -4,7 +4,7 @@
 \alias{save_analyser_object}
 \title{Function to extract analyser object data into a csv}
 \usage{
-save_analyser_object(object, which_data)
+save_analyser_object(object, which_data, type)
 }
 \arguments{
 \item{object}{An object of class metime_plotter}

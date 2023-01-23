@@ -4,7 +4,14 @@
 \alias{calc_distance_pairwise}
 \title{Function to calculate dissimilarity using distance measures}
 \usage{
-calc_distance_pairwise(object, which_data, method)
+calc_distance_pairwise(
+  object,
+  which_data,
+  method,
+  name,
+  cols_for_meta,
+  stratifications
+)
 }
 \arguments{
 \item{object}{S4 Object of class metime_analyser}
@@ -13,6 +20,12 @@ calc_distance_pairwise(object, which_data, method)
 
 \item{method}{default setting: method="euclidean", Alternative "maximum","minimum",
 "manhattan","canberra","minkowski" are also possible}
+
+\item{name}{name of the results should be of length=1}
+
+\item{cols_for_meta}{list equal to length of which_data defining the columns for metadata}
+
+\item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
 }
 \value{
 data.frame with pairwise results

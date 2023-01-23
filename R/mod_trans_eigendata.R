@@ -4,6 +4,7 @@
 #' @param which_data character to define which dataset is to be used
 #' @param append logical if set to true adds the new data to the object used else creates new object
 #' @param clusters logical if set to true will add already existing cluster info otherwise creates new
+#' @param ... arguments for add_clusters_wgcna
 #' @return metime_analyser object with new dataset with eigendata of the metabolites
 #' @export
 setGeneric("mod_trans_eigendata", function(object, which_data, append, clusters, ...) standardGeneric("mod_trans_eigendata"))

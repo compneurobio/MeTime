@@ -6,7 +6,7 @@
 \usage{
 add_node_features(
   network_plotter_object,
-  guide_plotter_object,
+  guide_object,
   which_type,
   metab_colname
 )
@@ -14,9 +14,9 @@ add_node_features(
 \arguments{
 \item{network_plotter_object}{plotter object with network information}
 
-\item{guide_plotter_object}{guide from which the colors are to be extracted}
+\item{guide_object}{guide from which the colors are to be extracted. Both analyser and plotter objects are allowed}
 
-\item{which_type}{type of the guide plotter object to be used. Current options are "regression" and "conservation"}
+\item{which_type}{type of the guide plotter object to be used. Current options are c("regression","conservation")}
 
 \item{metab_colname}{name of the column in guide plotter object that represents the metabolites}
 }

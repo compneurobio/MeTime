@@ -4,16 +4,27 @@
 \alias{calc_colinearity}
 \title{Function to calculate colinearity}
 \usage{
-calc_colinearity(object, which_data, cols_for_meta, show_all)
+calc_colinearity(
+  object,
+  which_data,
+  cols_for_meta,
+  show_all,
+  name,
+  stratifications
+)
 }
 \arguments{
 \item{object}{An S4 object of class metime_analyser}
 
 \item{which_data}{Dataset to check for colinearity}
 
-\item{cols_for_meta}{character vector to columns needed in metadata. Id and class name is needed}
+\item{cols_for_meta}{list of character vectors of column names needed in metadata. Id and class name is needed}
 
 \item{show_all}{logical. True will only filter out colinear data}
+
+\item{name}{character to define the name of the result}
+
+\item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
 }
 \value{
 plotter object with data for heatmap information

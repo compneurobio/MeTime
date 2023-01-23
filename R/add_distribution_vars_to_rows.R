@@ -5,7 +5,8 @@
 #' object <- add_distribution_vars_to_rows(object=data, screening_vars=c("APOEGrp", "DXGrp_longi", "PTGENDER"), 
 #'			distribution_vars=c("Age", "BMI", "ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp", "DXGrp_longi", "PTGENDER"), which_data="lipid_data")
 #' @param object An object of class metime_analyser
-#' @param vars A character naming the vars of interest
+#' @param distribution_vars A character naming the vars of interest
+#' @param screening_vars Logical to call add_screening_vars() before updating rows
 #' @param which_data dataset to which the information is to be added(only 1 can be used at a time)
 #' @return object of class metime_analyser with phenotype data added to row data
 #' @export
@@ -14,7 +15,7 @@ setMethod("add_distribution_vars_to_rows", "metime_analyser", function(object, s
 			if(!is.null(screening_vars)) {
 				phenotype <- add_screening_vars(object, screening_vars)
 			} else {
-				phenotype <- object@list_of_data[[object@annotations$phenotype]]
+				phenotype <- object@list_of_data[[object@annotations[[1]]$phenotype]]
 			}
 			data <- as.data.frame(object@list_of_row_data[[which_data]])
 			phenotype <- phenotype[rownames(phenotype) %in% rownames(data), ]
@@ -23,6 +24,8 @@ setMethod("add_distribution_vars_to_rows", "metime_analyser", function(object, s
 			data <- cbind(data, phen_data[ ,distribution_vars])
 			object@list_of_row_data[[which_data]] <- data
 			out <- object
+			out <- add_function_info(object=out, function_name="add_distribution_vars_to_rows",
+					params=list(screening_vars=screening_vars, distribution_vars=distribution_vars, which_data=which_data))
 			return(out)
 	})
 

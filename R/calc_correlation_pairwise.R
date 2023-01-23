@@ -10,10 +10,12 @@
 #' @param which_data specify datasets to calculate on. One or more possible
 #' @param method default setting: method="pearson", Alternative "spearman" also possible
 #' @param cols_for_meta list equal to length of which_data defining the columns for metadata
+#' @param name name of the results should be of length=1
+#' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @return data.frame with pairwise results
 #' @export
-setGeneric("calc_correlation_pairwise", function(object, which_data, method, cols_for_meta) standardGeneric("calc_correlation_pairwise"))
-setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which_data, method="pearson", cols_for_meta){
+setGeneric("calc_correlation_pairwise", function(object, which_data, method, cols_for_meta, name, stratifications) standardGeneric("calc_correlation_pairwise"))
+setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which_data, method="pearson", cols_for_meta, name, stratifications){
   stopifnot(all(which_data %in% names(object@list_of_data)))
   flattenCorrMatrix <- function(cormat, pmat) {
     ut <- upper.tri(cormat)
@@ -39,17 +41,26 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
       plyr::join_all(by="id", type="inner") %>% 
       `rownames<-`(.[,"id"]) %>% 
       dplyr::select(-id)
-    
+  if(length(stratifications)>=1) {
+        dummy_data <- object@list_of_data[[which_data[1]]]
+        row_data <- object@list_of_row_data[[which_data[1]]]
+        stratifications <- lapply(names(stratifications), function(x) {
+              row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
+              return(stratifications[[x]]) 
+          })
+        my_data <- my_data[rownames(my_data) %in% rownames(row_data), ]
+  }
     # calculate correlation matrix and pvalues
     cor_mat <- my_data %>% 
       as.matrix() %>% 
       Hmisc::rcorr(type=method)
     out=flattenCorrMatrix(cor_mat$r, cor_mat$P) %>% 
       dplyr::mutate(type="cor") %>% 
-      dplyr::rename("dist"="cor", "cut_p"="p") %>%
-      MeTime::get_make_plotter_object(metadata=metadata, calc_type="pairwise_correlation", 
-                      calc_info = paste(which_data, "and" ,method, "pairwise_correlation", sep=" "),
-                      plot_type="heatmap", style="ggplot", aesthetics=list(x="row", y="column", fill="dist")) 
+      dplyr::rename("dist"="cor", "cut_p"="p")
+
+    out <- MeTime::get_results(data=list(out), object=object, metadata=metadata, calc_type="pairwise_correlation", 
+                      calc_info = paste(which_data, "_and_" , method, "_pairwise_correlation", sep=""), 
+                      name=name) 
     return(out)
 })
 

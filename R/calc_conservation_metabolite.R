@@ -5,25 +5,39 @@
 #' out <- calc_metabolite_conservation(object=metime_analyser_object, which_data="Name of the dataset")
 #' @param object An object of class metime_analyser
 #' @param which_data Name of the dataset to be used
-#' @param timepoints character vector with timepoints of interest
 #' @param verbose Information provided on steps being processed
 #' @param cols_for_meta A list of a Character vector to define column names that are to be used for plotting purposes
-#' @return List of conservation index results
+#' @param name character vector to define the name of the results generated. length should be equal to which_data
+#' @param stratifications list to stratify the data used 
+#' @return conservation index results that are added to the object
 #' @export
-setGeneric("calc_conservation_metabolite", function(object, which_data, timepoints, verbose, cols_for_meta) standardGeneric("calc_conservation_metabolite"))
-setMethod("calc_conservation_metabolite", "metime_analyser", function(object, which_data, timepoints, verbose=F, cols_for_meta) {
+setGeneric("calc_conservation_metabolite", function(object, which_data, verbose, cols_for_meta, stratifications, name) standardGeneric("calc_conservation_metabolite"))
+setMethod("calc_conservation_metabolite", "metime_analyser", function(object, which_data, verbose=F, cols_for_meta, stratifications, name) {
   #define data to be processed
   #data_position <- which(names(object@list_of_data) %in% which_data)
+  stopifnot(length(which_data)==length(name))
   out=list()
   for (i in which_data) {
     
     # index variables to use
     index_var <- c("id","time","subject")
+    if(length(stratifications)>=1) {
+        data <- object@list_of_data[[i]]
+        row_data <- object@list_of_row_data[[i]]
+        stratifications <- lapply(names(stratifications), function(x) {
+              row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
+              return(stratifications[[x]]) 
+          })
+        data <- data[rownames(data) %in% rownames(row_data), ]
+    } else {
+      data <- object@list_of_data[[i]]
+      row_data <- object@list_of_row_data[[i]]
+    }
     
     # extract and reshape data
-    this_data <- object@list_of_data[[which(names(object@list_of_data)==i)]] %>% 
+    this_data <- data %>% 
       dplyr::mutate(id = rownames(.[])) %>% 
-      dplyr::left_join(object@list_of_row_data[[which(names(object@list_of_data)==i)]][,index_var], by = "id") %>% 
+      dplyr::left_join(row_data[,index_var], by = "id") %>% 
       dplyr::mutate(time = gsub(x=time, pattern="t", replacement="")) %>% 
       `rownames<-`(.[,"id"]) %>% 
       dplyr::arrange(subject, time)
@@ -81,16 +95,19 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
                                          index_of_names = "id")
     }
     out <- list()
-    out[[i]]<- lapply(1:ncol(index_time_combinations), function(x) {
-      get_make_plotter_object(data = out_sum[[x]], 
+    combinations <- lapply(1:ncol(index_time_combinations), function(y) {
+              t <- paste(index_time_combinations[,y], collapse="vs")
+              return(t)
+      }) %>% unlist()
+
+    out <- get_make_results(object=object, data = out_sum, 
                               metadata = metadata, 
-                              calc_type = "CI", 
-                              calc_info = paste("metabotype_CI_", i, "_", x, sep = ""), 
-                              plot_type = "dot", 
-                              style = "ggplot",
-                              aesthetics = list(x="x", y="ci"))
-    })
+                              calc_type = rep("CI_metabolite", each=length(out_sum)), 
+                              calc_info = paste("metabolite_CI_", i, "_", combinations, sep = ""),
+                              name=name[i])
   }
+  out <- out %>% add_function_info(function_name="calc_conservation_metabolite", 
+      params=list())
   return(out)
 })
 

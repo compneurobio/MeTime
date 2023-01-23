@@ -2,13 +2,15 @@
 #' @param object An S4 object of class metime_analyser
 #' @param which_data character to define dataset to be used 
 #' @param covariates covariates to be used
-#' @param timepoints timepoints used in feature selection 
 #' @param feature_selection results from feature_selection
 #' @param regression_phenotype character to define which phenotype
+#' @param cols_for_meta colnames to be added for meta information. list of character vectors of length which_data
+#' @param name character vector for naming the results
+#' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @return plotter object with a forest plot 
 #' @export
-setGeneric("calc_lm_matrixeqtl", function(object, which_data, covariates, timepoints, feature_selection, regression_phenotype) standardGeneric("calc_lm_matrixeqtl"))
-setMethod("calc_lm_matrixeqtl", "metime_analyser", function(object, which_data, covariates, timepoints, feature_selection) {
+setGeneric("calc_lm_matrixeqtl", function(object, which_data, covariates, feature_selection, regression_phenotype, name, stratifications, cols_for_meta) standardGeneric("calc_lm_matrixeqtl"))
+setMethod("calc_lm_matrixeqtl", "metime_analyser", function(object, which_data, covariates, feature_selection, name, stratifications, cols_for_meta) {
     stopifnot(all(which_data %in% names(object@list_of_data)))
     stopifnot(timepoints %in% names(feature_selection))
     for(i in timepoints) {   
@@ -64,14 +66,19 @@ setMethod("calc_lm_matrixeqtl", "metime_analyser", function(object, which_data, 
     all_results <- results_adjusted %>% 
         do.call(what=rbind.data.frame) %>% 
         dplyr::mutate(trait = as.character(trait))
+    metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta, 
+                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
     out <- lapply(unique(all_results$trait), function(x) {
             data <- all_results%>% 
                dplyr::filter(pvalue<=0.05/281, 
                               trait==i)
-            plotter_object <- get_make_plotter_object(data=data, metadata=NULL, 
-                                calc_type="linear_model", calc_info=paste(which_data, "linear_model", sep="_"), 
-                                plot_type="dot", style="ggplot", 
-                                aesthetics=list(x=met, y=beta))
+            plotter_object <- get_results(object=object, data=list(data), metadata=list(metadata), 
+                                calc_type="linear_model", 
+                                calc_info=paste(which_data, "linear_model", "with", 
+                                    ifelse(length(stratifications)>=1, 
+                                        paste(stratifications, collapse="_"), "full_data"),
+                                    sep="_"), 
+                    name=name)
       })
     return(out)
     

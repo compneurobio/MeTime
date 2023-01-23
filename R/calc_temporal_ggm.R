@@ -85,10 +85,10 @@ setMethod("calc_temporal_ggm", "metime_analyser", function(object, which_data, l
         metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta, 
                  names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
         out <- lapply(models, function(x) {
-              plotter_object <- get_make_plotter_object(data=x, metadata=metadata, calc_type="temporal_network", 
-                  calc_info=paste("Temporal network for:", paste(which_data, collapse=" & "), sep=" "), 
-                plot_type="network", style="visNetwork", aesthetics=NULL)
-              return(plotter_object)
+              #plotter_object <- get_make_plotter_object(data=x, metadata=metadata, calc_type="temporal_network", 
+               #   calc_info=paste("Temporal network for:", paste(which_data, collapse=" & "), sep=" "), 
+                #plot_type="network", style="visNetwork", aesthetics=NULL)
+              #return(plotter_object)
           })
         return(out)
   })

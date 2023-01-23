@@ -10,6 +10,7 @@ calc_dimensionality_reduction(
   type,
   cols_for_metabs,
   cols_for_samples,
+  stratifications,
   ...
 )
 }
@@ -23,6 +24,8 @@ calc_dimensionality_reduction(
 \item{cols_for_metabs}{a list of character vectors for getting metadata for columns for plotting purposes}
 
 \item{cols_for_samples}{a character vector to define the columns to extract metadata for plotting purposes}
+
+\item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
 
 \item{...}{additional arguments that can be passed on to prcomp(), M3C::tsne() and umap::umap()}
 }

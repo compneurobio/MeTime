@@ -4,7 +4,14 @@
 \alias{calc_correlation_pairwise}
 \title{Function to calculate correlation}
 \usage{
-calc_correlation_pairwise(object, which_data, method)
+calc_correlation_pairwise(
+  object,
+  which_data,
+  method,
+  cols_for_meta,
+  name,
+  stratifications
+)
 }
 \arguments{
 \item{object}{S4 Object of class metime_analyser}
@@ -12,6 +19,12 @@ calc_correlation_pairwise(object, which_data, method)
 \item{which_data}{specify datasets to calculate on. One or more possible}
 
 \item{method}{default setting: method="pearson", Alternative "spearman" also possible}
+
+\item{cols_for_meta}{list equal to length of which_data defining the columns for metadata}
+
+\item{name}{name of the results should be of length=1}
+
+\item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
 }
 \value{
 data.frame with pairwise results

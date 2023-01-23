@@ -9,7 +9,9 @@ get_files_and_names(path, annotations_index)
 \arguments{
 \item{path}{Path to the parent directory}
 
-\item{annotations_index}{a list to be filled as follows = list(phenotype="Name or index of the files", medication="Name or index of the files")}
+\item{annotations_index}{a list to be filled as
+list(phenotype="Name or index of the files",
+medication="Name or index of the files")}
 }
 \value{
 An object of class metime_analyser
@@ -22,6 +24,8 @@ all files into a list and each type of data is packed into its respective
 class i.e. col_data, row_data or data
 }
 \examples{
-# Input in the parent directory from which the data files are to be extracted along with annotations_index to specify phenotype and medication data
-get_files_and_names(path=/path/to/parent/directory, annotations_index=list(phenotype="Name of phenotype file", medication="name of phenotype file"))
+get_files_and_names(path="/path/to/parent/directory", 
+	annotations_index=list(phenotype="Name of phenotype file", 
+medication="name of phenotype file"))
+
 }

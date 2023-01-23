@@ -7,13 +7,14 @@
 #' class i.e. col_data, row_data or data
 #'
 #' @examples
-
-#' # Input in the parent directory from which the data files are to be extracted along with annotations_index to specify phenotype and medication data
-
-#' get_files_and_names(path=/path/to/parent/directory, annotations_index=list(phenotype="Name of phenotype file", medication="name of phenotype file"))
-
+#' get_files_and_names(path="/path/to/parent/directory", 
+#' 	annotations_index=list(phenotype="Name of phenotype file", 
+#'	medication="name of phenotype file"))
+#'
 #' @param path Path to the parent directory
-#' @param annotations_index a list to be filled as follows = list(phenotype="Name or index of the files", medication="Name or index of the files")
+#' @param annotations_index a list to be filled as 
+#' list(phenotype="Name or index of the files", 
+#'	medication="Name or index of the files")
 #' @return An object of class metime_analyser
 #' @export
 
@@ -48,11 +49,9 @@ get_files_and_names <- function(path, annotations_index) {
 										list_of_row_data=list_of_row_data,
 										annotations=annotations_index,
 										results=list())
-	#sanity checks for the object created
-	check_rownames_and_colnames(metab_object)
 	#Update subject and time columns in the row data
 	out <- metab_object
-	out@list_of_row_data <- lapply(seq_len(out@list_of_row_data), function(x) {
+	out@list_of_row_data <- lapply(seq_along(out@list_of_row_data), function(x) {
 			a <- out@list_of_row_data[[x]]
 			if("rid" %in% colnames(a)) {
 				a$rid <- NULL
@@ -61,7 +60,7 @@ get_files_and_names <- function(path, annotations_index) {
 			} else if("RID" %in% colnames(a)) {
 				a$RID <- NULL
 			}
-			if(colnames(a) %in% "subject" && colnames(a) %in% "time") {
+			if("subject" %in% colnames(a) && "time" %in% colnames(a)) {
 				a <- a %>% dplyr::arrange(subject, time)
 			} else {
 				a$subject <- rownames(a) %>% gsub(pattern="_[a-z|A-Z][0-9]+", replacement="")
@@ -71,11 +70,12 @@ get_files_and_names <- function(path, annotations_index) {
 			return(a)
 	})
 	names(out@list_of_row_data) <- names(out@list_of_data)
-	out@list_of_col_data <- lapply(seq_len(out@list_of_col_data),function(x) {
+	out@list_of_col_data <- lapply(seq_along(out@list_of_col_data),function(x) {
 			a <- out@list_of_col_data[[x]]
-			if(!colnames(a) %in% "covariates") {
+			if(!"covariates" %in% colnames(a)) {
 				a$covariates <- rep(NA, each=length(a$id))
 			}
+			return(a)
 	})
 	names(out@list_of_col_data) <- names(out@list_of_data)
 	return(out)

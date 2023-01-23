@@ -7,8 +7,8 @@
 #' @param type which type of output file. Can be "csv", "tsv" and "xlsx"
 #' @return saves the data in the working directory as a csv and returns nothing
 #' @export
-setGeneric("save_analyser_object", function(object, which_data) standardGeneric("save_analyser_object"))
-setMethod("save_analyser_object", "metime_analyser", function(object, which_data) {
+setGeneric("save_analyser_object", function(object, which_data, type) standardGeneric("save_analyser_object"))
+setMethod("save_analyser_object", "metime_analyser", function(object, which_data, type) {
 			stopifnot(type %in% c("csv", "tsv", "xlsx"))
 			list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 			list_of_col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% which_data]

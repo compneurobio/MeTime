@@ -14,9 +14,11 @@ add_distribution_vars_to_rows(
 \arguments{
 \item{object}{An object of class metime_analyser}
 
-\item{which_data}{dataset to which the information is to be added(only 1 can be used at a time)}
+\item{screening_vars}{Logical to call add_screening_vars() before updating rows}
 
-\item{vars}{A character naming the vars of interest}
+\item{distribution_vars}{A character naming the vars of interest}
+
+\item{which_data}{dataset to which the information is to be added(only 1 can be used at a time)}
 }
 \value{
 object of class metime_analyser with phenotype data added to row data

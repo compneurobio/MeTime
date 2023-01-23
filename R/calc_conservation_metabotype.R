@@ -8,10 +8,12 @@
 #' @param timepoints character vector with timepoints of interest
 #' @param verbose Information provided on steps being processed
 #' @param cols_for_meta Character vector to define column names that are to be used for plotting purposes
+#' @param name character vector to define the results 
+#' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @return List of conservation index results
 #' @export
-setGeneric("calc_conservation_metabotype", function(object, which_data, timepoints, verbose, cols_for_meta) standardGeneric("calc_conservation_metabotype"))
-setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, timepoints, verbose=F, cols_for_meta) {
+setGeneric("calc_conservation_metabotype", function(object, which_data, timepoints, verbose, cols_for_meta, stratifications, name) standardGeneric("calc_conservation_metabotype"))
+setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, timepoints, verbose=F, cols_for_meta, stratifications, name) {
 
   #define data to be processed
 
@@ -21,11 +23,22 @@ for (i in which_data) {
     
     # index variables to use
     index_var <- c("id","time","subject")
-    
+    if(length(stratifications)>=1) {
+        data <- object@list_of_data[[i]]
+        row_data <- object@list_of_row_data[[i]]
+        stratifications <- lapply(names(stratifications), function(x) {
+              row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
+              return(stratifications[[x]]) 
+          })
+        data <- data[rownames(data) %in% rownames(row_data), ]
+    } else {
+      data <- object@list_of_data[[i]]
+      row_data <- object@list_of_row_data[[i]]
+    }
     # extract data
-    this_data <- object@list_of_data[[which(names(object@list_of_data)==i)]] %>% 
+    this_data <- data %>% 
       dplyr::mutate(id = rownames(.[])) %>% 
-      dplyr::left_join(object@list_of_row_data[[which(names(object@list_of_data)==i)]][,index_var], by = "id") %>% 
+      dplyr::left_join(row_data[,index_var], by = "id") %>% 
       dplyr::mutate(time = gsub(x=time, pattern="t", replacement="")) %>% 
       `rownames<-`(.[,"id"]) %>% 
       dplyr::arrange(subject, time)
@@ -69,20 +82,23 @@ for (i in which_data) {
                                       which_data = i, 
                                       columns = cols_for_meta)
     out <- list()
-    out[[i]]<- lapply(1:ncol(index_time_combinations), function(x) {
-      get_make_plotter_object(data = out_sum[[x]], 
-                              metadata = metadata, 
-                              calc_type = "CI", 
-                              calc_info = paste("metabotype_CI_", i, "_", x, sep = ""), 
-                              plot_type = "dot", 
-                              style = "ggplot", 
-                              aesthetics = list(x="x", y="ci"))
-    })
+    combinations <- lapply(1:ncol(index_time_combinations), function(y) {
+              t <- paste(index_time_combinations[,y], collapse="vs")
+              return(t)
+      }) %>% unlist()
+
+    out <- get_make_results(object=object, data = out_sum, 
+                              metadata = lapply(1:ncol(index_time_combinations), function(x) {
+                                      return(metadata)
+                                }), 
+                              calc_type = rep("CI_metabotype", each=length(out_sum)), 
+                              calc_info = paste("metabotype_CI_", i, "_", combinations, sep = ""),
+                              name=name[i])
   }
   return(out)
 })
 
 #lipids_metabotype <- calc_conservation_metabotype(object=data, which_data="lipid_data", 
-#timepoints=c("t0","t12","t24"), verbose=TRUE, 
-#cols_for_meta=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp",  "DXGrp_longi", "PTGENDER", "Age", "BMI"))
+#stratifications=list(time=c("t0", "t12", "t24")), verbose=TRUE, 
+#cols_for_meta=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp",  "DXGrp_longi", "PTGENDER", "Age", "BMI"), name="CI_test")
 

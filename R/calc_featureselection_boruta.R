@@ -59,6 +59,9 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
   final <- final[order(final$id), ]
   object@list_of_col_data[[which_y]] <- object@list_of_col_data[[which_y]][order(object@list_of_data[[which_y]]$id), ]
   object@list_of_col_data[[which_y]]$covariates <- final$covariates
+  object <- object %>% add_function_info(function_name="calc_featureselection_boruta", 
+      params=list(which_x=which_x, which_y=which_y, verbose=verbose, 
+          output_loc=output_loc, file_name=file_name))
   return(object)
 })
 

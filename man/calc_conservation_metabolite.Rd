@@ -7,9 +7,10 @@
 calc_conservation_metabolite(
   object,
   which_data,
-  timepoints,
   verbose,
-  cols_for_meta
+  cols_for_meta,
+  stratifications,
+  name
 )
 }
 \arguments{
@@ -17,14 +18,16 @@ calc_conservation_metabolite(
 
 \item{which_data}{Name of the dataset to be used}
 
-\item{timepoints}{character vector with timepoints of interest}
-
 \item{verbose}{Information provided on steps being processed}
 
 \item{cols_for_meta}{A list of a Character vector to define column names that are to be used for plotting purposes}
+
+\item{stratifications}{list to stratify the data used}
+
+\item{name}{character vector to define the name of the results generated. length should be equal to which_data}
 }
 \value{
-List of conservation index results
+conservation index results that are added to the object
 }
 \description{
 Method applied on the object metime_analyser to calculate the metabotype conservation index

@@ -9,7 +9,9 @@ calc_conservation_metabotype(
   which_data,
   timepoints,
   verbose,
-  cols_for_meta
+  cols_for_meta,
+  stratifications,
+  name
 )
 }
 \arguments{
@@ -22,6 +24,10 @@ calc_conservation_metabotype(
 \item{verbose}{Information provided on steps being processed}
 
 \item{cols_for_meta}{Character vector to define column names that are to be used for plotting purposes}
+
+\item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
+
+\item{name}{character vector to define the results}
 }
 \value{
 List of conservation index results

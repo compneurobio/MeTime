@@ -21,6 +21,11 @@ setMethod("mod_extract_common_samples", "metime_analyser",function(object, time_
 					x <- x[order(rownames(x)), ]
 					return(x)
 			})
+		object@list_of_row_data <- lapply(object@list_of_row_data, function(x) {
+					x <- x[rownames(x) %in% common_samples, ]
+					x <- x[order(rownames(x)), ]
+					return(x)
+			})
 		if(time_splitter) {
 				object <- mod_split_acc_to_time(object)
 		}

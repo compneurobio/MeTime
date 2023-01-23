@@ -8,10 +8,11 @@ calc_ggm_genenet_longitudnal(
   object,
   which_data,
   threshold,
-  timepoints,
   all,
   cols_for_meta,
   covariates,
+  stratifications,
+  name,
   ...
 )
 }
@@ -20,15 +21,17 @@ calc_ggm_genenet_longitudnal(
 
 \item{which_data}{a character or a character vector naming the datasets of interest}
 
-\item{threshold}{type of threshold to be used for extracting significant edges}
-
-\item{timepoints}{timepoints of interest that are to be used to build networks(as per timepoints in rows)}
+\item{threshold}{type of threshold to be used for extracting significant edge}
 
 \item{all}{Logical to get all edges without any cutoff.}
 
 \item{cols_for_meta}{a list of character vectors for getting metadata for columns for plotting purposes}
 
 \item{covariates}{covariates to be used for this analysis}
+
+\item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
+
+\item{name}{character vector for naming the results}
 
 \item{...}{addtional arguments for genenet network}
 }

@@ -10,7 +10,7 @@
 setGeneric("add_screening_vars", function(object, vars) standardGeneric("add_screening_vars"))
 
 setMethod("add_screening_vars", "metime_analyser", function(object, vars) {
-	phenotype_name <- object@annotations$phenotype
+	phenotype_name <- object@annotations[[1]]$phenotype
 	phenotype <- object@list_of_data[[phenotype_name]]
 	screening <- phenotype[grep("-1|-2", rownames(phenotype)), ]
 	new_rows <- as.data.frame(screening[, vars])
@@ -26,6 +26,7 @@ setMethod("add_screening_vars", "metime_analyser", function(object, vars) {
 		})
 	object@list_of_data[[phenotype_name]] <- phenotype
 	out <- object
+	out <- add_function_info(object=out, function_name="add_screening_vars", params=list(vars=vars))
 	return(out)
 })
 

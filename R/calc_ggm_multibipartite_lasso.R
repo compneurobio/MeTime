@@ -92,10 +92,7 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
                   x$node1[i] <- table$metabolite[table$id %in% x$node1[i]]
                   x$node2[i] <- table$metabolite[table$id %in% x$node2[i]]
                 }
-                plotter_object <- get_make_plotter_object(data=x, metadata=metadata, calc_type="multibipartite_ggm", 
-                  calc_info=paste("multibipartite lasso network for:", paste(which_data, collapse=" & "), sep=" "), 
-                plot_type="network", style="visNetwork", aesthetics=NULL)
-                return(plotter_object) 
+                return(x) 
             })
           return(out)
   })
