@@ -24,10 +24,10 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
     if(length(stratifications)>=1) {
         data <- object@list_of_data[[i]]
         row_data <- object@list_of_row_data[[i]]
-        stratifications <- lapply(names(stratifications), function(x) {
+        row_data <- lapply(names(stratifications), function(x) {
               row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
-              return(stratifications[[x]]) 
-          })
+              return(row_data) 
+          }) %>% do.call(what=rbind.data.frame)
         data <- data[rownames(data) %in% rownames(row_data), ]
     } else {
       data <- object@list_of_data[[i]]

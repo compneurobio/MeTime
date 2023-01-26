@@ -1,7 +1,7 @@
 usethis::use_import_from("rstatix", fun="t_test")
 usethis::use_package("tidyverse", type="depends")
-usethis::use_package("igraph", type="Imports")
-usethis::use_package("plyr", type="Imports")
+#usethis::use_package("igraph", type="Imports")
+#usethis::use_package("plyr", type="Imports")
 usethis::use_package("DT", type="Imports")
 usethis::use_import_from("M3C", fun="tsne")
 usethis::use_import_from("umap", fun="umap")
@@ -12,19 +12,19 @@ usethis::use_package("GeneNet", type="Imports")
 usethis::use_package("longitudinal", type="Imports")
 usethis::use_package("glmnet", type="Imports")
 usethis::use_package("Boruta", type="Imports")
-usethis::use_import_from("nnet", fun="class.ind")
-usethis::use_import_from("abind", fun="abind")
-usethis::use_import_from("multiway", fun="parafac")
-usethis::use_import_from("DT", fun="datatable")
-usethis::use_import_from("xlsx", fun="write.xlsx")
+usethis::use_import_from("nnet", fun="class.ind") # get that manually 
+usethis::use_import_from("abind", fun="abind") # get that manually
+usethis::use_import_from("multiway", fun="parafac") # get that manually
+#usethis::use_import_from("DT", fun="datatable")
+usethis::use_import_from("xlsx", fun="write.xlsx") # get that manually, or check for base function or in tidyverse
 usethis::use_package("visNetwork", type="Imports")
 usethis::use_package("mgcv", type="Imports")
 usethis::use_import_from("lmerTest", fun="lmer")
 usethis::use_import_from("parallel", fun="mclapply")
-usethis::use_import_from("reshape2", fun="melt")
-usethis::use_import_from("data.table", fun="setDT")
+#usethis::use_import_from("reshape2", fun="melt")
+#usethis::use_import_from("data.table", fun="setDT") 
 usethis::use_package("MatrixEQTL", type="Imports")
-usethis::use_package("WGCNA", type="Imports")
+usethis::use_package("WGCNA", type="Imports") # change it to functions
 usethis::use_import_from("dynamicTreeCut", fun="cutreeDynamic")
 
 
@@ -71,10 +71,9 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #'  
 #' @return plots for a certain set of results
 #' @export
-setGeneric("plot", function(object, results_index, interactive, ...) standardGeneric("plot"))
-setMethod("plot", "metime_analyser", function(object, results_index, interactive, ...) {
+setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...) {
 			add <- list(...)
-			results <- object@results[[results_index]]
+			results <- x@results[[results_index]]
 			if(!all(names(plot_data) %in% c("node", "edge", "metadata"))) {
 				plots <- lapply(seq_along(results$plot_data), function(x) {
 					if(results$information$calc_type[x] %in% "CI_metabolite" |
@@ -88,7 +87,8 @@ setMethod("plot", "metime_analyser", function(object, results_index, interactive
 								x <- plot$x$data[[i]]$x
 								data <- results$plot_data[[x]]
 								data <- data[data[ ,data$x] %in% x, ] 
-								plot$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=add$viz)
+								plot$x$data[[j]]$text <- get_text_for_plot(data=data, 
+										colnames=add$viz)
 							}
 							return(plot)
 						} else {
@@ -105,7 +105,8 @@ setMethod("plot", "metime_analyser", function(object, results_index, interactive
 								x <- plot$x$data[[i]]$x
 								data <- results$plot_data[[x]]
 								data <- data[data[ ,data$row] %in% x, ] 
-								plot$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=add$viz)
+								plot$x$data[[j]]$text <- get_text_for_plot(data=data, 
+									colnames=add$viz)
 							}
 							return(plot)
 						} else {
@@ -211,16 +212,6 @@ setMethod("plot", "metime_analyser", function(object, results_index, interactive
         		return(graph)
         	}
 	})
-
-
-#' Setting new structure definition for the metime_analyser object
-#' @description function to see the structure of metime_analyser object
-#' @param object S4 object of class metime_analyser
-#' @examples structure(object)
-#' @return structure of the S4 object
-#' @export
-setGeneric("structure", function(object) standardGeneric("structure"))
-setMethod("structure", "metime_analyser", function(object) return(str(object, max.level = 3)))
 
 #' Setting new print definition for the metime_analyser object
 #' @description function to see the structure of metime_analyser object

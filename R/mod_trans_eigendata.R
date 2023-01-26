@@ -6,7 +6,7 @@
 #' @param clusters logical if set to true will add already existing cluster info otherwise creates new
 #' @param ... arguments for add_clusters_wgcna
 #' @return metime_analyser object with new dataset with eigendata of the metabolites
-#' @export
+#' @export  
 setGeneric("mod_trans_eigendata", function(object, which_data, append, clusters, ...) standardGeneric("mod_trans_eigendata"))
 setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data, append, clusters, ...) {
 			stopifnot(which_data %in% names(object@list_of_data))

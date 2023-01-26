@@ -54,9 +54,18 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 					plot_data <- data
 				} else {
 					data <- lapply(seq_along(data), function(x) {
-							data[[x]] <- data[[x]][order(rownames(data[[x]])), ]
-							dummy_metadata <- metadata[[x]][rownames(metadata[[x]]) %in% rownames(data[[x]]), ]
-							data[[x]] <- data[[x]][rownames(data[[x]]) %in% rownames(dummy_metadata), ]
+							if(length(metadata)==0) {
+								return(data[[x]])
+							}
+							if(length(metadata)>1) {	
+								data[[x]] <- data[[x]][order(rownames(data[[x]])), ]
+								dummy_metadata <- metadata[[x]][rownames(metadata[[x]]) %in% rownames(data[[x]]), ]
+								data[[x]] <- data[[x]][rownames(data[[x]]) %in% rownames(dummy_metadata), ]
+							} else {
+								data[[x]] <- data[[x]][order(rownames(data[[x]])), ]
+								dummy_metadata <- metadata[[1]][rownames(metadata[[1]]) %in% rownames(data[[x]]), ]
+								data[[x]] <- data[[x]][rownames(data[[x]]) %in% rownames(dummy_metadata), ]
+							}
 							return(cbind.data.frame(data[[x]], dummy_metadata))
 						})
 					object@results[[length(object@results)]]$plot_data <- data

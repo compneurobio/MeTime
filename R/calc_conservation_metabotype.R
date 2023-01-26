@@ -5,15 +5,14 @@
 #' out <- calc_metabotype_conservation(object=metime_analyser_object, which_data="Name of the dataset")
 #' @param object An object of class metime_analyser
 #' @param which_data Name of the dataset to be used
-#' @param timepoints character vector with timepoints of interest
 #' @param verbose Information provided on steps being processed
 #' @param cols_for_meta Character vector to define column names that are to be used for plotting purposes
 #' @param name character vector to define the results 
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @return List of conservation index results
 #' @export
-setGeneric("calc_conservation_metabotype", function(object, which_data, timepoints, verbose, cols_for_meta, stratifications, name) standardGeneric("calc_conservation_metabotype"))
-setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, timepoints, verbose=F, cols_for_meta, stratifications, name) {
+setGeneric("calc_conservation_metabotype", function(object, which_data, verbose=F, cols_for_meta, stratifications, name) standardGeneric("calc_conservation_metabotype"))
+setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, verbose=F, cols_for_meta, stratifications, name) {
 
   #define data to be processed
 
@@ -26,10 +25,10 @@ for (i in which_data) {
     if(length(stratifications)>=1) {
         data <- object@list_of_data[[i]]
         row_data <- object@list_of_row_data[[i]]
-        stratifications <- lapply(names(stratifications), function(x) {
+        row_data <- lapply(names(stratifications), function(x) {
               row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
-              return(stratifications[[x]]) 
-          })
+              return(row_data) 
+          }) %>% do.call(what=rbind.data.frame)
         data <- data[rownames(data) %in% rownames(row_data), ]
     } else {
       data <- object@list_of_data[[i]]
@@ -88,9 +87,7 @@ for (i in which_data) {
       }) %>% unlist()
 
     out <- get_make_results(object=object, data = out_sum, 
-                              metadata = lapply(1:ncol(index_time_combinations), function(x) {
-                                      return(metadata)
-                                }), 
+                              metadata = list(metadata), 
                               calc_type = rep("CI_metabotype", each=length(out_sum)), 
                               calc_info = paste("metabotype_CI_", i, "_", combinations, sep = ""),
                               name=name[i])
