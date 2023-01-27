@@ -11,7 +11,7 @@ get_make_results(object, data, metadata, calc_type, calc_info, name)
 
 \item{data}{list of dataframes of plotable data obtained from any calc function}
 
-\item{metadata}{list of dataframes with the metadata for the plot table mentioned above. To obtain these see
+\item{metadata}{dataframe or a list of dataframes with the metadata for the plot table mentioned above. To obtain these see
 get_metadata_for_rows() and get_metadata_for_columns()}
 
 \item{calc_type}{A character vector to specify type of calculation - will be used for comp_ functions

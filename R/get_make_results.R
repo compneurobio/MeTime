@@ -3,7 +3,7 @@
 #' @description function to generate results for metime_analyser object
 #' @param object An S4 object of class metime_analyser
 #' @param data list of dataframes of plotable data obtained from any calc function
-#' @param metadata list of dataframes with the metadata for the plot table mentioned above. To obtain these see
+#' @param metadata dataframe or a list of dataframes with the metadata for the plot table mentioned above. To obtain these see
 #' get_metadata_for_rows() and get_metadata_for_columns()
 #' @param calc_type A character vector to specify type of calculation - will be used for comp_ functions
 #' For networks the accepted notations are "genenet_ggm", "multibipartite_ggm", and "temporal_network"
@@ -46,9 +46,15 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
    			 			edge_list$dashes <- dashes
    			 			edge_list$arrows <- rep("from", each=length(edge_list$dashes))
    			 	}
+   			 	if(length(grep("calc_", names(object@results[[length(object@results)]]$functions_applied))) ==1) {
+					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
+						plot_data=list(node=node_list, edge=edge_list, metadata=metadata),
+						information=list(calc_type=calc_type, calc_info=calc_info))
+				} else {
 					object@results[[length(object@results)]]$plot_data$node <- node_list
 					object@results[[length(object@results)]]$plot_data$edge <- edge_list
 					object@results[[length(object@results)]]$plot_data$metadata <- metadata
+				}
 			} else {
 				if(is.null(metadata)) {
 					plot_data <- data
@@ -57,22 +63,25 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 							if(length(metadata)==0) {
 								return(data[[x]])
 							}
-							if(length(metadata)>1) {	
+							if(class(metadata) %in% "list") {	
 								data[[x]] <- data[[x]][order(rownames(data[[x]])), ]
 								dummy_metadata <- metadata[[x]][rownames(metadata[[x]]) %in% rownames(data[[x]]), ]
 								data[[x]] <- data[[x]][rownames(data[[x]]) %in% rownames(dummy_metadata), ]
 							} else {
 								data[[x]] <- data[[x]][order(rownames(data[[x]])), ]
-								dummy_metadata <- metadata[[1]][rownames(metadata[[1]]) %in% rownames(data[[x]]), ]
+								dummy_metadata <- metadata[rownames(metadata) %in% rownames(data[[x]]), ]
 								data[[x]] <- data[[x]][rownames(data[[x]]) %in% rownames(dummy_metadata), ]
 							}
 							return(cbind.data.frame(data[[x]], dummy_metadata))
 						})
-					object@results[[length(object@results)]]$plot_data <- data
+					if(length(grep("calc_", names(object@results[[length(object@results)]]$functions_applied)))==1) {
+						object@results[[length(object@results)+1]] <- list(functions_applied=list(), plot_data=data,
+											information=list(calc_type=calc_type, calc_info=calc_info))
+					} else {
+						object@results[[length(object@results)]]$plot_data <- data
+					}
 				}
 			}
-			object@results[[length(object@results)]]$information$calc_type <- calc_type
-			object@results[[length(object@results)]]$information$calc_info <- calc_info
 			names(object@results)[length(object@results)] <- name
 			return(object)
 })

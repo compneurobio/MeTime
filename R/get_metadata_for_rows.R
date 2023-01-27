@@ -9,32 +9,31 @@
 setGeneric("get_metadata_for_rows", function(object, which_data, columns) standardGeneric("get_metadata_for_rows"))
 setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_data, columns) {
 					if(length(which_data) > 1) {
-							if(is.null(columns)) {
-									out <- NULL
-									return(out)
-							} else {
-									object <- mod_extract_common_samples(object)
-									list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
-									list_of_data <- lapply(list_of_data, function(x) return(x[order(rownames(x)), ]))
-									out <- object@list_of_row_data[[1]][ ,columns]
-									timepoints <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[2])))
-									samples <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[1])))
-									levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
-									timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
-									out <- as.data.frame(cbind(out, timepoints, samples))
-							}
-					} else {
 						if(is.null(columns)) {
-							out <- NULL
 							return(NULL)
 						} else {
-							data <- as.data.frame(object@list_of_data[names(object@list_of_data) %in% which_data][[1]])
+							object <- mod_extract_common_samples(object)
+							list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+							list_of_data <- lapply(list_of_data, function(x) return(x[order(rownames(x)), ]))
+							out <- object@list_of_row_data[[which_data[1]]][ ,columns]
+							timepoints <- rownames(out) %>% gsub(pattern="[a-z|A-Z][-|0-9]+_", replacement="")
+							samples <- rownames(out) %>% gsub(pattern="_[a-z|A-Z][-|0-9]+", replacement="")
+							levels <- timepoints %>% gsub(pattern="t", replacement="") %>% as.numeric() %>% sort()
+							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
+							out <- as.data.frame(cbind(out, timepoints, samples))
+						}
+					} else {
+						if(is.null(columns)) {
+							return(NULL)
+						} else {
+							data <- object@list_of_data[[which_data]]
 							phenotype <- object@list_of_row_data[[which_data]]
 							out <- phenotype[rownames(phenotype) %in% rownames(data), columns]
 							out <- out[order(rownames(out)), ]
-							timepoints <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[2])))
-							samples <- unlist(lapply(strsplit(rownames(out), split="_"), function(x) return(x[1])))
-							levels <- sort(unique(as.numeric(unlist(lapply(strsplit(timepoints, split="t"), function(x) return(x[2]))))))
+							timepoints <- rownames(out) %>% gsub(pattern="[a-z|A-Z][-|0-9]+_", replacement="")
+							samples <- rownames(out) %>% gsub(pattern="_[a-z|A-Z][-|0-9]+", replacement="")
+							levels <- timepoints %>% gsub(pattern="t", replacement="") %>% as.numeric() %>% 
+										unique() %>% sort()	
 							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
 							out <- as.data.frame(cbind(out, timepoints, samples))
 						}

@@ -21,24 +21,14 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
     
     # index variables to use
     index_var <- c("id","time","subject")
-    if(length(stratifications)>=1) {
-        data <- object@list_of_data[[i]]
-        row_data <- object@list_of_row_data[[i]]
-        row_data <- lapply(names(stratifications), function(x) {
-              row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
-              return(row_data) 
-          }) %>% do.call(what=rbind.data.frame)
-        data <- data[rownames(data) %in% rownames(row_data), ]
-    } else {
-      data <- object@list_of_data[[i]]
-      row_data <- object@list_of_row_data[[i]]
-    }
-    
+    data_list <- get_stratified_data(which_data=which_data, object=object, stratifications=stratifications)
+    data <- data_list[["data"]]
+    row_data <- data_list[["row_data"]]
     # extract and reshape data
     this_data <- data %>% 
       dplyr::mutate(id = rownames(.[])) %>% 
       dplyr::left_join(row_data[,index_var], by = "id") %>% 
-      dplyr::mutate(time = gsub(x=time, pattern="t", replacement="")) %>% 
+      dplyr::mutate(time = gsub(x=id, pattern="[a-z|A-Z][-|0-9]+_", replacement="")) %>% 
       `rownames<-`(.[,"id"]) %>% 
       dplyr::arrange(subject, time)
   
@@ -85,15 +75,12 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
         dplyr::select(x,y, ci, id, time_from, time_to, n, rank, cor, id_from,id_to) %>% 
         `rownames<-`(.[,"id_from"])
     })
-    if(is.null(cols_for_meta)) {
-       metadata <- NULL
-    } else {
-       metadata <- get_metadata_for_columns(object = object, 
+
+    metadata <- get_metadata_for_columns(object = object, 
                                          which_data = i, 
                                          columns = cols_for_meta, 
                                          names = c("name", "group"), 
                                          index_of_names = "id")
-    }
     out <- list()
     combinations <- lapply(1:ncol(index_time_combinations), function(y) {
               t <- paste(index_time_combinations[,y], collapse="vs")
@@ -104,10 +91,11 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
                               metadata = metadata, 
                               calc_type = rep("CI_metabolite", each=length(out_sum)), 
                               calc_info = paste("metabolite_CI_", i, "_", combinations, sep = ""),
-                              name=name[i])
+                              name=name)
+    out <- add_function_info(object=out, function_name="calc_conservation_metabolite", 
+        params=list(which_data=which_data, verbose=verbose, cols_for_meta=cols_for_meta, 
+            name=name, stratifications=stratifications))
   }
-  out <- out %>% add_function_info(function_name="calc_conservation_metabolite", 
-      params=list())
   return(out)
 })
 

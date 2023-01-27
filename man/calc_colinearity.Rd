@@ -24,7 +24,7 @@ calc_colinearity(
 
 \item{name}{character to define the name of the result}
 
-\item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
+\item{stratifications}{List to stratify data into a subset. Usage list(name=values)}
 }
 \value{
 plotter object with data for heatmap information

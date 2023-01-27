@@ -10,7 +10,8 @@ calc_featureselection_boruta(
   which_y,
   verbose,
   output_loc,
-  file_name
+  file_name,
+  cols_for_meta
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ calc_featureselection_boruta(
 \item{output_loc}{path to the parent directory where in the out file wíll be stored}
 
 \item{file_name}{name of the out file}
+
+\item{cols_for_meta}{A list of a Character vector to define column names that are to be used for plotting purposes}
 }
 \value{
 List of conservation index results

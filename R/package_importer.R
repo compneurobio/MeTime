@@ -89,11 +89,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
 								data <- data[data[ ,data$x] %in% x, ] 
 								plot$x$data[[j]]$text <- get_text_for_plot(data=data, 
 										colnames=add$viz)
-							}
-							return(plot)
-						} else {
-							return(plot)
+							}	
 						}
+						return(plot)
+
 					} else if(results$information$calc_type[x] %in% "pairwise_distance" |
 						results$information$calc_type[x] %in% "pairwise_correlation") {
 						plot <- ggplot(results$plot_data[[x]], aes(x=row,y=column)) + 
@@ -107,11 +106,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
 								data <- data[data[ ,data$row] %in% x, ] 
 								plot$x$data[[j]]$text <- get_text_for_plot(data=data, 
 									colnames=add$viz)
-							}
-							return(plot)
-						} else {
-							return(plot)
+							}	
 						}
+						return(plot)
+		
 					} else if(results$information$calc_type[x] %in% "PCA") {
 						plot <- ggplot(results$plot_data[[x]], aes(x=PC1, y=PC2)) + 
 								geom_point(aes_string(color=add$color, 
@@ -123,11 +121,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
 								data <- results$plot_data[[x]]
 								data <- data[data[ ,data$PC1] %in% x, ] 
 								plot$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=add$viz)
-							}
-							return(plot)
-						} else {
-							return(plot)
+							}	
 						}
+						return(plot)
+
 					} else if(results$information$calc_type[x] %in% "UMAP") {
 						plot <- ggplot(results$plot_data[[x]], aes(x=UMAP1, y=UMAP2)) + 
 								geom_point(aes_string(color=add$color, 
@@ -139,11 +136,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
 								data <- results$plot_data[[x]]
 								data <- data[data[ ,data$UMAP1] %in% x, ] 
 								plot$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=add$viz)
-							}
-							return(plot)
-						} else {
-							return(plot)
+							}	
 						}
+						return(plot)
+
 					} else if(results$information$calc_type[x] %in% "tSNE") {
 						plot <- ggplot(results$plot_data[[x]], aes(x=X1, y=X2)) + 
 								geom_point(aes_string(color=add$color, 
@@ -155,13 +151,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
 								data <- results$plot_data[[x]]
 								data <- data[data[ ,data$X1] %in% x, ] 
 								plot$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=add$viz)
-							}
-							return(plot)
-						} else {
-							return(plot)
+							}	
 						}
+						return(plot)
 					}
-					
 				})
 				return(plots)
 			} else {
@@ -237,3 +230,34 @@ setMethod("show", "metime_analyser", function(object) {
 			return(NULL)
 		})
 	})
+
+
+#' Function to stratify before calculation
+#' @description Stratification of a dataset in calculations. Used only in calc_ functions
+#' @param object An S4 object of class metime_analyser
+#' @param which_data Dataset to be used
+#' @param stratifications list of variables and their values to stratified - list(name=value)
+#' @returns data with stratifications aforementioned
+#' @export
+setGeneric("get_stratified_data", function(object, which_data, stratifications) standardGeneric("get_stratified_data"))
+setMethod("get_stratified_data", "metime_analyser", function(object, which_data, stratifications) {
+		if(length(which_data)==1) {
+      		data <- object@list_of_data[[which_data]]
+      		row_data <- object@list_of_row_data[[which_data]]
+		} else {
+			object <- mod_extract_common_samples(object)
+			object@list_of_data <- lapply(object@list_of_data, function(x) return(x[order(rownames(x)), ]))
+			list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+			data <- do.call(cbind, unname(list_of_data))
+			row_data <- object@list_of_row_data[[which_data[1]]]
+		}
+		if(length(stratifications)>=1) {
+			row_data <- lapply(names(stratifications), function(x) {
+              		row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
+              		return(row_data) 
+          		}) %>% do.call(what=rbind.data.frame)
+        	data <- data[rownames(data) %in% rownames(row_data), ]		
+		}
+		return(list(data=data, row_data=row_data))
+	})
+

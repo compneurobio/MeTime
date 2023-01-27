@@ -22,23 +22,14 @@ for (i in which_data) {
     
     # index variables to use
     index_var <- c("id","time","subject")
-    if(length(stratifications)>=1) {
-        data <- object@list_of_data[[i]]
-        row_data <- object@list_of_row_data[[i]]
-        row_data <- lapply(names(stratifications), function(x) {
-              row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
-              return(row_data) 
-          }) %>% do.call(what=rbind.data.frame)
-        data <- data[rownames(data) %in% rownames(row_data), ]
-    } else {
-      data <- object@list_of_data[[i]]
-      row_data <- object@list_of_row_data[[i]]
-    }
+    data_list <- get_stratified_data(which_data=which_data, object=object, stratifications=stratifications)
     # extract data
+    data <- data_list[["data"]]
+    row_data <- data_list[["row_data"]]
     this_data <- data %>% 
       dplyr::mutate(id = rownames(.[])) %>% 
       dplyr::left_join(row_data[,index_var], by = "id") %>% 
-      dplyr::mutate(time = gsub(x=time, pattern="t", replacement="")) %>% 
+      dplyr::mutate(time = gsub(x=id, pattern="[a-z|A-Z][-|0-9]+_", replacement="")) %>% 
       `rownames<-`(.[,"id"]) %>% 
       dplyr::arrange(subject, time)
     # calculate correlations
@@ -52,12 +43,12 @@ for (i in which_data) {
     index_time_combinations <- utils::combn(x = unique(this_data$time), 
                                             m = 2, simplify = T)
     # get all TP combinations in a prelim. results
-    out_sum <- lapply(1:ncol(index_time_combinations), function(x){
-       this_out <-dplyr::full_join(x=this_data[this_data$time == index_time_combinations[1,x],c("id","subject","time")],
+    out_sum <- lapply(1:ncol(index_time_combinations), function(x) {
+       this_out <- dplyr::full_join(x=this_data[this_data$time == index_time_combinations[1,x],c("id","subject","time")],
                                    y=this_data[this_data$time == index_time_combinations[2,x],c("id","subject","time")],
                                    by="subject") %>% 
-         dplyr::rename("id_from"="id.x","id_to"="id.y", "time_from"="time.x","time_to"="time.y")
-       this_out <- na.omit(this_out) # Fixed bug below by adding this line
+         dplyr::rename("id_from"="id.x","id_to"="id.y", "time_from"="time.x","time_to"="time.y") %>%
+          na.omit() # Fixed bug below by adding this line
        #add results 
        this_out$cor <- data_cor[this_out$id_from,this_out$id_to] %>% diag() # Throws error
        this_out$rank <- as.data.frame(data_cor[this_out$id_from,this_out$id_to]* -1)%>% 
@@ -74,7 +65,7 @@ for (i in which_data) {
                        y=ci, 
                        nsubject=nrow(.[])) %>% 
          dplyr::select(x,y, ci, id, time_from, time_to, nsubject, rank, cor, id_from,id_to) %>% 
-         `rownames<-`(.[,"id_from"])
+         `rownames<-`(.[,"id_from"]) 
     })
     
     metadata <- get_metadata_for_rows(object = object, 
@@ -87,15 +78,18 @@ for (i in which_data) {
       }) %>% unlist()
 
     out <- get_make_results(object=object, data = out_sum, 
-                              metadata = list(metadata), 
+                              metadata = metadata, 
                               calc_type = rep("CI_metabotype", each=length(out_sum)), 
                               calc_info = paste("metabotype_CI_", i, "_", combinations, sep = ""),
-                              name=name[i])
+                              name=name)
+    out <- add_function_info(object=out, function_name="calc_conservation_metabotype", 
+        params=list(which_data=which_data, verbose=verbose, cols_for_meta=cols_for_meta, 
+            name=name, stratifications=stratifications))
   }
   return(out)
 })
 
-#lipids_metabotype <- calc_conservation_metabotype(object=data, which_data="lipid_data", 
+#object <- calc_conservation_metabotype(object=object, which_data="lipid_data", 
 #stratifications=list(time=c("t0", "t12", "t24")), verbose=TRUE, 
 #cols_for_meta=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp",  "DXGrp_longi", "PTGENDER", "Age", "BMI"), name="CI_test")
 

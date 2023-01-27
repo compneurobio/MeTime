@@ -22,34 +22,9 @@
 setGeneric("calc_dimensionality_reduction", function(object, which_data, type, cols_for_metabs, cols_for_samples, stratifications, ...) standardGeneric("calc_dimensionality_reduction"))
 
 setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, which_data, type, cols_for_metabs, cols_for_samples, stratifications,...) {
-      if(length(which_data) > 1) {
-        object <- mod_extract_common_samples(object)
-        data <- object@list_of_data[names(object@list_of_data) %in% which_data]
-        data <- lapply(data, function(x) {
-            return(x[sort(rownames(x)),])
-          })
-        data <- as.data.frame(do.call(cbind, unname(data)))
-        if(length(stratifications)>=1) {
-            dummy_data <- object@list_of_data[[which_data[1]]]
-            row_data <- object@list_of_row_data[[which_data[1]]]
-            stratifications <- lapply(names(stratifications), function(x) {
-              row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
-              return(stratifications[[x]]) 
-            })
-            data <- data[rownames(data) %in% rownames(row_data), ]
-        } 
-      } else {
-        data <- object@list_of_data[[which_data]]
-        if(length(stratifications)>=1) {
-            dummy_data <- object@list_of_data[[which_data[1]]]
-            row_data <- object@list_of_row_data[[which_data[1]]]
-            stratifications <- lapply(names(stratifications), function(x) {
-              row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
-              return(stratifications[[x]]) 
-            })
-            data <- data[rownames(data) %in% rownames(row_data), ]
-        }
-      }
+      data_list <- get_stratified_data(object=object, which_data=which_data, stratifications=stratifications)
+      data <- data_list[["data"]]
+      row_data <- data_list[["row_data"]]
       rm_col = intersect(names(data), c("time","subject"))
       data <- data %>% select(-c(rm_col))
       data <- na.omit(data)
@@ -62,7 +37,7 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
         dr_data_metabs <- as.data.frame(pca_metabs$x[,1:2])
         dr_data_samples <- as.data.frame(pca_individuals$x[,1:2])
         out <- get_make_results(object=object, data=list(metabs=dr_data_metabs, samples=dr_data_samples), 
-                metadata=list(metabs=metadata_metabs, samples=dr_data_samples),
+                metadata=list(metabs=metadata_metabs, samples=metadata_samples),
                 calc_type=rep("PCA", each=2), 
                 calc_info=paste("dimensionality reduction method:", 
                     type, c("for metabolites data of", "for samples data of"), 
@@ -76,7 +51,7 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
         dr_data_metabs <- as.data.frame(umap_metabs$layout)
         colnames(dr_data_metabs) <- c("UMAP1", "UMAP2")
         out <- get_make_results(object=object, data=list(metabs=dr_data_metabs, samples=dr_data_samples), 
-                metadata=list(metabs=metadata_metabs, samples=dr_data_samples),
+                metadata=list(metabs=metadata_metabs, samples=metadata_samples),
                 calc_type=rep("UMAP", each=2), 
                 calc_info=paste("dimensionality reduction method:", 
                     type, c("for metabolites data of", "for samples data of"), 
@@ -90,7 +65,7 @@ setMethod("calc_dimensionality_reduction", "metime_analyser", function(object, w
         dr_data_samples <- as.data.frame(tsne_samples$data)
         rownames(dr_data_samples) <- rownames(data)
         out <- get_make_results(object=object, data=list(metabs=dr_data_metabs, samples=dr_data_samples), 
-                metadata=list(metabs=metadata_metabs, samples=dr_data_samples),
+                metadata=list(metabs=metadata_metabs, samples=metadata_samples),
                 calc_type=rep("tSNE", each=2), 
                 calc_info=paste("dimensionality reduction method:", 
                     type, c("for metabolites data of", "for samples data of"), 

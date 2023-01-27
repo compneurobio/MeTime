@@ -7,8 +7,7 @@
 calc_conservation_metabotype(
   object,
   which_data,
-  timepoints,
-  verbose,
+  verbose = F,
   cols_for_meta,
   stratifications,
   name
@@ -18,8 +17,6 @@ calc_conservation_metabotype(
 \item{object}{An object of class metime_analyser}
 
 \item{which_data}{Name of the dataset to be used}
-
-\item{timepoints}{character vector with timepoints of interest}
 
 \item{verbose}{Information provided on steps being processed}
 
