@@ -30,3 +30,5 @@ setMethod("add_node_features", "metime_plotter", function(network_plotter_object
 			guide_analyser_object <- guide_object
 		}
 	}) 
+
+

@@ -4,22 +4,18 @@
 \alias{mod_extract_common_samples}
 \title{Function to get only common samples from the dataframes in list_of_data}
 \usage{
-mod_extract_common_samples(object, time_splitter = FALSE)
+mod_extract_common_samples(object)
 }
 \arguments{
 \item{object}{An object of class metime_anaylser}
-
-\item{time_splitter}{A boolean input: True leads to splitting of the data wrt time,
-False returns all the dataframes as they are with common rows}
 }
 \value{
 list_of_data with common samples across all time points
 }
 \description{
-A method applied on object of class metime_analyse to extract common samples across datasets. Also has an option to split the data according
-timepoints(mod_split_acc_time()).
+A method applied on object of class metime_analyse to extract common samples across datasets.
 }
 \examples{
 # extracting common samples across all datasets
-new_list_of_data <- mod_common_sample_extractor(object=metime_analyser_object)
+new_list_of_data <- mod_extract_common_samples(object=metime_analyser_object)
 }

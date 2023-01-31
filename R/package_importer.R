@@ -1,30 +1,28 @@
-usethis::use_import_from("rstatix", fun="t_test")
+usethis::use_import_from("rstatix", fun=c("wilcox_test", "t_test"))
 usethis::use_package("tidyverse", type="depends")
 #usethis::use_package("igraph", type="Imports")
 #usethis::use_package("plyr", type="Imports")
 usethis::use_package("DT", type="Imports")
-usethis::use_import_from("M3C", fun="tsne")
+usethis::use_import_from("M3C", fun="tsne") # Also has umap - will change it
 usethis::use_import_from("umap", fun="umap")
-usethis::use_package("plotly", type="Imports")
+usethis::use_import_from("plotly", fun="ggplotly")
 usethis::use_package("visNetwork", type="Imports")
-usethis::use_package("RColorBrewer", type="Imports")
+#usethis::use_package("RColorBrewer", type="Imports")
 usethis::use_package("GeneNet", type="Imports")
 usethis::use_package("longitudinal", type="Imports")
 usethis::use_package("glmnet", type="Imports")
 usethis::use_package("Boruta", type="Imports")
-usethis::use_import_from("nnet", fun="class.ind") # get that manually 
-usethis::use_import_from("abind", fun="abind") # get that manually
-usethis::use_import_from("multiway", fun="parafac") # get that manually
+#usethis::use_import_from("nnet", fun="class.ind") # get that manually - done in extras
+#usethis::use_import_from("abind", fun="abind") # get that manually - done in extras
+usethis::use_import_from("multiway", fun="parafac") # get that manually - can't dependence
 #usethis::use_import_from("DT", fun="datatable")
-usethis::use_import_from("xlsx", fun="write.xlsx") # get that manually, or check for base function or in tidyverse
-usethis::use_package("visNetwork", type="Imports")
+usethis::use_import_from("xlsx", fun="write.xlsx") # No base function and same dependence issue
 usethis::use_package("mgcv", type="Imports")
 usethis::use_import_from("lmerTest", fun="lmer")
 usethis::use_import_from("parallel", fun="mclapply")
 #usethis::use_import_from("reshape2", fun="melt")
 #usethis::use_import_from("data.table", fun="setDT") 
-usethis::use_package("MatrixEQTL", type="Imports")
-usethis::use_package("WGCNA", type="Imports") # change it to functions
+usethis::use_package("WGCNA", type="Imports") # can't dependence
 usethis::use_import_from("dynamicTreeCut", fun="cutreeDynamic")
 
 
@@ -74,85 +72,98 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...) {
 			add <- list(...)
 			results <- x@results[[results_index]]
-			if(!all(names(plot_data) %in% c("node", "edge", "metadata"))) {
-				plots <- lapply(seq_along(results$plot_data), function(x) {
-					if(results$information$calc_type[x] %in% "CI_metabolite" |
-						results$information$calc_type[x] %in% "CI_metabotype") {
-						plot <- ggplot(results$plot_data[[x]], aes(x=x, y=ci)) + 
+			get_text_for_plot <- function(data, colnames) {	
+						out <- c()
+						count <- 1
+						text <- c()
+						for(l in 1:length(rownames(data))) {
+							for(m in 1:length(colnames)) {
+								if(m==1) {
+									text <- paste("<br /> ", colnames[m], " : ", data[l, colnames[m]], sep="")
+								} else {
+									text <- paste(text, "<br /> ", colnames[m], " : ", data[l, colnames[m]], sep="")
+								}
+							}
+							out[count] <- text
+							count <- count + 1
+						} 
+						return(out)
+			} 
+
+			make_interactive <- function(.plot, j, col, .results=results) {
+				plot <- plotly::ggplotly(.plot, width=800, height=800)
+				for(i in seq_along(plot$x$data)) {
+					if(!is.null(plot$x$data[[i]]$text)) {
+						x <- plot$x$data[[i]]$x
+						data <- .results$plot_data[[j]]
+						data <- data[data[ ,col] %in% x, ] 
+						plot$x$data[[i]]$text <- get_text_for_plot(data=data, 
+										colnames=add$viz)
+					}
+				}
+				return(plot)
+			}
+			if(is.null(names(results$plot_data))) {
+				plots <- lapply(seq_along(results$plot_data), function(b) {
+					if(results$information$calc_type[b] %in% "CI_metabolite" |
+						results$information$calc_type[b] %in% "CI_metabotype") {
+						plot <- ggplot(results$plot_data[[b]], aes(x=x, y=ci)) + 
 								geom_point(aes_string(color=add$color, 
 								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
 						if(interactive) {
-							plot <- plotly::ggplotly(plot, width=800, height=800)
-							for(i in seq_along(plot$x$data)) {
-								x <- plot$x$data[[i]]$x
-								data <- results$plot_data[[x]]
-								data <- data[data[ ,data$x] %in% x, ] 
-								plot$x$data[[j]]$text <- get_text_for_plot(data=data, 
-										colnames=add$viz)
-							}	
-						}
+							plot <- make_interactive(.plot=plot, j=b, col="x")
+						} 
 						return(plot)
-
-					} else if(results$information$calc_type[x] %in% "pairwise_distance" |
-						results$information$calc_type[x] %in% "pairwise_correlation") {
-						plot <- ggplot(results$plot_data[[x]], aes(x=row,y=column)) + 
-							geom_tile(aes_string(fill=dist)) +
+					} else if(results$information$calc_type[b] %in% "pairwise_distance" |
+						results$information$calc_type[b] %in% "pairwise_correlation") {
+						plot <- ggplot(results$plot_data[[b]], aes(x=row,y=column)) + 
+							geom_tile(aes(fill=dist)) +
 							facet_wrap(add$strats) + theme_classic()
 						if(interactive) {
-							plot <- plotly::ggplotly(plot, width=800, height=800)
-							for(i in seq_along(plot$x$data)) {
-								x <- plot$x$data[[i]]$x
-								data <- results$plot_data[[x]]
-								data <- data[data[ ,data$row] %in% x, ] 
-								plot$x$data[[j]]$text <- get_text_for_plot(data=data, 
-									colnames=add$viz)
-							}	
+							plot <- make_interactive(.plot=plot, j=b, col="row")
+						} 
+						return(plot)		
+					} else if(results$information$calc_type[b] %in% "PCA") {
+						if(b==1) {
+							plot <- ggplot(results$plot_data[[b]], aes(x=PC1, y=PC2)) + 
+								geom_point(aes_string(color=add$color_metabs, 
+								shape=add$shape_metabs)) + facet_wrap(add$strats_metabs) + theme_classic()
+						} else if(b==2) {
+							plot <- ggplot(results$plot_data[[b]], aes(x=PC1, y=PC2)) + 
+								geom_point(aes_string(color=add$color_samples, 
+								shape=add$shape_samples)) + facet_wrap(add$strats_samples) + theme_classic()
 						}
-						return(plot)
-		
-					} else if(results$information$calc_type[x] %in% "PCA") {
-						plot <- ggplot(results$plot_data[[x]], aes(x=PC1, y=PC2)) + 
-								geom_point(aes_string(color=add$color, 
-								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
 						if(interactive) {
-							plot <- plotly::ggplotly(plot, width=800, height=800)
-							for(i in seq_along(plot$x$data)) {
-								x <- plot$x$data[[i]]$x
-								data <- results$plot_data[[x]]
-								data <- data[data[ ,data$PC1] %in% x, ] 
-								plot$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=add$viz)
-							}	
-						}
+							plot <- make_interactive(.plot=plot, j=b, col="PC1")
+						} 
 						return(plot)
-
-					} else if(results$information$calc_type[x] %in% "UMAP") {
-						plot <- ggplot(results$plot_data[[x]], aes(x=UMAP1, y=UMAP2)) + 
-								geom_point(aes_string(color=add$color, 
-								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
-						if(interactive) {
-							plot <- plotly::ggplotly(plot, width=800, height=800)
-							for(i in seq_along(plot$x$data)) {
-								x <- plot$x$data[[i]]$x
-								data <- results$plot_data[[x]]
-								data <- data[data[ ,data$UMAP1] %in% x, ] 
-								plot$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=add$viz)
-							}	
+					} else if(results$information$calc_type[b] %in% "UMAP") {
+						if(b==1) {
+							plot <- ggplot(results$plot_data[[b]], aes(x=UMAP1, y=UMAP2)) + 
+								geom_point(aes_string(color=add$color_metabs, 
+								shape=add$shape_metabs)) + facet_wrap(add$strats_metabs) + theme_classic()
+						} else if(b==2) {
+							plot <- ggplot(results$plot_data[[b]], aes(x=UMAP1, y=UMAP2)) + 
+								geom_point(aes_string(color=add$color_samples, 
+								shape=add$shape_samples)) + facet_wrap(add$strats_samples) + theme_classic()
 						}
+						if(interactive) {
+							plot <- make_interactive(.plot=plot, j=b, col="UMAP1")
+						} 
 						return(plot)
-
-					} else if(results$information$calc_type[x] %in% "tSNE") {
-						plot <- ggplot(results$plot_data[[x]], aes(x=X1, y=X2)) + 
-								geom_point(aes_string(color=add$color, 
-								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
-						if(interactive) {
-							plot <- plotly::ggplotly(plot, width=800, height=800)
-							for(i in seq_along(plot$x$data)) {
-								x <- plot$x$data[[i]]$x
-								data <- results$plot_data[[x]]
-								data <- data[data[ ,data$X1] %in% x, ] 
-								plot$x$data[[j]]$text <- get_text_for_plot(data=data, colnames=add$viz)
-							}	
+					} else if(results$information$calc_type[b] %in% "tSNE") {
+						if(b==1) {
+							plot <- ggplot(results$plot_data[[b]], aes(x=X1, y=X2)) + 
+								geom_point(aes_string(color=add$color_metabs, 
+								shape=add$shape_metabs)) + facet_wrap(add$strats_metabs) + theme_classic()
+						} else if(b==2) {
+							plot <- ggplot(results$plot_data[[b]], aes(x=X1, y=X2)) + 
+								geom_point(aes_string(color=add$color_samples, 
+								shape=add$shape_samples)) + facet_wrap(add$strats_samples) + theme_classic()
 						}
+						if(interactive) {
+							plot <- make_interactive(.plot=plot, j=b, col="X1")
+						} 
 						return(plot)
 					}
 				})
@@ -161,7 +172,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
 				metadata <- results$plot_data$metadata
 				node_list <- results$plot_data$node
 				edge_list <- results$plot_data$edge
-			#Choosing colors and shapes for visualization
+				#Choosing colors and shapes for visualization
         		if(is.null(node_list$color)) {
             		shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
             		colors_for_nodes <- node_list$group

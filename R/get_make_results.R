@@ -54,6 +54,8 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 					object@results[[length(object@results)]]$plot_data$node <- node_list
 					object@results[[length(object@results)]]$plot_data$edge <- edge_list
 					object@results[[length(object@results)]]$plot_data$metadata <- metadata
+					object@results[[length(object@results)]]$information$calc_type <- calc_type
+					object@results[[length(object@results)]]$information$calc_info <- calc_info
 				}
 			} else {
 				if(is.null(metadata)) {
@@ -79,6 +81,8 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 											information=list(calc_type=calc_type, calc_info=calc_info))
 					} else {
 						object@results[[length(object@results)]]$plot_data <- data
+						object@results[[length(object@results)]]$information$calc_type <- calc_type
+						object@results[[length(object@results)]]$information$calc_info <- calc_info
 					}
 				}
 			}
