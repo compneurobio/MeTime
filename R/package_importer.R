@@ -1,27 +1,19 @@
 usethis::use_import_from("rstatix", fun=c("wilcox_test", "t_test"))
 usethis::use_package("tidyverse", type="depends")
-#usethis::use_package("igraph", type="Imports")
-#usethis::use_package("plyr", type="Imports")
 usethis::use_package("DT", type="Imports")
 usethis::use_import_from("M3C", fun="tsne") # Also has umap - will change it
 usethis::use_import_from("umap", fun="umap")
 usethis::use_import_from("plotly", fun="ggplotly")
 usethis::use_package("visNetwork", type="Imports")
-#usethis::use_package("RColorBrewer", type="Imports")
 usethis::use_package("GeneNet", type="Imports")
 usethis::use_package("longitudinal", type="Imports")
 usethis::use_package("glmnet", type="Imports")
 usethis::use_package("Boruta", type="Imports")
-#usethis::use_import_from("nnet", fun="class.ind") # get that manually - done in extras
-#usethis::use_import_from("abind", fun="abind") # get that manually - done in extras
 usethis::use_import_from("multiway", fun="parafac") # get that manually - can't dependence
-#usethis::use_import_from("DT", fun="datatable")
 usethis::use_import_from("xlsx", fun="write.xlsx") # No base function and same dependence issue
 usethis::use_package("mgcv", type="Imports")
 usethis::use_import_from("lmerTest", fun="lmer")
 usethis::use_import_from("parallel", fun="mclapply")
-#usethis::use_import_from("reshape2", fun="melt")
-#usethis::use_import_from("data.table", fun="setDT") 
 usethis::use_package("WGCNA", type="Imports") # can't dependence
 usethis::use_import_from("dynamicTreeCut", fun="cutreeDynamic")
 
@@ -261,6 +253,7 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
 			list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 			data <- do.call(cbind, unname(list_of_data))
 			row_data <- object@list_of_row_data[[which_data[1]]]
+			row_data <- row_data[rownames(row_data) %in% rownames(data), ]
 		}
 		if(length(stratifications)>=1) {
 			row_data <- lapply(names(stratifications), function(x) {

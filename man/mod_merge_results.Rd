@@ -4,17 +4,21 @@
 \alias{mod_merge_results}
 \title{Function to combine plotter objects}
 \usage{
-mod_merge_results(object, results_indices, groups)
+mod_merge_results(object, results_index, sub_results = NULL, groups, name)
 }
 \arguments{
 \item{object}{An S4 object of class metime_analyser}
 
-\item{results_indices}{one or more indices of results to merge data}
+\item{results_index}{index of results to merge results of similar type}
+
+\item{sub_results}{Vector to define indices of plot_data to be merged. Set to NULL by default.}
 
 \item{groups}{character vector to define the groups that are involved}
+
+\item{name}{character to name the new merged results}
 }
 \value{
-object with add merged letters
+metime_analyser object with merged results
 }
 \description{
 Function to combine plotter objects based on similar calc type

@@ -18,7 +18,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 			stopifnot(length(calc_type)==length(calc_info))
 			stopifnot(length(calc_type)==length(data))
 			stopifnot(length(calc_info)==length(data))
-			if(length(grep("[ggm|network]", calc_type))==1) {
+			if(length(grep("ggm|network", calc_type))==1) {
 				data <- data[[1]]
 				nodes <- unique(c(data$node1, data$node2))
     			node_list <- data.frame(id=1:length(nodes), label=nodes, group=as.character(1:length(nodes)))
@@ -46,7 +46,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
    			 			edge_list$dashes <- dashes
    			 			edge_list$arrows <- rep("from", each=length(edge_list$dashes))
    			 	}
-   			 	if(length(grep("calc_", names(object@results[[length(object@results)]]$functions_applied))) ==1) {
+   			 	if(length(grep("calc_|mod_merge_results", names(object@results[[length(object@results)]]$functions_applied))) ==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
 						plot_data=list(node=node_list, edge=edge_list, metadata=metadata),
 						information=list(calc_type=calc_type, calc_info=calc_info))
@@ -61,7 +61,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 				if(is.null(metadata)) {
 					plot_data <- data
 				} else {
-					data <- lapply(seq_along(data), function(x) {
+					plot_data <- lapply(seq_along(data), function(x) {
 							if(length(metadata)==0) {
 								return(data[[x]])
 							}
@@ -75,15 +75,15 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 								data[[x]] <- data[[x]][rownames(data[[x]]) %in% rownames(dummy_metadata), ]
 							}
 							return(cbind.data.frame(data[[x]], dummy_metadata))
-						})
-					if(length(grep("calc_", names(object@results[[length(object@results)]]$functions_applied)))==1) {
-						object@results[[length(object@results)+1]] <- list(functions_applied=list(), plot_data=data,
+					})
+				}
+				if(length(grep("calc_|mod_merge_results", names(object@results[[length(object@results)]]$functions_applied)))==1) {
+					object@results[[length(object@results)+1]] <- list(functions_applied=list(), plot_data=plot_data,
 											information=list(calc_type=calc_type, calc_info=calc_info))
-					} else {
-						object@results[[length(object@results)]]$plot_data <- data
-						object@results[[length(object@results)]]$information$calc_type <- calc_type
-						object@results[[length(object@results)]]$information$calc_info <- calc_info
-					}
+				} else {
+					object@results[[length(object@results)]]$plot_data <- plot_data
+					object@results[[length(object@results)]]$information$calc_type <- calc_type
+					object@results[[length(object@results)]]$information$calc_info <- calc_info
 				}
 			}
 			names(object@results)[length(object@results)] <- name

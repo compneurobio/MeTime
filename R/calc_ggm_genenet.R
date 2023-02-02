@@ -15,13 +15,18 @@
 #' @export
 setGeneric("calc_ggm_genenet", function(object, which_data, threshold, all, cols_for_meta, covariates, stratifications, name, ...) standardGeneric("calc_ggm_genenet"))
 setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, threshold, all, cols_for_meta, covariates, stratifications, name, ...) {
-        stopifnot(names(stratifications) %in% "time")
+  
+        if(is.null(stratifications)) {
+          times <- object@list_of_row_data[[which_data[1]]]$time %>% unique()
+        } else {
+          times <- stratifications$time
+        }
         data_list <- get_stratified_data(object=object, which_data=which_data,
                     stratifications=stratifications)
         data <- data_list[["data"]]
         row_data <- data_list[["row_data"]]
 
-        if(length(stratifications$time)>1) {
+        if(length(times)>1) {
           data <- na.omit(data)
           data$subject <- rownames(data) %>% gsub(pattern="_[a-z|A-Z][0-9]+", replacement="")
           data$time <- rownames(data) %>% gsub(pattern="[a-z|A-Z][0-9]+_", replacement="")
@@ -102,7 +107,7 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
           return(out)
 
         } else {
-
+          
           this_mat <- as.matrix(apply(data, 2, as.numeric))
           pcor_mat <- GeneNet::ggm.estimate.pcor(as.matrix(this_mat), method = "dynamic", verbose = F)
           # compute p-values of edges

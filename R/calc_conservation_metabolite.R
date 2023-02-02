@@ -66,14 +66,15 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
         as.matrix() %>% 
         diag()
       
-      this_out %>% 
+      this_out <- this_out %>% 
         dplyr::mutate(ci = (1 - ((rank - 1)/(nrow(.[]) - 1)))) %>% 
         dplyr::arrange(desc(ci)) %>% 
         dplyr::mutate(x=nrow(.[]):1,
                       y=ci, 
                       n=nrow(.[])) %>% 
         dplyr::select(x,y, ci, id, time_from, time_to, n, rank, cor, id_from,id_to) %>% 
-        `rownames<-`(.[,"id_from"])
+        `rownames<-`(.[,"id"])
+      return(this_out)
     })
 
     metadata <- get_metadata_for_columns(object = object, 

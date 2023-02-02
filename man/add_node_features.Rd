@@ -5,20 +5,20 @@
 \title{Function to add features to visnetwork plot from another plotter object}
 \usage{
 add_node_features(
-  network_plotter_object,
-  guide_object,
-  which_type,
-  metab_colname
+  object,
+  results_indices,
+  which_calculation = 1,
+  metab_colname = "name"
 )
 }
 \arguments{
-\item{network_plotter_object}{plotter object with network information}
+\item{object}{An S4 object of class metime_analyser}
 
-\item{guide_object}{guide from which the colors are to be extracted. Both analyser and plotter objects are allowed}
+\item{results_indices}{indices as a list to define which results to use. Eg: list(network=1/"name of the results", guide=2)}
 
-\item{which_type}{type of the guide plotter object to be used. Current options are c("regression","conservation")}
+\item{which_calculation}{index for plot_data to be used. Set to 1 by default.}
 
-\item{metab_colname}{name of the column in guide plotter object that represents the metabolites}
+\item{metab_colname}{name of the column in guide plotter object that represents the metabolites. set to "name" by default}
 }
 \value{
 network plotter object with new node colors/features

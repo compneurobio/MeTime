@@ -10,7 +10,7 @@
 setGeneric("add_phenotypes_as_covariates", function(object, which_data, covariates, class.ind, phenotype) standardGeneric("add_phenotypes_as_covariates"))
 setMethod("add_phenotypes_as_covariates", "metime_analyser", function(object, which_data, covariates, class.ind, phenotype) {
 			if(phenotype) {
-				phenotype <- object@list_of_data[[object@annotations$phenotype]]
+				phenotype <- object@list_of_data[[object@annotations[[1]]$phenotype]]
 				phenotype <- phenotype[order(rownames(phenotype)),]
 				list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 				covariates_list <- lapply(list_of_data, function(x) {
@@ -75,6 +75,9 @@ setMethod("add_phenotypes_as_covariates", "metime_analyser", function(object, wh
 				}
 			}
 			out <- object
+			out <- object %>% add_function_info(function_name="add_metabs_as_covariates", 
+				params=list(which_data=which_data, covariates=covariates, class.ind=class.ind, 
+					phenotype=phenotype))
 			return(out)
 	})	
 

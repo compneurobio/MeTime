@@ -28,7 +28,8 @@ setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_
 			metab_matrix <- metab_matrix[rownames(metab_matrix) %in% common_samples, ]
 			metab_matrix <- metab_matrix[order(rownames(metab_matrix)), ]
 			object@list_of_data[[which_data]] <- as.data.frame(cbind(data, metab_matrix))
-			out <- object
+			out <- object %>% add_function_info(function_name="add_metabs_as_covariates", 
+				params=list(which_data=which_data, which_metabs=which_metabs))
 			return(out)
 	})
 

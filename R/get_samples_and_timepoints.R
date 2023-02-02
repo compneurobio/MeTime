@@ -11,13 +11,14 @@
 setGeneric("get_samples_and_timepoints", function(object, which_data) standardGeneric("get_samples_and_timepoints"))
 
 setMethod("get_samples_and_timepoints", "metime_analyser", function(object, which_data){
-		data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+		data <- object@list_of_row_data[names(object@list_of_data) %in% which_data]
 		data <- data[[1]]
-		unique_timepoints <- unique(unlist(lapply(strsplit(rownames(data), split="_"), function(x) return(x[2]))))
-		levels <- order(as.numeric(unique(unlist(lapply(strsplit(rownames(data), split="_t"), function(x) return(x[2]))))))
+		unique_timepoints <- rownames(data) %>% gsub(pattern="[a-z|A-Z][0-9]+_", replacement="") %>% unique()
+		levels <- unique_timepoints %>% gsub(pattern="[a-z|A-z]", replacement="") %>% as.numeric() %>% order()
 		unique_timepoints <- unique_timepoints[levels]
 		samples_count <- vapply(unique_timepoints, function(x) {
-						index <- grep(x, rownames(data))
+						index <- x %in% data$time 
+						index <- index[index==TRUE]
 						return(length(index))
 					}, numeric(1))
 		out <- as.data.frame(cbind(as.character(unique_timepoints), samples_count))

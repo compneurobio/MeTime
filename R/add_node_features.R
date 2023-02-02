@@ -1,34 +1,35 @@
 #' Function to add features to visnetwork plot from another plotter object
 #' @description Function to add node features to see the nodes in the network that affected differently
-#' @param network_plotter_object plotter object with network information
-#' @param guide_object guide from which the colors are to be extracted. Both analyser and plotter objects are allowed
-#' @param which_type type of the guide plotter object to be used. Current options are c("regression","conservation")
-#' @param metab_colname name of the column in guide plotter object that represents the metabolites
+#' @param object An S4 object of class metime_analyser
+#' @param results_indices indices as a list to define which results to use. Eg: list(network=1/"name of the results", guide=2)
+#' @param which_calculation index for plot_data to be used. Set to 1 by default.
+#' @param metab_colname name of the column in guide plotter object that represents the metabolites. set to "name" by default
 #' @return network plotter object with new node colors/features
 #' @export
-setGeneric("add_node_features", function(network_plotter_object, guide_object, which_type, metab_colname) standardGeneric("add_node_features"))
-setMethod("add_node_features", "metime_plotter", function(network_plotter_object, guide_object, which_type, metab_colname) {
-		class <- class(guide_object)
-		if(class %in% "metime_plotter") {
-			guide_plotter_object <- guide_object
-			network_plotter_object@plot_data[["node"]] <- network_plotter_object@plot_data[["node"]][order(network_plotter_object@plot_data[["node"]]$label), ]
-			guide_plotter_object@plot_data[[1]] <- guide_plotter_object@plot_data[[1]][guide_plotter_object@plot_data[[1]][ ,metab_colname] %in% network_plotter_object@plot_data[[1]]$label, ]
-			guide_plotter_object@plot_data[[1]] <- guide_plotter_object@plot_data[[1]][order(guide_plotter_object@plot_data[[1]][ ,metab_colname]), ]
-			if(which_type %in% "regression") {
-				column_for_colors <- guide_plotter_object@plot_data[[1]][ ,c("beta", "pval")]
-				column_for_colors <- sign(column_for_colors$beta) * -log10(column_for_colors$pval)
-			} else if(which_type %in% "conservation") {
-				column_for_colors <- guide_plotter_object@plot_data[[1]][ ,"ci"]
-			}
-			color.gradient <- function(x, colors=c("blue","gray","red"), colsteps=50) {
+setGeneric("add_node_features", function(object, results_indices, which_calculation=1, metab_colname="name") standardGeneric("add_node_features"))
+setMethod("add_node_features", "metime_plotter", function(object, results_indices, which_calculation=1, metab_colname="name") {
+		stopifnot(all(names(results_indices) %in% c("network", "guide")))
+		stopifnot(is.null(results_indices$network))
+		stopifnot(is.null(results_indices$guide))
+		color.gradient <- function(x, colors=c("blue","gray","red"), colsteps=50) {
   				return(colorRampPalette(colors) (colsteps)[findInterval(x, seq(-1, 1, length.out=colsteps))] )
-			}
-			gradient <- color.gradient(column_for_colors)
-			network_plotter_object@plot_data[["node"]]$color <- gradient
-			return(network_plotter_object)
-		} else if(class %in% "metime_analyser") {
-			guide_analyser_object <- guide_object
 		}
+		network <- object@results[[results_indices$network]]
+		guide <- object@results[[results_indices$guide]]
+		data_of_interest <- guide$plot_data[[which_results]]
+		data_of_interest <- data_of_interest[order(data_of_interest[ ,metab_colname]), ]
+		network$plot_data$node <- network$plot_data$node[order(network$plot_data$node$label), ]
+		data_of_interest <- data_of_interest[data_of_interest[ ,metab_colname] %in% network$node$label, ]
+		if(guide$information$calc_type[which_results] %in% "regression") {
+			column_for_colors <- data_of_interest[ ,c("beta", "pval")]
+			column_for_colors <- sign(column_for_colors$beta) * -log10(column_for_colors$pval)
+		} else if(guide$information$calc_type[which_results] %in% "CI_metabolite") {
+			column_for_colors <- data_of_interest[ ,"ci"]
+		}
+		gradient <- color.gradient(column_for_colors)
+		network$plot_data$node$color <- gradient
+		object@results[[results_indices$network]] <- network
+		return(object)
 	}) 
 
 
