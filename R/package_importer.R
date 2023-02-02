@@ -168,7 +168,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
         		if(is.null(node_list$color)) {
             		shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
             		colors_for_nodes <- node_list$group
-            		colors_code <- as.data.frame(cbind(unique(node_list$group), get_palette(length(unique(node_list$group)))))
+            		colors <- grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
+            		colors_code <- cbind.data.frame(unique(node_list$group), colors[1:length(unique(node_list$group))])
             		colnames(colors_code) <- c("group", "color")
             		colors_new <- c()
             		for(i in 1:length(colors_for_nodes)) {
@@ -193,9 +194,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
                     	visNetwork::visEdges(smooth = FALSE, shadow = TRUE) %>%
                         visNetwork::visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
                         visNetwork::visInteraction(navigationButtons = T) %>%
-                       	visNetwork::visExport(type="pdf", name=title, float="right")
+                       	visNetwork::visExport(type="pdf", name=ifelse(is.null(add$title), "network_metime", add$title),
+                       		float="right")
         		} else {
-        			graph <- visNetwork::visNetwork(nodes=node_list, edges=edge_title) %>%
+        			graph <- visNetwork::visNetwork(nodes=node_list, edges=edge_list) %>%
                     	visNetwork::visIgraphLayout(layout="layout.fruchterman.reingold", physics = F, smooth = F) %>%
                     	visNetwork::visPhysics(stabilization = FALSE) %>%
                     	visNetwork::visLegend(useGroups = T) %>% 
@@ -203,7 +205,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
                     	visNetwork::visEdges(smooth = FALSE, shadow = TRUE) %>%
                     	visNetwork::visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
                     	visNetwork::visInteraction(navigationButtons = T) %>%
-                    	visNetwork::visExport(type="pdf", name=title, float="right")		
+                    	visNetwork::visExport(type="pdf", name=ifelse(is.null(add$title), "network_metime", add$title), 
+                    		float="right")		
         		}
         		return(graph)
         	}

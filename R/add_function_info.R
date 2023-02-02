@@ -28,7 +28,7 @@ setMethod("add_function_info", "metime_analyser", function(object, function_name
 					}
 				}
 			} else {
-				if(length(grep("calc_|mod_merge_results", results[[length(results)]]$functions_applied))==0) {
+				if(length(grep("calc_|mod_merge_results", names(results[[length(results)]]$functions_applied)))==0) {
 					if(length(results[[length(results)]]$functions_applied) >=1) {
 						names <- names(results[[length(results)]]$functions_applied)
 						results[[length(results)]]$functions_applied[[length(results[[length(results)]]$functions_applied)+1]] <- params
@@ -39,8 +39,8 @@ setMethod("add_function_info", "metime_analyser", function(object, function_name
 					}
 				} else {
 					results[[length(results) + 1]] <- list()
-					results[[length(results)+1]]$functions_applied[[1]] <- params
-					names(results[[length(results) + 1]]$functions_applied)[1] <- function_name
+					results[[length(results)]]$functions_applied[[1]] <- params
+					names(results[[length(results)]]$functions_applied)[1] <- function_name
 				} 
 			}
 			object@results <- results

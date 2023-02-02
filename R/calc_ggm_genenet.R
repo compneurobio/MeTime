@@ -38,14 +38,14 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
               dplyr::filter(n == length(stratifications$time))
                   
           data <- data %>% 
-            dplyr::filter(time %in% timepoints,
+            dplyr::filter(time %in% times,
             subject %in% my_subjects[["subject"]])
           rm_col = intersect(names(data), c("adni_id","RID","rid","time","tp","subject", "id"))
           vars <- data %>% select(-c(all_of(rm_col))) %>% names()     
           # get full data
           data <- data %>% dplyr::arrange(time, subject) 
           n_subject = unique(data$subject) %>% length() %>% as.numeric()
-          name_tp = as.numeric(unlist(lapply(strsplit(unique(data$time), split="t"), function(x) return(x[2]))))
+          name_tp = data$time %>% unique() %>% gsub(pattern="[a-z|A-Z]", replacement="") %>% as.numeric()
           data <- longitudinal::as.longitudinal(x=as.matrix(data[,vars]), repeats=n_subject, time=name_tp)
           met.ggm <- GeneNet::ggm.estimate.pcor(data, method="dynamic", ...) # retrieve GGM
           met.ggm.edges <- GeneNet::network.test.edges(met.ggm, plot=F) # calculate edge statistics

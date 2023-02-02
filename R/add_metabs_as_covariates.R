@@ -9,15 +9,20 @@
 setGeneric("add_metabs_as_covariates", function(object, which_data, which_metabs) standardGeneric("add_metabs_as_covariates"))
 setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_data, which_metabs) {
 			data <- object@list_of_data[[which_data]]
-			list_of_metabs <- list()
 			list_of_metabs <- lapply(seq_along(which_metabs), function(i) {
 				dat <- object@list_of_data[[names(which_metabs)[i]]]
 				dat <- dat[ ,which_metabs[[i]]]
 				dat <- dat[order(rownames(dat)), ]
 				return(dat)
 			})
-			if(length(which_data) > 1) {
-				metab_matrix <- do.call(cbind, list_of_metabs)
+			if(length(which_metabs) > 1) {
+				samples <- lapply(seq_along(list_of_metabs), function(a) {
+						return(rownames(list_of_metabs))
+					})
+				common_samples <- Reduce(intersect, samples)
+				metab_matrix <- lapply(seq_along(list_of_metabs), function(a) {
+						return(list_of_metabs[[a]][rownames(list_of_metabs[[a]]) %in% common_samples, ])
+					}) %>% do.call(what=cbind.data.frame)
 			} else {
 				metab_matrix <- list_of_metabs[[1]]
 			}
