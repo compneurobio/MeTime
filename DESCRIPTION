@@ -13,34 +13,22 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Imports: 
-    abind,
     Boruta,
-    data.table,
     DT,
     dynamicTreeCut,
     GeneNet,
-    ggplot2,
     glmnet,
-    igraph,
-    lme4,
     lmerTest,
     longitudinal,
     M3C,
-    MatrixEQTL,
     mgcv,
     multiway,
-    nnet,
     parallel,
     plotly,
-    plyr,
-    RColorBrewer,
-    reshape2,
     rstatix,
-    shiny,
     umap,
     visNetwork,
     WGCNA,
     xlsx
 Depends: 
     tidyverse
-

@@ -11,6 +11,7 @@ setMethod("add_node_features", "metime_analyser", function(object, results_indic
 		stopifnot(all(names(results_indices) %in% c("network", "guide")))
 		stopifnot(length(results_indices$network)==1)
 		stopifnot(length(results_indices$guide)==1)
+		# change the below function in terms of scale_fill_gradientn 
 		color.gradient <- function(x, colors=c("blue","gray","red"), colsteps=50) {
   				return(colorRampPalette(colors) (colsteps)[findInterval(x, seq(-1, 1, length.out=colsteps))])
 		}

@@ -11,15 +11,15 @@ calc_parafac(object, which_data, timepoints, nfac = 3, ...)
 
 \item{which_data}{character vector for dataset to be used}
 
-\item{timepoints}{character vector to define timepoints of interest}
-
 \item{nfac}{parameter nfac for parafac(). Numeric value to define the number of factors. Default is set to 3}
 
 \item{...}{Additional arguments to be used for the function parafac()}
+
+\item{stratifications}{list to define stratification for the data before calculation}
 }
 \value{
 An object of class PARAFAC. See multiway library for more information
 }
 \description{
-Method to be applied on S4 object of class metime_analyser to perform PARAFAC analysis
+Function for S4 object of class metime_analyser to perform PARAFAC analysis
 }

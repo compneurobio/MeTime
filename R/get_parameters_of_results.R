@@ -8,7 +8,7 @@ setGeneric("get_parameters_of_results", function(object, results_index) standard
 setMethod("get_parameters_of_results", "metime_analyser", function(object, results_index) {
 		if(class(results_index) %in% "character") stopifnot(results_index %in% names(object@results))
 		if(class(results_index) %in% c("numeric", "integer")) stopifnot(results_index < length(object@results))
-		parameters <- object@results[[results_index]][["functions"]]
+		parameters <- object@results[[results_index]][["functions_applied"]]
 		functions <- names(parameters)
 		out <- lapply(seq_along(parameters), function(i) {
 				func <- parameters[[i]]
@@ -16,7 +16,7 @@ setMethod("get_parameters_of_results", "metime_analyser", function(object, resul
 						distinct() %>% t() %>% as.data.frame()
 				colnames(func) <- func[1,]
 				func <- func[-1, ]
-				return(func)
+				return(as.data.frame(func))
 			}) %>% do.call(what=plyr::rbind.fill)
 		rownames(out) <- functions
 		return(out)

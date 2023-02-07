@@ -7,10 +7,11 @@
 calc_ggm_multibipartite_lasso(
   object,
   which_data,
-  alpha,
-  nfolds,
-  timepoints,
-  cols_for_meta
+  alpha = 1,
+  nfolds = 3,
+  stratifications,
+  cols_for_meta,
+  cores = 4
 )
 }
 \arguments{
@@ -18,16 +19,22 @@ calc_ggm_multibipartite_lasso(
 
 \item{which_data}{a character or a character vector naming the datasets of interest}
 
-\item{alpha}{tuning parameter for lasso + ridge regression in glmnet}
+\item{alpha}{tuning parameter for lasso + ridge regression in glmnet. Default set to 1 to perform LASSO}
 
-\item{nfolds}{nfolds for cv.glmnet}
+\item{nfolds}{nfolds for cv.glmnet. Default set to 3}
 
-\item{timepoints}{timepoints of interest that are to be used to build networks(as per timepoints in rows)}
+\item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
 
 \item{cols_for_meta}{a list of character vectors of column names to be used for visualization of the networks.}
+
+\item{cores}{number of cores to be used in parallel::mclapply(). Default set to 4.}
+
+\item{name}{character to define the name of the results}
+
+\item{...}{additional arguments for cv.glmnet function}
 }
 \value{
-list of plotter objects that can be used for plotting.
+Analyser object with updated results of this calculation
 }
 \description{
 automated funtion that can be applied on s4 object of class metime_analyser to calculate a network using
