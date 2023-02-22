@@ -11,18 +11,22 @@
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @return List of conservation index results
 #' @export
-setGeneric("calc_conservation_metabotype", function(object, which_data, verbose=F, cols_for_meta, stratifications, name) standardGeneric("calc_conservation_metabotype"))
-setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, verbose=F, cols_for_meta, stratifications, name) {
+setGeneric("calc_conservation_metabotype", function(object, which_data, verbose=F, cols_for_meta, stratifications, name="calc_conservation_metabotype_1") standardGeneric("calc_conservation_metabotype"))
+setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, verbose=F, cols_for_meta, stratifications, name="calc_conservation_metabotype_1") {
 
-  #define data to be processed
-
-  #data_position <- which(names(object@list_of_data) %in% which_data)
+if(grep(name, names(object@results)) %>% length() >=1) {
+      warning("name of the results was previously used, using a different name")
+      index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
+      index <- c(0:9)[grep(index, 0:9)+1]
+      name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
+}
   out=list()
 for (i in which_data) {
     
     # index variables to use
     index_var <- c("id","time","subject")
-    data_list <- get_stratified_data(which_data=which_data, object=object, stratifications=stratifications)
+    data_list <- get_stratified_data(which_data=which_data, object=object, 
+      stratifications=stratifications)
     # extract data
     data <- data_list[["data"]]
     row_data <- data_list[["row_data"]]
@@ -84,7 +88,8 @@ for (i in which_data) {
                               name=name)
     out <- add_function_info(object=out, function_name="calc_conservation_metabotype", 
         params=list(which_data=which_data, verbose=verbose, cols_for_meta=cols_for_meta, 
-            name=name, stratifications=stratifications))
+            name=name, stratifications=stratifications)) %>%
+        update_plots(type="CI_metabotype")
   }
   return(out)
 })

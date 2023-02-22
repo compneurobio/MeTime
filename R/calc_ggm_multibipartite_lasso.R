@@ -31,8 +31,8 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
         common_samples <- Reduce(intersect, all_samples)
 
         data_lists <- lapply(seq_along(data_lists), function(a) {
-                data <- data_lists[[b]][["data"]]
-                row_data <- data_lists[[b]][["row_data"]]
+                data <- data_lists[[a]][["data"]]
+                row_data <- data_lists[[a]][["row_data"]]
                 data <- data[rownames(data) %in% common_samples, ]
                 row_data <- row_data[rownames(row_data) %in% common_samples, ]
                 return(list(data=data, row_data=row_data))
@@ -77,7 +77,8 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
           return(out)
         }
 
-        results_list <- get_betas_for_multibipartite_lasso(list_of_mats=list_of_mats, alpha=alpha, nfolds=nfolds, ...)
+        results_list <- get_betas_for_multibipartite_lasso(list_of_mats=list_of_mats, 
+          alpha=alpha, nfolds=nfolds, ...)
         
         edge_lists <- lapply(seq_along(results_list), function(a) {
                 edge_list <- lapply(seq_along(results_list[[a]]), function(b) {
@@ -114,7 +115,7 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
         out <- get_make_results(object=object, data=list(edge_lists), metadata=metadata, 
                 calc_type="multibipartite_ggm", calc_info=paste("multibipartite_ggm for ", which_data,
                     "with", ifelse(is.null(stratifications)), "full data", stratifications, sep=" "), 
-                name=name) %>%
+                name=name, plot_type=list()) %>%
                 add_function_info(function_name="calc_ggm_multibipartite_lasso", 
                         params=list(which_data=which_data, stratifications=stratifications, alpha=alpha, nfolds=nfolds, 
                         cols_for_meta=cols_for_meta, name=name))

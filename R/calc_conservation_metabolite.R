@@ -11,10 +11,17 @@
 #' @param stratifications list to stratify the data used 
 #' @return conservation index results that are added to the object
 #' @export
-setGeneric("calc_conservation_metabolite", function(object, which_data, verbose, cols_for_meta, stratifications, name) standardGeneric("calc_conservation_metabolite"))
-setMethod("calc_conservation_metabolite", "metime_analyser", function(object, which_data, verbose=F, cols_for_meta, stratifications, name) {
+setGeneric("calc_conservation_metabolite", function(object, which_data, verbose=F, cols_for_meta=NULL, stratifications=NULL, name="conservation_index_metabolite_1") standardGeneric("calc_conservation_metabolite"))
+setMethod("calc_conservation_metabolite", "metime_analyser", function(object, which_data, verbose=F, cols_for_meta=NULL, stratifications=NULL, name="conservation_index_metabolite_1") {
   #define data to be processed
   #data_position <- which(names(object@list_of_data) %in% which_data)
+  #test this now
+  if(grep(name, names(object@results)) %>% length() >=1) {
+    warning("name of the results was previously used, using a different name")
+    index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
+    index <- c(0:9)[grep(index, 0:9)+1]
+    name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
+  }
   stopifnot(length(which_data)==length(name))
   out=list()
   for (i in which_data) {
@@ -88,14 +95,15 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
               return(t)
       }) %>% unlist()
 
-    out <- get_make_results(object=object, data = out_sum, 
-                              metadata = metadata, 
-                              calc_type = rep("CI_metabolite", each=length(out_sum)), 
-                              calc_info = paste("metabolite_CI_", i, "_", combinations, sep = ""),
-                              name=name)
-    out <- add_function_info(object=out, function_name="calc_conservation_metabolite", 
-        params=list(which_data=which_data, verbose=verbose, cols_for_meta=cols_for_meta, 
-            name=name, stratifications=stratifications))
+      out <- get_make_results(object=object, data = out_sum, 
+                                metadata = metadata, 
+                                calc_type = rep("CI_metabolite", each=length(out_sum)), 
+                                calc_info = paste("metabolite_CI_", i, "_", combinations, sep = ""),
+                                name=name)
+      out <- add_function_info(object=out, function_name="calc_conservation_metabolite", 
+          params=list(which_data=which_data, verbose=verbose, cols_for_meta=cols_for_meta, 
+              name=name, stratifications=stratifications)) %>%
+            update_plots(type="CI_metabolite")
   }
   return(out)
 })

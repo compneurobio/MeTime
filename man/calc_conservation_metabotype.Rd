@@ -10,7 +10,7 @@ calc_conservation_metabotype(
   verbose = F,
   cols_for_meta,
   stratifications,
-  name
+  name = "calc_conservation_metabotype_1"
 )
 }
 \arguments{

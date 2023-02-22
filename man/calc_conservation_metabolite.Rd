@@ -7,10 +7,10 @@
 calc_conservation_metabolite(
   object,
   which_data,
-  verbose,
-  cols_for_meta,
-  stratifications,
-  name
+  verbose = F,
+  cols_for_meta = NULL,
+  stratifications = NULL,
+  name = "conservation_index_metabolite_1"
 )
 }
 \arguments{

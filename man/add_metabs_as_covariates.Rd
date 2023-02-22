@@ -15,7 +15,7 @@ add_metabs_as_covariates(object, which_data, which_metabs)
 the metabs are to be acquired. eg: which_metabs=list(nmr_data=c("metab1", "metab2"), lipid_data=c(""))}
 }
 \value{
-S4 object with metabs added for GGM to another dataset
+S4 object with metabs from one dataset added for analysis to another dataset
 }
 \description{
 Method applied on metime_analyser object to add other metabolite data to a certain dataset

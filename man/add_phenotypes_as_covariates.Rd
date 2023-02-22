@@ -8,8 +8,8 @@ add_phenotypes_as_covariates(
   object,
   which_data,
   covariates,
-  class.ind,
-  phenotype
+  class.ind = FALSE,
+  phenotype = FALSE
 )
 }
 \arguments{

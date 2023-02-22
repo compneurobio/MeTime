@@ -43,19 +43,21 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
     					edge_list$title <- paste("coeff1: ", data$coeffs.1, "<br /> coeff2: ", data$coeffs.2, sep=" ")
    			 	} else if(calc_type %in% "temporal_network") {
    			 			dashes <- ifelse(data$coeffs > 0, FALSE, TRUE)
+   			 			edge_list$values <- data$coeffs
    			 			edge_list$dashes <- dashes
    			 			edge_list$arrows <- rep("from", each=length(edge_list$dashes))
    			 	}
    			 	if(length(grep("calc_|mod_merge_results", names(object@results[[length(object@results)]]$functions_applied))) ==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
 						plot_data=list(node=node_list, edge=edge_list, metadata=metadata),
-						information=list(calc_type=calc_type, calc_info=calc_info))
+						information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {
 					object@results[[length(object@results)]]$plot_data$node <- node_list
 					object@results[[length(object@results)]]$plot_data$edge <- edge_list
 					object@results[[length(object@results)]]$plot_data$metadata <- metadata
 					object@results[[length(object@results)]]$information$calc_type <- calc_type
 					object@results[[length(object@results)]]$information$calc_info <- calc_info
+					object@results[[length(object@results)]]$plots <- list()
 				}
 			} else {
 				if(is.null(metadata)) {
@@ -79,11 +81,12 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 				}
 				if(length(grep("calc_|mod_merge_results", names(object@results[[length(object@results)]]$functions_applied)))==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), plot_data=plot_data,
-											information=list(calc_type=calc_type, calc_info=calc_info))
+											information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {
 					object@results[[length(object@results)]]$plot_data <- plot_data
 					object@results[[length(object@results)]]$information$calc_type <- calc_type
 					object@results[[length(object@results)]]$information$calc_info <- calc_info
+					object@results[[length(object@results)]]$plots <- list()
 				}
 			}
 			names(object@results)[length(object@results)] <- name

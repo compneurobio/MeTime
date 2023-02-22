@@ -9,7 +9,7 @@ calc_correlation_pairwise(
   which_data,
   method,
   cols_for_meta,
-  name,
+  name = "calc_correlation_pairwise_1",
   stratifications
 )
 }

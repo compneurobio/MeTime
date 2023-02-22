@@ -10,10 +10,16 @@
 #' @param stratifications List to stratify data into a subset. Usage list(name=values)
 #' @return plotter object with data for heatmap information
 #' @export
-setGeneric("calc_colinearity", function(object, which_data, cols_for_meta, show_all, name, stratifications) standardGeneric("calc_colinearity"))
-setMethod("calc_colinearity", "metime_analyser", function(object, which_data, cols_for_meta, show_all, name, stratifications) {
+setGeneric("calc_colinearity", function(object, which_data, cols_for_meta, show_all=F, name="calc_colinearity_1", stratifications=list()) standardGeneric("calc_colinearity"))
+setMethod("calc_colinearity", "metime_analyser", function(object, which_data, cols_for_meta, show_all=F, name="calc_colinearity_1", stratifications=list()) {
       stopifnot(which_data %in% names(object@list_of_data))
       stopifnot(length(names(object@list_of_data[[which_data]]))==length(unique(names(object@list_of_data[[which_data]]))))
+      if(grep(name, names(object@results)) %>% length() >=1) {
+          warning("name of the results was previously used, using a different name")
+          index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
+          index <- c(0:9)[grep(index, 0:9)+1]
+          name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
+      }
       my_combn <- combn(names(object@list_of_data[[which_data]]),2) %>% t() %>% as.data.frame() # setup combinations for later pairwise calculation
       if(length(stratifications)>=1) {
         data <- object@list_of_data[[which_data]]
@@ -62,15 +68,18 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
           }
           out <- cbind(out, classes)
           out <- get_make_results(object=object, data=list(out), metadata=metadata, calc_type="colinearity", 
-                  calc_info=paste("colinearity test of: ", which_data, sep=""), name=name)
+                  calc_info=paste("colinearity test of: ", which_data, sep=""), name=name) %>%
+                add_function_info(function_name="calc_colinearity", 
+                  params=list(which_data=which_data, cols_for_meta=cols_for_meta, show_all=show_all, stratifications=stratifications)) %>%
+                  update_plots(type="colinearity")
           return(out)
       } else {
           out <- out[out$colinear==TRUE, ]
           if(dim(out)[1]==0) {
               cat("There are no colinear vectors in the data")
               cat("\n")
-              cat("Exiting without making a plotter object")
-              return(out)
+              cat("Exiting without updating the object")
+              return(object)
           } else {
               for(i in 1:length(out$med_class_1)) {
                   out$med_class_1[i] <- as.character(metadata[metadata$id %in% out$med_class_1[i], "class"])
@@ -79,7 +88,8 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
               out <- get_make_results(object=object, data=list(out), metadata=metadata, calc_type="colinearity", 
                   calc_info=paste("colinearity test of: ", which_data, sep=""), name=name)
               out <- out %>% add_function_info(function_name="calc_colinearity", 
-                  params=list(which_data, cols_for_meta, show_all))
+                  params=list(which_data=which_data, cols_for_meta=cols_for_meta, show_all=show_all, stratifications=stratifications)) %>%
+                  update_plots(type="colinearity")
               return(out)
           }
       }

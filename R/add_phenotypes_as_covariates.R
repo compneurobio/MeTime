@@ -7,15 +7,16 @@
 #' @param phenotype Logical. If True will extract from phenotype dataset else uses row data
 #' @return S4 object with covariates added to the dataset
 #' @export
-setGeneric("add_phenotypes_as_covariates", function(object, which_data, covariates, class.ind, phenotype) standardGeneric("add_phenotypes_as_covariates"))
-setMethod("add_phenotypes_as_covariates", "metime_analyser", function(object, which_data, covariates, class.ind, phenotype) {
+setGeneric("add_phenotypes_as_covariates", function(object, which_data, covariates, class.ind=FALSE, phenotype=FALSE) standardGeneric("add_phenotypes_as_covariates"))
+setMethod("add_phenotypes_as_covariates", "metime_analyser", function(object, which_data, covariates, class.ind=FALSE, phenotype=FALSE) {
+			stopifnot(which_data %>% length() == 1 )
 			if(phenotype) {
-				phenotype <- object@list_of_data[[object@annotations[[1]]$phenotype]]
-				phenotype <- phenotype[order(rownames(phenotype)),]
+				phenotype_data <- object@list_of_data[[object@annotations[[1]]$phenotype]]
+				phenotype_data <- phenotype_data[order(rownames(phenotype_data)),]
 				list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 				covariates_list <- lapply(list_of_data, function(x) {
 							x <- x[order(rownames(x)), ]
-							return(phenotype[rownames(phenotype) %in% rownames(x), covariates])
+							return(phenotype_data[rownames(phenotype_data) %in% rownames(x), covariates])
 					})
 				for(i in 1:length(which_data)) {
 					 list_of_data <- unname(list_of_data)
@@ -75,7 +76,7 @@ setMethod("add_phenotypes_as_covariates", "metime_analyser", function(object, wh
 				}
 			}
 			out <- object
-			out <- object %>% add_function_info(function_name="add_metabs_as_covariates", 
+			out <- object %>% add_function_info(function_name="add_phenotypes_as_covariates", 
 				params=list(which_data=which_data, covariates=covariates, class.ind=class.ind, 
 					phenotype=phenotype))
 			return(out)

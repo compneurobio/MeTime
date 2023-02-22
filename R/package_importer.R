@@ -16,6 +16,9 @@ usethis::use_import_from("lmerTest", fun="lmer")
 usethis::use_import_from("parallel", fun="mclapply")
 usethis::use_package("WGCNA", type="Imports") # can't dependence
 usethis::use_import_from("dynamicTreeCut", fun="cutreeDynamic")
+usethis::use_package("rmarkdown", type="Imports")
+usethis::use_package("rmdformats", type="Imports")
+usethis::use_package("htmltools", type="Imports")
 
 
 #' Validity function to check if the object is valid or not
@@ -62,9 +65,9 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' @return plots for a certain set of results
 #' @export
 setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...) {
-			add <- list(...)
-			results <- x@results[[results_index]]
-			get_text_for_plot <- function(data, colnames) {	
+		add <- list(...)
+		results <- x@results[[results_index]]
+		get_text_for_plot <- function(data, colnames) {	
 						out <- c()
 						count <- 1
 						text <- c()
@@ -82,84 +85,153 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
 						return(out)
 			} 
 
-			make_interactive <- function(.plot, j, col, .results=results) {
-				plot <- plotly::ggplotly(.plot, width=800, height=800)
-				for(i in seq_along(plot$x$data)) {
-					if(!is.null(plot$x$data[[i]]$text)) {
-						x <- plot$x$data[[i]]$x
-						data <- .results$plot_data[[j]]
-						data <- data[data[ ,col] %in% x, ] 
-						plot$x$data[[i]]$text <- get_text_for_plot(data=data, 
-										colnames=add$viz)
+		make_interactive <- function(.plots, j, col, .results=results) {
+				plots <- lapply(seq_along(.plots), function(.plot) {
+					plot <- plotly::ggplotly(.plots[[.plot]], width=800, height=800)
+					for(i in seq_along(plot$x$data)) {
+						if(!is.null(plot$x$data[[i]]$text)) {
+							x <- plot$x$data[[i]]$x
+							data <- .results$plot_data[[j]]
+							data <- data[data[ ,col] %in% x, ] 
+							plot$x$data[[i]]$text <- get_text_for_plot(data=data, 
+										colnames=colnames(data))
+						}
 					}
-				}
-				return(plot)
+					return(plot)
+				})
+				return(plots)
 			}
-			if(is.null(names(results$plot_data))) {
-				plots <- lapply(seq_along(results$plot_data), function(b) {
-					if(results$information$calc_type[b] %in% "CI_metabolite" |
-						results$information$calc_type[b] %in% "CI_metabotype") {
-						plot <- ggplot(results$plot_data[[b]], aes(x=x, y=ci)) + 
+
+		if(is.null(names(results$plot_data))) {
+			all_plots <- lapply(seq_along(results$plot_data), function(ind_data) {
+					if(results$information$calc_type[ind_data] %in% "CI_metabolite" |
+						results$information$calc_type[ind_data] %in% "CI_metabotype") {
+						plots <- list()
+						plots[[1]] <- ggplot(results$plot_data[[ind_data]], aes(x=x, y=ci)) + 
+								geom_point(aes_string(color=add$color, 
+								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
+						if(results$information$calc_type[ind_data] %in% "CI_metabotype") {
+							if(is.null(add$box_x)) {
+								add$box_x <- add$color
+							} 
+							median_data <- results$plot_data[[ind_data]]
+							median_data <- median_data[median_data$ci != 1, ]
+							median_data$ci <- -log10(1-median_data$ci)
+							combinations <- combn(results$plot_data[[ind_data]][ ,add$box_x], 2)
+							my_comparisons <- lapply(1:ncol(combinations), function(x) return(combinations[,x]))
+							plots[[2]] <- ggpubr::ggboxplot(median_data, x=add$box_x, 
+								y="ci", color="black", fill=add$box_x, alpha=0.5, notch=T) +
+          						ggpubr::stat_compare_means(method="wilcox.test", comparisons=my_comparisons, 
+          						label.y=seq(from=3.5, to=11, by=0.5))
+						}
+						if(interactive) {
+							plots[[2]] <- make_interactive(.plots=list(plots[[1]]), j=ind_data, col="x")
+						} 
+						return(plots)
+					} else if(results$information$calc_type[ind_data] %in% "pairwise_distance" |
+						results$information$calc_type[ind_data] %in% "pairwise_correlation") {
+						plot <- ggplot(results$plot_data[[ind_data]], aes(x=row,y=column)) + 
+							geom_tile(aes(fill=dist)) +
+								facet_wrap(add$strats) + theme_classic()
+						if(interactive) {
+							plot <- make_interactive(.plots=plot, j=ind_data, col="row")
+						} 
+						return(plot)
+					} else if(results$information$calc_type[ind_data] %in% "PCA") {
+						plot <- ggplot(results$plot_data[[ind_data]], aes(x=PC1, y=PC2)) + 
 								geom_point(aes_string(color=add$color, 
 								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
 						if(interactive) {
-							plot <- make_interactive(.plot=plot, j=b, col="x")
+							plot <- make_interactive(.plots=list(plot), j=ind_data, col="PC1")
 						} 
 						return(plot)
-					} else if(results$information$calc_type[b] %in% "pairwise_distance" |
-						results$information$calc_type[b] %in% "pairwise_correlation") {
-						plot <- ggplot(results$plot_data[[b]], aes(x=row,y=column)) + 
-							geom_tile(aes(fill=dist)) +
-							facet_wrap(add$strats) + theme_classic()
+					} else if(results$information$calc_type[ind_data] %in% "UMAP") {
+						plot <- ggplot(results$plot_data[[ind_data]], aes(x=UMAP1, y=UMAP2)) + 
+								geom_point(aes_string(color=add$color, 
+								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
 						if(interactive) {
-							plot <- make_interactive(.plot=plot, j=b, col="row")
+							plot <- make_interactive(.plots=list(plot), j=ind_data, col="UMAP1")
 						} 
-						return(plot)		
-					} else if(results$information$calc_type[b] %in% "PCA") {
-						if(b==1) {
-							plot <- ggplot(results$plot_data[[b]], aes(x=PC1, y=PC2)) + 
-								geom_point(aes_string(color=add$color_metabs, 
-								shape=add$shape_metabs)) + facet_wrap(add$strats_metabs) + theme_classic()
-						} else if(b==2) {
-							plot <- ggplot(results$plot_data[[b]], aes(x=PC1, y=PC2)) + 
-								geom_point(aes_string(color=add$color_samples, 
-								shape=add$shape_samples)) + facet_wrap(add$strats_samples) + theme_classic()
+						return(plot)
+					} else if(results$information$calc_type[ind_data] %in% "tSNE") {
+						plot <- ggplot(results$plot_data[[ind_data]], aes(x=X1, y=X2)) + 
+								geom_point(aes_string(color=add$color, 
+								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
+						if(interactive) {
+							plot <- make_interactive(.plots=list(plot), j=ind_data, col="X1")
+						} 
+						return(plot)
+					} else if(results$information$calc_type[ind_data] %in% "GAMM" | 
+						results$information$calc_type[ind_data] %in% "LMM") {
+						plot <- ggplot(results$plot_data[[ind_data]], 
+							aes_string(x="x", y="y", xmin="xmin", xmax="xmax", 
+								color=add$color, metabolite=add$grp)) +
+        						geom_point() +
+        						geom_errorbar(width=.2,position=position_dodge(0.05))
+        						scale_color_manual(values=c("grey"="grey","blue"="blue"))
+						if(interactive) {
+							plot <- make_interactive(.plots=plot, j=ind_data, col="x")
 						}
-						if(interactive) {
-							plot <- make_interactive(.plot=plot, j=b, col="PC1")
-						} 
-						return(plot)
-					} else if(results$information$calc_type[b] %in% "UMAP") {
-						if(b==1) {
-							plot <- ggplot(results$plot_data[[b]], aes(x=UMAP1, y=UMAP2)) + 
-								geom_point(aes_string(color=add$color_metabs, 
-								shape=add$shape_metabs)) + facet_wrap(add$strats_metabs) + theme_classic()
-						} else if(b==2) {
-							plot <- ggplot(results$plot_data[[b]], aes(x=UMAP1, y=UMAP2)) + 
-								geom_point(aes_string(color=add$color_samples, 
-								shape=add$shape_samples)) + facet_wrap(add$strats_samples) + theme_classic()
-						}
-						if(interactive) {
-							plot <- make_interactive(.plot=plot, j=b, col="UMAP1")
-						} 
-						return(plot)
-					} else if(results$information$calc_type[b] %in% "tSNE") {
-						if(b==1) {
-							plot <- ggplot(results$plot_data[[b]], aes(x=X1, y=X2)) + 
-								geom_point(aes_string(color=add$color_metabs, 
-								shape=add$shape_metabs)) + facet_wrap(add$strats_metabs) + theme_classic()
-						} else if(b==2) {
-							plot <- ggplot(results$plot_data[[b]], aes(x=X1, y=X2)) + 
-								geom_point(aes_string(color=add$color_samples, 
-								shape=add$shape_samples)) + facet_wrap(add$strats_samples) + theme_classic()
-						}
-						if(interactive) {
-							plot <- make_interactive(.plot=plot, j=b, col="X1")
-						} 
-						return(plot)
+						return(plot) 
+					} else if(results$information$calc_type[ind_data] %in% "distribution_metabs" |
+						results$information$calc_type[ind_data] %in% "distribution_samples") {
+						data <- results$plot_data[[ind_data]]
+						plots <- lapply(colnames(data)[!colnames(data) %in% c("id", "time")], function(col) {
+								vec <- data[,col] 
+								vec <- na.omit(vec)
+								if(is.character(vec)==TRUE | is.factor(vec)==TRUE) var_type <- "bar"
+								if(is.numeric(vec)==TRUE) {
+									if(length(unique(vec)) <= 12) {
+										var_type <- "bar"
+									} else {
+										var_type <- "density"
+									}
+								}
+								if(var_type %in% "bar") {
+									if(results$information$calc_type[ind_data] %in% "distribution_metabs") {
+										plot_data <- data[ ,col]
+										plot_data <- table(plot_data) %>% as.data.frame()
+										colnames(plot_data) <- c(col, "Frequency")
+										bar_plot <- ggplot(plot_data, aes_string(x=col, y="Frequency")) +
+												geom_bar(stat="identity") + theme_classic()
+										return(bar_plot)
+									} else {
+										plot_data <- data[ ,c(col, "time")]
+										plot_data <- table(plot_data)
+										plot_data <- reshape2::melt(plot_data)
+										colnames(plot_data) <- c(col, "Timepoints", "Frequency")
+										bar_plot <- ggplot(data=plot_data, aes_string(x=col, y="Frequency", fill="Timepoints")) +
+											geom_bar(stat="identity") + theme_classic()
+										line_plot <- ggplot(plot_data, aes_string(x="Timepoints", y="Frequency", group=col)) + 
+					 						geom_line(aes_string(color=col)) + geom_point(aes_string(color=col)) + theme_classic()
+										return(list(bar_plot=bar_plot, line_plot=line_plot))
+									}
+								} else if(var_type %in% "density") {
+									if(results$information$calc_type[ind_data] %in% "distribution_metabs") {
+										plot_data <- data[ ,col]
+										mean <- mean(data[,col])
+										density_plot <- ggplot(plot_data, aes_string(x=col)) + geom_density(alpha=0.5) +
+											geom_vline(data=plot_data, aes(xintercept=mean), linetype="dashed") + theme_classic()
+										return(density_plot) 
+									} else {	
+										plot_data <- data[ ,c(col, "time")]
+										levels <- data$time %>% unique() %>% gsub(pattern="[a-z|A-Z]", replacement="") %>% as.numeric() %>% sort()
+										data$time <- factor(data$time, levels=paste("t", levels, sep=""))
+										plot_data <- na.omit(plot_data)
+										mu <- as.data.frame(aggregate(plot_data[,col], list(Timepoints=plot_data$time), FUN=mean))
+										mu$Timepoints <- factor(mu$Timepoints, levels=paste("t", levels, sep=""))
+										colnames(mu)[2] <- "mean"
+										density_plot <- ggplot(plot_data, aes_string(x=col, fill="time")) + geom_density(alpha=0.3) + 
+												geom_vline(data=mu, aes(xintercept=mean, color=Timepoints), linetype="dashed") +
+			 								 	theme_classic()
+										return(list(density_plot))
+									}
+								}
+							})
+						
 					}
 				})
-				return(plots)
+				return(all_plots)
 			} else {
 				metadata <- results$plot_data$metadata
 				node_list <- results$plot_data$node
@@ -250,11 +322,14 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
 		if(length(which_data)==1) {
       		data <- object@list_of_data[[which_data]]
       		row_data <- object@list_of_row_data[[which_data]]
+      		col_data <- object@list_of_col_data[[which_data]]
 		} else {
 			object <- mod_extract_common_samples(object)
 			object@list_of_data <- lapply(object@list_of_data, function(x) return(x[order(rownames(x)), ]))
-			list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
+			list_of_data <- object@list_of_data[which_data]
+			list_of_col_data <- object@list_of_col_data[which_data]
 			data <- do.call(cbind, unname(list_of_data))
+			col_data <- do.call(dplyr::rbind.fill, unname(list_of_col_data))
 			row_data <- object@list_of_row_data[[which_data[1]]]
 			row_data <- row_data[rownames(row_data) %in% rownames(data), ]
 		}
@@ -265,6 +340,89 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
           		}) %>% do.call(what=rbind.data.frame)
         	data <- data[rownames(data) %in% rownames(row_data), ]		
 		}
-		return(list(data=data, row_data=row_data))
+		return(list(data=data, row_data=row_data, col_data=col_data))
 	})
 
+#' Function to update plots post calculations
+#' @description Function to update plots based on the calculation. 
+#' See a calc_* function to see the usage of this function
+#' @param object An S4 object of class metime_analyser
+#' @param .interactive logical to make the plot interactive or not
+#' @param type character to define the type of calculation used for updating the plot
+#' cols_for_samples, cols_for_metabs, cols_for_meta etc will be used. So make sure you set those correctly
+#' for better results. 
+#' @returns object with plots of the newest calculation
+#' @export
+
+setGeneric("update_plots", function(object, .interactive=FALSE, type) standardGeneric("update_plots"))
+setMethod("update_plots", "metime_analyser", function(object, .interactive=TRUE, type) {
+		results <- object@results[[length(object@results)]]
+		if(grep("ggm|network", type) %>% length() == 1) {
+			network <- plot(object, results_index=length(object@results), 
+				interactive=.interactive)
+			results$plots <- network
+			object@results[[length(object@results)]] <- results
+		} else if(type %in% "DR_samples") {
+			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in%
+			c("PC1", "PC2", "UMAP1", "UMAP2", "X1", "X2", "time", "id", "subject", "name")]
+			cols_of_int_class <- sapply(results$plot_data[[1]][ ,cols_of_int], class)
+			info <- cols_of_int[which(cols_of_int_class %in% c("character", "factor"))]
+			combinations <- combn(info, 2)
+			plots <- list()
+			plots <- lapply(1:ncol(combinations), function(col) {
+					dr_plots <- plot(object, results_index=length(object@results), 
+						interactive=.interactive,
+						color=as.character(combinations[1, col]),
+						shape=as.character(combinations[2, col]))
+					return(dr_plots)
+				}) 
+			results$plots <- plots
+			object@results[[length(object@results)]] <- results
+		} else if(type %in% "DR_metabs") {
+			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in%
+			c("PC1", "PC2", "UMAP1", "UMAP2", "X1", "X2", "time", "id", "subject", "name")]
+			cols_of_int_class <- sapply(results$plot_data[[1]][ ,cols_of_int], class)
+			info <- cols_of_int[which(cols_of_int_class %in% c("character", "factor"))]
+			plots <- list()
+			plots <- lapply(info, function(col) {
+					dr_plots <- plot(object, results_index=length(object@results), 
+						interactive=.interactive,
+						color=as.character(col),
+						)
+					return(dr_plots)
+				})
+			results$plots <- plots
+			object@results[[length(object@results)]] <- results 
+		} else if(type %in% "CI_metabotype" | type %in% "CI_metabolite") {
+			#info <- sapply(results$plot_data[[1]], class)
+			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in%
+			c("id_from", "id_to", "x", "y", "ci", "id", "time_from", "time_to", "name", "n", "rank", "cor",
+				"timepoints", "samples")]
+			cols_of_int_class <- sapply(results$plot_data[[1]][ ,cols_of_int], class)
+			info <- cols_of_int[which(cols_of_int_class %in% c("character", "factor"))]
+			combinations <- combn(info, 2) 
+			plots <- list()
+			plots <- lapply(1:ncol(combinations), function(col) {
+					ci_plots <- plot(object, results_index=length(object@results), 
+						interactive=.interactive,
+						color=as.character(combinations[1, col]),
+						shape=as.character(combinations[2, col]))
+					return(ci_plots)
+				})
+			results$plots <- plots
+			object@results[[length(object@results)]] <- results
+		} else if(type %in% "pairwise_distance" | type %in% "pairwise_correlation") {
+			plots <- plot(object, results_index=length(object@results), interactive=.interactive)
+			results$plots <- plots
+			object@results[[length(object@results)]] <- results
+		} else if(type %in% "GAMM" | type %in% "LMM") {
+			plots <-  plot(object, results_index=length(object@results), interactive=.interactive)
+			results$plots <- plots
+			object@results[[length(object@results)]] <- results
+		} else if(type %in% "distribution") {
+			plots <- plot(object, results_index=length(object@results), interactive=.interactive)
+			results$plots <- plots
+			object@results[[length(object@results)]] <- results
+		}
+		return(object)
+	})

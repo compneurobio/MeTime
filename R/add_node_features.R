@@ -11,9 +11,21 @@ setMethod("add_node_features", "metime_analyser", function(object, results_indic
 		stopifnot(all(names(results_indices) %in% c("network", "guide")))
 		stopifnot(length(results_indices$network)==1)
 		stopifnot(length(results_indices$guide)==1)
-		# change the below function in terms of scale_fill_gradientn 
 		color.gradient <- function(x, colors=c("blue","gray","red"), colsteps=50) {
-  				return(colorRampPalette(colors) (colsteps)[findInterval(x, seq(-1, 1, length.out=colsteps))])
+			#adding a flag here to get more colors
+			if(length(unique(x))<length(x)) {
+				colors <- colorRampPalette(colors) (colsteps)[findInterval(unique(x), seq(-1, 1, length.out=colsteps))]
+				colors_data <- cbind.data.frame(colors, unique(x))
+				colnames(colors_data) <- c("colors", "values")
+				final <- c()
+				for(i in seq_along(x)) {
+					final[i] <- colors_data[colors_data$values %in% x[i], "colors"] %>% as.character()
+				}
+				return(final)
+			} else {
+				return(colorRampPalette(colors) (colsteps)[findInterval(x, seq(-1, 1, length.out=colsteps))])
+			}
+  			
 		}
 		network <- object@results[[results_indices$network]]
 		guide <- object@results[[results_indices$guide]]

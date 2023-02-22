@@ -14,9 +14,15 @@
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @return data.frame with pairwise results
 #' @export
-setGeneric("calc_correlation_pairwise", function(object, which_data, method, cols_for_meta, name, stratifications) standardGeneric("calc_correlation_pairwise"))
-setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which_data, method="pearson", cols_for_meta, name, stratifications){
+setGeneric("calc_correlation_pairwise", function(object, which_data, method, cols_for_meta, name="calc_correlation_pairwise_1", stratifications) standardGeneric("calc_correlation_pairwise"))
+setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which_data, method="pearson", cols_for_meta, name="calc_correlation_pairwise_1", stratifications){
   stopifnot(all(which_data %in% names(object@list_of_data)))
+  if(grep(name, names(object@results)) %>% length() >=1) {
+    warning("name of the results was previously used, using a different name")
+    index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
+    index <- c(0:9)[grep(index, 0:9)+1]
+    name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
+  }
   flattenCorrMatrix <- function(cormat, pmat) {
     ut <- upper.tri(cormat)
     return(data.frame(
@@ -58,9 +64,9 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
       dplyr::mutate(type="cor") %>% 
       dplyr::rename("dist"="cor", "cut_p"="p")
 
-    out <- MeTime::get_results(data=list(out), object=object, metadata=metadata, calc_type="pairwise_correlation", 
+    out <- get_results(data=list(out), object=object, metadata=metadata, calc_type="pairwise_correlation", 
                       calc_info = paste(which_data, "_and_" , method, "_pairwise_correlation", sep=""), 
-                      name=name) 
+                      name=name) %>% update_plots(type="pairwise_correlation")
     return(out)
 })
 

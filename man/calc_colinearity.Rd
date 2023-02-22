@@ -8,9 +8,9 @@ calc_colinearity(
   object,
   which_data,
   cols_for_meta,
-  show_all,
-  name,
-  stratifications
+  show_all = F,
+  name = "calc_colinearity_1",
+  stratifications = list()
 )
 }
 \arguments{

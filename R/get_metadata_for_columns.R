@@ -6,13 +6,13 @@
 #' @param object S4 object of class MeTime Analyser
 #' @param which_data Names of dataset/s to be used
 #' @param columns A list of character vectors for the columns of interest. Length of the list should be
-#' same as length of which_data
+#' same as length of which_data. list(nmr_data=c("id", "Group"), lipid_data=c("id", "sub_pathway"))
 #' @param names A Character vector with the new names for the columns mentioned above id should always be first in order
 #' @param index_of_names character vector to define the name of the column in which names of the variables are stored
 #' @return data.frame with metadata information
 #' @export
-setGeneric("get_metadata_for_columns", function(object, which_data, columns, names, index_of_names) standardGeneric("get_metadata_for_columns"))
-setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_data, columns, names, index_of_names) {
+setGeneric("get_metadata_for_columns", function(object, which_data, columns, names, index_of_names="id") standardGeneric("get_metadata_for_columns"))
+setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_data, columns, names, index_of_names="id") {
 				list_of_col_data <- object@list_of_col_data[names(object@list_of_col_data) %in% which_data]
 				if(length(which_data)>1) {
 						if(is.null(columns)) {

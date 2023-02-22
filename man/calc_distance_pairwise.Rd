@@ -8,7 +8,7 @@ calc_distance_pairwise(
   object,
   which_data,
   method,
-  name,
+  name = "calc_distance_pairwise_1",
   cols_for_meta,
   stratifications
 )

@@ -4,7 +4,13 @@
 \alias{get_metadata_for_columns}
 \title{Get metadata for columns(in most cases for metabolites)}
 \usage{
-get_metadata_for_columns(object, which_data, columns, names, index_of_names)
+get_metadata_for_columns(
+  object,
+  which_data,
+  columns,
+  names,
+  index_of_names = "id"
+)
 }
 \arguments{
 \item{object}{S4 object of class MeTime Analyser}
@@ -12,7 +18,7 @@ get_metadata_for_columns(object, which_data, columns, names, index_of_names)
 \item{which_data}{Names of dataset/s to be used}
 
 \item{columns}{A list of character vectors for the columns of interest. Length of the list should be
-same as length of which_data}
+same as length of which_data. list(nmr_data=c("id", "Group"), lipid_data=c("id", "sub_pathway"))}
 
 \item{names}{A Character vector with the new names for the columns mentioned above id should always be first in order}
 

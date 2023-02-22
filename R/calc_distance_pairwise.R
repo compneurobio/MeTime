@@ -15,9 +15,15 @@
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @return data.frame with pairwise results
 #' @export
-setGeneric("calc_distance_pairwise", function(object, which_data, method, name, cols_for_meta, stratifications) standardGeneric("calc_distance_pairwise"))
-setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_data, method="euclidean", name, cols_for_meta, stratifications) {
+setGeneric("calc_distance_pairwise", function(object, which_data, method, name="calc_distance_pairwise_1", cols_for_meta, stratifications) standardGeneric("calc_distance_pairwise"))
+setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_data, method="euclidean", name="calc_distance_pairwise_1", cols_for_meta, stratifications) {
   stopifnot(all(which_data %in% names(object@list_of_data)))
+  if(grep(name, names(object@results)) %>% length() >=1) {
+    warning("name of the results was previously used, using a different name")
+    index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
+    index <- c(0:9)[grep(index, 0:9)+1]
+    name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
+  }
   
   flattenCorrMatrix <- function(cormat) {
     ut <- upper.tri(cormat)
@@ -62,7 +68,7 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
       dplyr::mutate(type=method)
     out <- get_make_results(data=list(out), object=object, metadata=metadata, calc_type="pairwise_distance", 
                       calc_info = paste(which_data, "and" , method, "pairwise_distance", sep=" "),
-                      name=name)
+                      name=name) %>% update_plots(type="pairwise_distance")
   }
   else {
     out=NA

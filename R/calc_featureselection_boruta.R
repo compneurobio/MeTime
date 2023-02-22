@@ -79,7 +79,7 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
                               name=file_name)
   object <- object %>% add_function_info(function_name="calc_featureselection_boruta", 
       params=list(which_x=which_x, which_y=which_y, verbose=verbose, 
-          output_loc=output_loc, file_name=file_name))
+          output_loc=output_loc, file_name=file_name)) %>% update_plots(type="feature_selection")
   
   return(object)
 })
