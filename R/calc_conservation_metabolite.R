@@ -16,13 +16,16 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
   #define data to be processed
   #data_position <- which(names(object@list_of_data) %in% which_data)
   #test this now
-  if(grep(name, names(object@results)) %>% length() >=1) {
-    warning("name of the results was previously used, using a different name")
-    index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
-    index <- c(0:9)[grep(index, 0:9)+1]
-    name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
-  }
   stopifnot(length(which_data)==length(name))
+  if(length(which_data)==1) {
+    if(grep(name, names(object@results)) %>% length() >=1) {
+      warning("name of the results was previously used, using a different name")
+      index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
+      index <- c(0:9)[grep(index, 0:9)+1]
+      name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
+    }
+  }
+  
   out=list()
   for (i in which_data) {
     
@@ -79,7 +82,7 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
         dplyr::mutate(x=nrow(.[]):1,
                       y=ci, 
                       n=nrow(.[])) %>% 
-        dplyr::select(x,y, ci, id, time_from, time_to, n, rank, cor, id_from,id_to) %>% 
+        dplyr::select(x,y, ci, id, time_from, time_to, n, rank, cor, id_from, id_to) %>% 
         `rownames<-`(.[,"id"])
       return(this_out)
     })
@@ -102,8 +105,7 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
                                 name=name)
       out <- add_function_info(object=out, function_name="calc_conservation_metabolite", 
           params=list(which_data=which_data, verbose=verbose, cols_for_meta=cols_for_meta, 
-              name=name, stratifications=stratifications)) %>%
-            update_plots(type="CI_metabolite")
+              name=name[i], stratifications=stratifications)) %>% update_plots(type="CI_metabolite")
   }
   return(out)
 })

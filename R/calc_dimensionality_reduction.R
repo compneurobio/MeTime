@@ -60,7 +60,7 @@ setMethod("calc_dimensionality_reduction_samples", "metime_analyser", function(o
       }
       out <- add_function_info(object=out, function_name="calc_dimensionality_reduction_samples", 
         params=list(which_data=which_data, type=type, cols_for_meta=cols_for_meta, 
-            ...)) %>% update_plots(type="DR_samples")
+            ...)) %>% update_plots(type="dimensionality_reduction")
       return(out)
   })
 
@@ -126,6 +126,6 @@ setMethod("calc_dimensionality_reduction_metabs", "metime_analyser", function(ob
       }
       out <- add_function_info(object=out, function_name="calc_dimensionality_reduction_metabs", 
         params=list(which_data=which_data, type=type, cols_for_meta=cols_for_meta, 
-            ...)) %>% update_plots(type="DR_metabs")
+            ...)) %>% update_plots(type="dimensionality_reduction")
       return(out)
   })

@@ -4,12 +4,14 @@
 \alias{plot,metime_analyser,ANY-method}
 \title{Setting a plotting method for the metime_analyser class}
 \usage{
-\S4method{plot}{metime_analyser,ANY}(x, results_index, interactive, ...)
+\S4method{plot}{metime_analyser,ANY}(x, results_index, interactive, plot_type, ...)
 }
 \arguments{
 \item{results_index}{Index/name of the results to be plotted}
 
 \item{interactive}{logical. Set TRUE for interactive plot}
+
+\item{plot_type}{to define the type of plot. Accepted inputs are "dot", "tile", "box", "forrest"}
 
 \item{...}{other parameters to pass color, fill, strat, viz(character vector with colnames for interactive)}
 

@@ -16,7 +16,7 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
       stopifnot(length(names(object@list_of_data[[which_data]]))==length(unique(names(object@list_of_data[[which_data]]))))
       if(grep(name, names(object@results)) %>% length() >=1) {
           warning("name of the results was previously used, using a different name")
-          index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
+          index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
           index <- c(0:9)[grep(index, 0:9)+1]
           name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
       }

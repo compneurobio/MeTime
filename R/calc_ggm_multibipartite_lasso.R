@@ -118,7 +118,7 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
                 name=name, plot_type=list()) %>%
                 add_function_info(function_name="calc_ggm_multibipartite_lasso", 
                         params=list(which_data=which_data, stratifications=stratifications, alpha=alpha, nfolds=nfolds, 
-                        cols_for_meta=cols_for_meta, name=name))
+                        cols_for_meta=cols_for_meta, name=name)) %>% update_plots(type="multibipartite_ggm")
         return(out)
   })
 

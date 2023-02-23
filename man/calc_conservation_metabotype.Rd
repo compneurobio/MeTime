@@ -24,7 +24,7 @@ calc_conservation_metabotype(
 
 \item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
 
-\item{name}{character vector to define the results}
+\item{name}{character vector to define the results. Should be equal to length of which_data}
 }
 \value{
 List of conservation index results

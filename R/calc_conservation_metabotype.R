@@ -7,19 +7,22 @@
 #' @param which_data Name of the dataset to be used
 #' @param verbose Information provided on steps being processed
 #' @param cols_for_meta Character vector to define column names that are to be used for plotting purposes
-#' @param name character vector to define the results 
+#' @param name character vector to define the results. Should be equal to length of which_data
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @return List of conservation index results
 #' @export
 setGeneric("calc_conservation_metabotype", function(object, which_data, verbose=F, cols_for_meta, stratifications, name="calc_conservation_metabotype_1") standardGeneric("calc_conservation_metabotype"))
 setMethod("calc_conservation_metabotype", "metime_analyser", function(object, which_data, verbose=F, cols_for_meta, stratifications, name="calc_conservation_metabotype_1") {
 
-if(grep(name, names(object@results)) %>% length() >=1) {
+stopifnot(length(which_data)==length(name))
+  if(length(which_data)==1) {
+    if(grep(name, names(object@results)) %>% length() >=1) {
       warning("name of the results was previously used, using a different name")
       index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
       index <- c(0:9)[grep(index, 0:9)+1]
       name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
-}
+    }
+  }
   out=list()
 for (i in which_data) {
     
@@ -66,9 +69,8 @@ for (i in which_data) {
          dplyr::mutate(subject_rank = nrow(.[]):1) %>%
          dplyr::mutate(x=subject_rank,
                        id=subject,
-                       y=ci, 
                        nsubject=nrow(.[])) %>% 
-         dplyr::select(x,y, ci, id, time_from, time_to, nsubject, rank, cor, id_from,id_to) %>% 
+         dplyr::select(x, ci, id, time_from, time_to, nsubject, rank, cor, id_from, id_to) %>% 
          `rownames<-`(.[,"id_from"]) 
     })
     
@@ -88,7 +90,7 @@ for (i in which_data) {
                               name=name)
     out <- add_function_info(object=out, function_name="calc_conservation_metabotype", 
         params=list(which_data=which_data, verbose=verbose, cols_for_meta=cols_for_meta, 
-            name=name, stratifications=stratifications)) %>%
+            name=name[i], stratifications=stratifications)) %>%
         update_plots(type="CI_metabotype")
   }
   return(out)

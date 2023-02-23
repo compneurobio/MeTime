@@ -61,10 +61,10 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' @param results_index Index/name of the results to be plotted
 #' @param interactive logical. Set TRUE for interactive plot
 #' @param ... other parameters to pass color, fill, strat, viz(character vector with colnames for interactive)
-#'  
+#' @param plot_type to define the type of plot. Accepted inputs are "dot", "tile", "box", "forrest"
 #' @return plots for a certain set of results
 #' @export
-setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...) {
+setMethod("plot", "metime_analyser", function(x, results_index, interactive, plot_type, ...) {
 		add <- list(...)
 		results <- x@results[[results_index]]
 		get_text_for_plot <- function(data, colnames) {	
@@ -85,9 +85,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
 						return(out)
 			} 
 
-		make_interactive <- function(.plots, j, col, .results=results) {
-				plots <- lapply(seq_along(.plots), function(.plot) {
-					plot <- plotly::ggplotly(.plots[[.plot]], width=800, height=800)
+		make_interactive <- function(.plot, j, col, .results=results) {
+					plot <- plotly::ggplotly(.plot, width=800, height=800)
 					for(i in seq_along(plot$x$data)) {
 						if(!is.null(plot$x$data[[i]]$text)) {
 							x <- plot$x$data[[i]]$x
@@ -98,139 +97,204 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, ...
 						}
 					}
 					return(plot)
-				})
-				return(plots)
 			}
 
 		if(is.null(names(results$plot_data))) {
 			all_plots <- lapply(seq_along(results$plot_data), function(ind_data) {
 					if(results$information$calc_type[ind_data] %in% "CI_metabolite" |
 						results$information$calc_type[ind_data] %in% "CI_metabotype") {
-						plots <- list()
-						plots[[1]] <- ggplot(results$plot_data[[ind_data]], aes(x=x, y=ci)) + 
+						df <- results$plot_data[[ind_data]]
+						exclude_cols <- c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "samples", "timepoints")
+						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
+						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
+  										if(is.na(min(a)) | is.na(max(a))) {
+  											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
+  										} else {
+  											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
+  										}
+  										return(cut(a, breaks = breaks, labels = c("Q1", "Q2", "Q3", "Q4")))
+						})
+						if(plot_type %in% "dot") {
+							plot <- ggplot(df, aes(x=x, y=ci)) + 
 								geom_point(aes_string(color=add$color, 
 								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
-						if(results$information$calc_type[ind_data] %in% "CI_metabotype") {
+						} else if(plot_type %in% "box") {
 							if(is.null(add$box_x)) {
-								add$box_x <- add$color
+								stop("Define x-axis for boxplot. Use box_x=variable as an argument in the plot function")
 							} 
 							median_data <- results$plot_data[[ind_data]]
 							median_data <- median_data[median_data$ci != 1, ]
 							median_data$ci <- -log10(1-median_data$ci)
 							combinations <- combn(results$plot_data[[ind_data]][ ,add$box_x], 2)
 							my_comparisons <- lapply(1:ncol(combinations), function(x) return(combinations[,x]))
-							plots[[2]] <- ggpubr::ggboxplot(median_data, x=add$box_x, 
+							plot <- ggpubr::ggboxplot(median_data, x=add$box_x, 
 								y="ci", color="black", fill=add$box_x, alpha=0.5, notch=T) +
           						ggpubr::stat_compare_means(method="wilcox.test", comparisons=my_comparisons, 
           						label.y=seq(from=3.5, to=11, by=0.5))
+						} else {
+							stop("This type of plot is not available for this calculation")
 						}
 						if(interactive) {
-							plots[[2]] <- make_interactive(.plots=list(plots[[1]]), j=ind_data, col="x")
-						} 
-						return(plots)
-					} else if(results$information$calc_type[ind_data] %in% "pairwise_distance" |
-						results$information$calc_type[ind_data] %in% "pairwise_correlation") {
-						plot <- ggplot(results$plot_data[[ind_data]], aes(x=row,y=column)) + 
-							geom_tile(aes(fill=dist)) +
-								facet_wrap(add$strats) + theme_classic()
-						if(interactive) {
-							plot <- make_interactive(.plots=plot, j=ind_data, col="row")
+							plot <- make_interactive(.plot=plot, j=ind_data, col="x")
 						} 
 						return(plot)
+					} else if(results$information$calc_type[ind_data] %in% "pairwise_distance" |
+						results$information$calc_type[ind_data] %in% "pairwise_correlation") {
+						if(plot_type %in% "tile") {
+							plot <- ggplot(results$plot_data[[ind_data]], aes(x=row,y=column)) + 
+							geom_tile(aes(fill=dist)) +
+								facet_wrap(add$strats) + theme_classic()
+						} else {
+							stop("This type of plot is not available for this calculation")
+						}
+						if(interactive) {
+							plot <- make_interactive(.plot=plot, j=ind_data, col="row")
+						} 
+						return(plot)
+					} else if(results$information$calc_type[ind_data] %in% "colinearity") {
+						if(plot_type %in% "tile") {
+							plot <- ggplot(results$plot_data[[ind_data]], aes(x=med_class_1,y=med_class_2)) + 
+							geom_tile(aes(fill=Cramers_V)) +
+								facet_wrap(add$strats) + theme_classic()
+						} else {
+							stop("This type of plot is not available for this calculation")
+						}
 					} else if(results$information$calc_type[ind_data] %in% "PCA") {
-						plot <- ggplot(results$plot_data[[ind_data]], aes(x=PC1, y=PC2)) + 
+						df <- results$plot_data[[ind_data]]
+						exclude_cols <- c("PC1", "PC2", "time", "id", "subject", "name")
+						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
+						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
+  										if(is.na(min(a)) | is.na(max(a))) {
+  											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
+  										} else {
+  											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
+  										}
+  										return(cut(a, breaks = breaks, labels = c("Q1", "Q2", "Q3", "Q4")))
+						})
+						if(plot_type %in% "dot") {
+							plot <- ggplot(df, aes(x=PC1, y=PC2)) + 
 								geom_point(aes_string(color=add$color, 
 								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
+						} else {
+							stop("This type of plot is not available for this calculation")
+						}
 						if(interactive) {
-							plot <- make_interactive(.plots=list(plot), j=ind_data, col="PC1")
+							plot <- make_interactive(.plot=plot, j=ind_data, col="PC1")
 						} 
 						return(plot)
 					} else if(results$information$calc_type[ind_data] %in% "UMAP") {
-						plot <- ggplot(results$plot_data[[ind_data]], aes(x=UMAP1, y=UMAP2)) + 
+						df <- results$plot_data[[ind_data]]
+						exclude_cols <- c("UMAP1", "UMAP2", "time", "id", "subject", "name")
+						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
+						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
+  										if(is.na(min(a)) | is.na(max(a))) {
+  											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
+  										} else {
+  											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
+  										}
+  										return(cut(a, breaks = breaks, labels = c("Q1", "Q2", "Q3", "Q4")))
+
+						})
+						if(plot_type %in% "dot") {
+							plot <- ggplot(df, aes(x=UMAP1, y=UMAP2)) + 
 								geom_point(aes_string(color=add$color, 
 								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
+						} else {
+							stop("This type of plot is not available for this calculation")
+						}
 						if(interactive) {
-							plot <- make_interactive(.plots=list(plot), j=ind_data, col="UMAP1")
+							plot <- make_interactive(.plot=plot, j=ind_data, col="UMAP1")
 						} 
 						return(plot)
 					} else if(results$information$calc_type[ind_data] %in% "tSNE") {
-						plot <- ggplot(results$plot_data[[ind_data]], aes(x=X1, y=X2)) + 
+						df <- results$plot_data[[ind_data]]
+						exclude_cols <- c( "X1", "X2", "time", "id", "subject", "name")
+						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
+						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
+  										if(is.na(min(a)) | is.na(max(a))) {
+  											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
+  										} else {
+  											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
+  										}
+  										return(cut(a, breaks = breaks, labels = c("Q1", "Q2", "Q3", "Q4")))
+						})
+						if(plot_type %in% "dot") {
+							plot <- ggplot(df, aes(x=X1, y=X2)) + 
 								geom_point(aes_string(color=add$color, 
 								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
+						} else {
+							stop("This type of plot is not available for this calculation")
+						}
 						if(interactive) {
-							plot <- make_interactive(.plots=list(plot), j=ind_data, col="X1")
+							plot <- make_interactive(.plot=plot, j=ind_data, col="X1")
 						} 
 						return(plot)
 					} else if(results$information$calc_type[ind_data] %in% "GAMM" | 
 						results$information$calc_type[ind_data] %in% "LMM") {
-						plot <- ggplot(results$plot_data[[ind_data]], 
+						if(plot_type %in% "forrest") {
+							plot <- ggplot(results$plot_data[[ind_data]], 
 							aes_string(x="x", y="y", xmin="xmin", xmax="xmax", 
 								color=add$color, metabolite=add$grp)) +
         						geom_point() +
         						geom_errorbar(width=.2,position=position_dodge(0.05))
         						scale_color_manual(values=c("grey"="grey","blue"="blue"))
+						} else {
+							stop("This type of plot is not available for this calculation")
+						}
 						if(interactive) {
-							plot <- make_interactive(.plots=plot, j=ind_data, col="x")
+							plot <- make_interactive(.plot=plot, j=ind_data, col="x")
 						}
 						return(plot) 
-					} else if(results$information$calc_type[ind_data] %in% "distribution_metabs" |
-						results$information$calc_type[ind_data] %in% "distribution_samples") {
+					} else if(results$information$calc_type[ind_data] %in% "distribution_metabs") {
 						data <- results$plot_data[[ind_data]]
-						plots <- lapply(colnames(data)[!colnames(data) %in% c("id", "time")], function(col) {
-								vec <- data[,col] 
-								vec <- na.omit(vec)
-								if(is.character(vec)==TRUE | is.factor(vec)==TRUE) var_type <- "bar"
-								if(is.numeric(vec)==TRUE) {
-									if(length(unique(vec)) <= 12) {
-										var_type <- "bar"
-									} else {
-										var_type <- "density"
-									}
-								}
-								if(var_type %in% "bar") {
-									if(results$information$calc_type[ind_data] %in% "distribution_metabs") {
-										plot_data <- data[ ,col]
-										plot_data <- table(plot_data) %>% as.data.frame()
-										colnames(plot_data) <- c(col, "Frequency")
-										bar_plot <- ggplot(plot_data, aes_string(x=col, y="Frequency")) +
+						if(is.null(add$col)) {
+							stop("col is not specified for distribution plot. Please set col=variable in the plot function")
+						}
+						if(plot_type %in% "bar") {
+							plot_data <- data[ ,add$col]
+							plot_data <- table(plot_data) %>% as.data.frame()
+							colnames(plot_data) <- c(col, "Frequency")
+							bar_plot <- ggplot(plot_data, aes_string(x=col, y="Frequency")) +
 												geom_bar(stat="identity") + theme_classic()
-										return(bar_plot)
-									} else {
-										plot_data <- data[ ,c(col, "time")]
-										plot_data <- table(plot_data)
-										plot_data <- reshape2::melt(plot_data)
-										colnames(plot_data) <- c(col, "Timepoints", "Frequency")
-										bar_plot <- ggplot(data=plot_data, aes_string(x=col, y="Frequency", fill="Timepoints")) +
-											geom_bar(stat="identity") + theme_classic()
-										line_plot <- ggplot(plot_data, aes_string(x="Timepoints", y="Frequency", group=col)) + 
-					 						geom_line(aes_string(color=col)) + geom_point(aes_string(color=col)) + theme_classic()
-										return(list(bar_plot=bar_plot, line_plot=line_plot))
-									}
-								} else if(var_type %in% "density") {
-									if(results$information$calc_type[ind_data] %in% "distribution_metabs") {
-										plot_data <- data[ ,col]
-										mean <- mean(data[,col])
-										density_plot <- ggplot(plot_data, aes_string(x=col)) + geom_density(alpha=0.5) +
+							return(bar_plot)
+						} else if(plot_type %in% "density") {
+							plot_data <- data[ ,add$col]
+							mean <- mean(data[,add$col])
+							density_plot <- ggplot(plot_data, aes_string(x=col)) + geom_density(alpha=0.5) +
 											geom_vline(data=plot_data, aes(xintercept=mean), linetype="dashed") + theme_classic()
-										return(density_plot) 
-									} else {	
-										plot_data <- data[ ,c(col, "time")]
-										levels <- data$time %>% unique() %>% gsub(pattern="[a-z|A-Z]", replacement="") %>% as.numeric() %>% sort()
-										data$time <- factor(data$time, levels=paste("t", levels, sep=""))
-										plot_data <- na.omit(plot_data)
-										mu <- as.data.frame(aggregate(plot_data[,col], list(Timepoints=plot_data$time), FUN=mean))
-										mu$Timepoints <- factor(mu$Timepoints, levels=paste("t", levels, sep=""))
-										colnames(mu)[2] <- "mean"
-										density_plot <- ggplot(plot_data, aes_string(x=col, fill="time")) + geom_density(alpha=0.3) + 
-												geom_vline(data=mu, aes(xintercept=mean, color=Timepoints), linetype="dashed") +
-			 								 	theme_classic()
-										return(list(density_plot))
-									}
-								}
-							})
-						
+							return(density_plot) 
+						} else {
+							stop("This type of plot is not available for this calculation")
+						}
+					} else if(results$information$calc_type[ind_data] %in% "distribution_samples") {
+						data <- results$plot_data[[ind_data]]
+						if(is.null(add$col)) {
+							stop("col is not specified for distribution plot. Please set col=variable in the plot function")
+						}
+						if(plot_type %in% "bar") {
+							plot_data <- data[ ,c(col, "time")]
+							plot_data <- table(plot_data)
+							plot_data <- reshape2::melt(plot_data)
+							colnames(plot_data) <- c(col, "Timepoints", "Frequency")
+							bar_plot <- ggplot(data=plot_data, aes_string(x=col, y="Frequency", fill="Timepoints")) +
+											geom_bar(stat="identity") + theme_classic()
+							return(bar_plot)
+						} else if(plot_type %in% "density") {
+							plot_data <- data[ ,c(col, "time")]
+							levels <- data$time %>% unique() %>% gsub(pattern="[a-z|A-Z]", replacement="") %>% as.numeric() %>% sort()
+							data$time <- factor(data$time, levels=paste("t", levels, sep=""))
+							plot_data <- na.omit(plot_data)
+							mu <- as.data.frame(aggregate(plot_data[,col], list(Timepoints=plot_data$time), FUN=mean))
+							mu$Timepoints <- factor(mu$Timepoints, levels=paste("t", levels, sep=""))
+							colnames(mu)[2] <- "mean"
+							density_plot <- ggplot(plot_data, aes_string(x=col, fill="time")) + geom_density(alpha=0.3) + 
+										geom_vline(data=mu, aes(xintercept=mean, color=Timepoints), linetype="dashed") +
+			 							theme_classic()
+			 				return(density_plot)
+						}
 					}
 				})
+				names(all_plots) <- results$information$calc_info
 				return(all_plots)
 			} else {
 				metadata <- results$plot_data$metadata
@@ -359,70 +423,119 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=TRUE,
 		results <- object@results[[length(object@results)]]
 		if(grep("ggm|network", type) %>% length() == 1) {
 			network <- plot(object, results_index=length(object@results), 
-				interactive=.interactive)
+				interactive=.interactive, plot_type="network")
 			results$plots <- network
 			object@results[[length(object@results)]] <- results
-		} else if(type %in% "DR_samples") {
+		} else if(type %in% "dimensionality_reduction") {
 			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in%
 			c("PC1", "PC2", "UMAP1", "UMAP2", "X1", "X2", "time", "id", "subject", "name")]
-			cols_of_int_class <- sapply(results$plot_data[[1]][ ,cols_of_int], class)
-			info <- cols_of_int[which(cols_of_int_class %in% c("character", "factor"))]
-			combinations <- combn(info, 2)
+			if(length(cols_of_int) < 2) {
+				if(length(cols_of_int)==1) {
+					combinations <- matrix(c(cols_of_int, cols_of_int), nrow=2, ncol=1)
+				} else if(length(cols_of_int)==0) {
+					plots <- list(no_meta=plot(object, results_index=length(object@results), 
+						interactive=.interactive, plot_type="dot")) 
+				}
+			} else {
+				combinations <- combn(cols_of_int, 2)
+			}
 			plots <- list()
 			plots <- lapply(1:ncol(combinations), function(col) {
 					dr_plots <- plot(object, results_index=length(object@results), 
 						interactive=.interactive,
+						plot_type="dot",
 						color=as.character(combinations[1, col]),
 						shape=as.character(combinations[2, col]))
 					return(dr_plots)
-				}) 
-			results$plots <- plots
-			object@results[[length(object@results)]] <- results
-		} else if(type %in% "DR_metabs") {
-			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in%
-			c("PC1", "PC2", "UMAP1", "UMAP2", "X1", "X2", "time", "id", "subject", "name")]
-			cols_of_int_class <- sapply(results$plot_data[[1]][ ,cols_of_int], class)
-			info <- cols_of_int[which(cols_of_int_class %in% c("character", "factor"))]
-			plots <- list()
-			plots <- lapply(info, function(col) {
-					dr_plots <- plot(object, results_index=length(object@results), 
-						interactive=.interactive,
-						color=as.character(col),
-						)
-					return(dr_plots)
 				})
-			results$plots <- plots
-			object@results[[length(object@results)]] <- results 
+			names(plots) <- apply(combinations, 2, paste, collapse="-")
+			if(length(results$plots)==0) {
+				results$plots[[1]] <- plots
+			} else {
+				results$plots[[length(results$plots)+1]] <- plots
+			}
+			object@results[[length(object@results)]] <- results
 		} else if(type %in% "CI_metabotype" | type %in% "CI_metabolite") {
-			#info <- sapply(results$plot_data[[1]], class)
 			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in%
-			c("id_from", "id_to", "x", "y", "ci", "id", "time_from", "time_to", "name", "n", "rank", "cor",
-				"timepoints", "samples")]
-			cols_of_int_class <- sapply(results$plot_data[[1]][ ,cols_of_int], class)
-			info <- cols_of_int[which(cols_of_int_class %in% c("character", "factor"))]
-			combinations <- combn(info, 2) 
-			plots <- list()
-			plots <- lapply(1:ncol(combinations), function(col) {
-					ci_plots <- plot(object, results_index=length(object@results), 
+			c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "samples", "timepoints")]
+			if(length(cols_of_int) < 2) {
+				if(length(cols_of_int)==1) {
+					combinations <- matrix(c(cols_of_int, cols_of_int), nrow=2, ncol=1)
+				} else if(length(cols_of_int)==0) {
+					plots <- list(no_meta=plot(object, results_index=length(object@results), 
+						interactive=.interactive, plot_type="dot")) 
+				}
+			} else {
+				combinations <- combn(cols_of_int, 2)
+			}
+			dotplots <- lapply(1:ncol(combinations), function(col) {
+					dot_plots <- plot(object, results_index=length(object@results), 
 						interactive=.interactive,
+						plot_type="dot",
 						color=as.character(combinations[1, col]),
 						shape=as.character(combinations[2, col]))
-					return(ci_plots)
+					return(dot_plots)
 				})
-			results$plots <- plots
+			names(dotplots) <- apply(combinations, 2, paste, collapse="-")
+			boxplots <- lapply(cols_of_int, function(col) {
+					box_plots <- plot(object, results_index=length(object@results), 
+						interactive=.interactive,
+						plot_type="box",
+						box_x=col)
+					return(box_plots)
+				})
+			names(boxplots) <- cols_of_int
+			if(length(results$plots)==0) {
+				results$plots[[1]] <- dotplots
+				results$plots[[2]] <- boxplots
+			} else {
+				results$plots[[length(results$plots)+1]] <- dotplots
+				results$plots[[length(results$plots)+1]] <- boxplots
+			}
 			object@results[[length(object@results)]] <- results
-		} else if(type %in% "pairwise_distance" | type %in% "pairwise_correlation") {
-			plots <- plot(object, results_index=length(object@results), interactive=.interactive)
-			results$plots <- plots
+		} else if(type %in% "pairwise_distance" | type %in% "pairwise_correlation" | type %in% "colinearity") {
+			plots <- plot(object, results_index=length(object@results), interactive=.interactive,
+				plot_type="tile")
+			if(results$plots %>% length() == 0) {
+				results$plots[[1]] <- plots
+			} else {
+				results$plots[[length(results$plots)+1]] <- plots
+			}
 			object@results[[length(object@results)]] <- results
 		} else if(type %in% "GAMM" | type %in% "LMM") {
-			plots <-  plot(object, results_index=length(object@results), interactive=.interactive)
-			results$plots <- plots
+			plots <-  plot(object, results_index=length(object@results), 
+				interactive=.interactive, type="forrest")
+			if(results$plots %>% length() == 0) {
+				results$plots[[1]] <- plots
+			} else {
+				results$plots[[length(results$plots)+1]] <- plots
+			}
 			object@results[[length(object@results)]] <- results
 		} else if(type %in% "distribution") {
-			plots <- plot(object, results_index=length(object@results), interactive=.interactive)
-			results$plots <- plots
+			plots <- lapply(colnames(data)[!colnames(data) %in% c("id", "time")], function(.col) {
+						vec <- data[,.col] 
+						vec <- na.omit(vec)
+						if(is.character(vec)==TRUE | is.factor(vec)==TRUE) var_type <- "bar"
+						if(is.numeric(vec)==TRUE) {
+							if(length(unique(vec)) <= 20) {
+								var_type <- "bar"
+							} else {
+								var_type <- "density"
+							}
+						}
+						plots <- plot(object, interactive=.interactive, results_index=length(object@results), col=.col)
+						return(plots)
+					})
+			names(plots) <- colnames(data)[!colnames(data) %in% c("id", "time")]
+			if(results$plots %>% length() == 0) {
+				results$plots[[1]] <- plots
+			} else {
+				results$plots[[length(results$plots)+1]] <- plots
+			}
 			object@results[[length(object@results)]] <- results
 		}
 		return(object)
 	})
+
+
+#### ADD quantiles for continuous variables 	
