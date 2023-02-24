@@ -2,7 +2,7 @@
 #' Function for Plotting distributions of phenotypic variables 
 #' @description A method to be applied onto s4 object so as to obtain distributions of various phenotypic variables
 #' @param object An object of class metime_analyser
-#' @param col_samples character vector to define the columns whose distributions are wanted from row_data
+#' @param cols character vector to define the columns whose distributions are wanted from row_data
 #' @param which_data Name of the dataset from which the samples will be extracted
 #' @param stratifications List to define the stratification of interest
 #' @param name Character to name the results 
@@ -40,7 +40,7 @@ setMethod("calc_distribution_samples", "metime_analyser",function(object, which_
     	metadata=NULL, calc_type="distribution_samples", 
     	calc_info=paste("Samples distributions dataframe of columns of interest in", which_data, sep=" "), 
     	name=name) %>%
-    	add_function_info(function_name="calc_distribution", 
+    	add_function_info(function_name="calc_distribution_samples", 
     		params=list(which_data=which_data, cols_for_meta=cols,
     			stratifications=stratifications, name=name)) %>% update_plots(type="distribution")
     return(out)
@@ -53,7 +53,7 @@ setMethod("calc_distribution_samples", "metime_analyser",function(object, which_
 #' @description A method to be applied onto s4 object so as to obtain distributions of various phenotypic variables
 #' @param object An object of class metime_analyser
 #' @param which_data A Character vector to define the dataset of interest
-#' @param col_metabs character vector to define the columns whose distributions are wanted from col_data#' @param which_data Name of the dataset from which the samples will be extracted
+#' @param cols character vector to define the columns whose distributions are wanted from col_data#' @param which_data Name of the dataset from which the samples will be extracted
 #' @param name Character to name the results 
 #' @return S4 object with updated plot_data and plots 
 #' with plots being either 1) density plot

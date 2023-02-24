@@ -125,8 +125,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							median_data <- results$plot_data[[ind_data]]
 							median_data <- median_data[median_data$ci != 1, ]
 							median_data$ci <- -log10(1-median_data$ci)
-							combinations <- combn(results$plot_data[[ind_data]][ ,add$box_x], 2)
-							my_comparisons <- lapply(1:ncol(combinations), function(x) return(combinations[,x]))
+							combinations <- combn(unique(results$plot_data[[ind_data]][ ,add$box_x]), 2)
+							my_comparisons <- lapply(1:ncol(combinations), function(x) return(as.character(combinations[,x])))
 							plot <- ggpubr::ggboxplot(median_data, x=add$box_x, 
 								y="ci", color="black", fill=add$box_x, alpha=0.5, notch=T) +
           						ggpubr::stat_compare_means(method="wilcox.test", comparisons=my_comparisons, 
@@ -253,14 +253,14 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						if(plot_type %in% "bar") {
 							plot_data <- data[ ,add$col]
 							plot_data <- table(plot_data) %>% as.data.frame()
-							colnames(plot_data) <- c(col, "Frequency")
-							bar_plot <- ggplot(plot_data, aes_string(x=col, y="Frequency")) +
+							colnames(plot_data) <- c(add$col, "Frequency")
+							bar_plot <- ggplot(plot_data, aes_string(x=add$col, y="Frequency")) +
 												geom_bar(stat="identity") + theme_classic()
 							return(bar_plot)
 						} else if(plot_type %in% "density") {
 							plot_data <- data[ ,add$col]
 							mean <- mean(data[,add$col])
-							density_plot <- ggplot(plot_data, aes_string(x=col)) + geom_density(alpha=0.5) +
+							density_plot <- ggplot(plot_data, aes_string(x=add$col)) + geom_density(alpha=0.5) +
 											geom_vline(data=plot_data, aes(xintercept=mean), linetype="dashed") + theme_classic()
 							return(density_plot) 
 						} else {
@@ -272,22 +272,22 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							stop("col is not specified for distribution plot. Please set col=variable in the plot function")
 						}
 						if(plot_type %in% "bar") {
-							plot_data <- data[ ,c(col, "time")]
+							plot_data <- data[ ,c(add$col, "time")]
 							plot_data <- table(plot_data)
 							plot_data <- reshape2::melt(plot_data)
-							colnames(plot_data) <- c(col, "Timepoints", "Frequency")
-							bar_plot <- ggplot(data=plot_data, aes_string(x=col, y="Frequency", fill="Timepoints")) +
+							colnames(plot_data) <- c(add$col, "Timepoints", "Frequency")
+							bar_plot <- ggplot(data=plot_data, aes_string(x=add$col, y="Frequency", fill="Timepoints")) +
 											geom_bar(stat="identity") + theme_classic()
 							return(bar_plot)
 						} else if(plot_type %in% "density") {
-							plot_data <- data[ ,c(col, "time")]
+							plot_data <- data[ ,c(add$col, "time")]
 							levels <- data$time %>% unique() %>% gsub(pattern="[a-z|A-Z]", replacement="") %>% as.numeric() %>% sort()
 							data$time <- factor(data$time, levels=paste("t", levels, sep=""))
 							plot_data <- na.omit(plot_data)
-							mu <- as.data.frame(aggregate(plot_data[,col], list(Timepoints=plot_data$time), FUN=mean))
+							mu <- as.data.frame(aggregate(plot_data[,add$col], list(Timepoints=plot_data$time), FUN=mean))
 							mu$Timepoints <- factor(mu$Timepoints, levels=paste("t", levels, sep=""))
 							colnames(mu)[2] <- "mean"
-							density_plot <- ggplot(plot_data, aes_string(x=col, fill="time")) + geom_density(alpha=0.3) + 
+							density_plot <- ggplot(plot_data, aes_string(x=add$col, fill="time")) + geom_density(alpha=0.3) + 
 										geom_vline(data=mu, aes(xintercept=mean, color=Timepoints), linetype="dashed") +
 			 							theme_classic()
 			 				return(density_plot)
@@ -412,16 +412,24 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
 #' See a calc_* function to see the usage of this function
 #' @param object An S4 object of class metime_analyser
 #' @param .interactive logical to make the plot interactive or not
+#' @param results_index character/numeric input to define the results that you want to plot or replot with our automation.
+#' Default will be set to NULL
 #' @param type character to define the type of calculation used for updating the plot
 #' cols_for_samples, cols_for_metabs, cols_for_meta etc will be used. So make sure you set those correctly
 #' for better results. 
 #' @returns object with plots of the newest calculation
 #' @export
 
-setGeneric("update_plots", function(object, .interactive=FALSE, type) standardGeneric("update_plots"))
-setMethod("update_plots", "metime_analyser", function(object, .interactive=TRUE, type) {
-		results <- object@results[[length(object@results)]]
+setGeneric("update_plots", function(object, .interactive=FALSE, type, results_index=NULL) standardGeneric("update_plots"))
+setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE, type, results_index=NULL) {
+		
+		if(is.null(results_index)) {
+			results <- object@results[[length(object@results)]]
+		} else {
+			results <- object@results[[results_index]]
+		}
 		if(grep("ggm|network", type) %>% length() == 1) {
+			# chooses colors as combinations
 			network <- plot(object, results_index=length(object@results), 
 				interactive=.interactive, plot_type="network")
 			results$plots <- network
@@ -456,14 +464,14 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=TRUE,
 			}
 			object@results[[length(object@results)]] <- results
 		} else if(type %in% "CI_metabotype" | type %in% "CI_metabolite") {
-			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in%
-			c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "samples", "timepoints")]
+			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in% c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "samples", "timepoints", "name")]
 			if(length(cols_of_int) < 2) {
 				if(length(cols_of_int)==1) {
 					combinations <- matrix(c(cols_of_int, cols_of_int), nrow=2, ncol=1)
 				} else if(length(cols_of_int)==0) {
 					plots <- list(no_meta=plot(object, results_index=length(object@results), 
-						interactive=.interactive, plot_type="dot")) 
+						interactive=.interactive, plot_type="dot"))
+					results$plots[[1]] <- plots 
 				}
 			} else {
 				combinations <- combn(cols_of_int, 2)
@@ -477,12 +485,20 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=TRUE,
 					return(dot_plots)
 				})
 			names(dotplots) <- apply(combinations, 2, paste, collapse="-")
+			cols_of_int <- vapply(cols_of_int, function(col) {
+						if(length(unique(results$plot_data[[1]][ ,col]))!=1) {
+							return(col)
+						} else {
+							return("No")
+						}
+				}, character(1))
+			cols_of_int <- cols_of_int[!cols_of_int %in% "No"]
 			boxplots <- lapply(cols_of_int, function(col) {
-					box_plots <- plot(object, results_index=length(object@results), 
-						interactive=.interactive,
-						plot_type="box",
-						box_x=col)
-					return(box_plots)
+						box_plots <- plot(object, results_index=length(object@results), 
+							interactive=.interactive,
+							plot_type="box",
+							box_x=col)
+						return(box_plots)
 				})
 			names(boxplots) <- cols_of_int
 			if(length(results$plots)==0) {
@@ -496,22 +512,28 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=TRUE,
 		} else if(type %in% "pairwise_distance" | type %in% "pairwise_correlation" | type %in% "colinearity") {
 			plots <- plot(object, results_index=length(object@results), interactive=.interactive,
 				plot_type="tile")
-			if(results$plots %>% length() == 0) {
+			plots <- list(plots)
+			names(plots) <- results$information$calc_info
+			if(results$plots %>% length() == 1) {
 				results$plots[[1]] <- plots
 			} else {
 				results$plots[[length(results$plots)+1]] <- plots
 			}
 			object@results[[length(object@results)]] <- results
 		} else if(type %in% "GAMM" | type %in% "LMM") {
+			plots <- list()
 			plots <-  plot(object, results_index=length(object@results), 
 				interactive=.interactive, type="forrest")
-			if(results$plots %>% length() == 0) {
+			plots <- list(plots)
+			names(plots) <- results$information$calc_info
+			if(results$plots %>% length() == 1) {
 				results$plots[[1]] <- plots
 			} else {
 				results$plots[[length(results$plots)+1]] <- plots
 			}
 			object@results[[length(object@results)]] <- results
 		} else if(type %in% "distribution") {
+			data <- results$plot_data[[1]]
 			plots <- lapply(colnames(data)[!colnames(data) %in% c("id", "time")], function(.col) {
 						vec <- data[,.col] 
 						vec <- na.omit(vec)
@@ -523,7 +545,8 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=TRUE,
 								var_type <- "density"
 							}
 						}
-						plots <- plot(object, interactive=.interactive, results_index=length(object@results), col=.col)
+						plots <- plot(object, interactive=.interactive, 
+							results_index=length(object@results), col=.col, plot_type=var_type)
 						return(plots)
 					})
 			names(plots) <- colnames(data)[!colnames(data) %in% c("id", "time")]

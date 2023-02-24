@@ -7,6 +7,7 @@
 #' @param which_data Name of the dataset to be used
 #' @param verbose Information provided on steps being processed
 #' @param cols_for_meta A list of a Character vector to define column names that are to be used for plotting purposes
+#' the characters should be named the same way eg: list(lipid_data=c(id="id", sub_pathway="sub_pathway"), nmr_data=c(id="id", sub_pathway="Group"))
 #' @param name character vector to define the name of the results generated. length should be equal to which_data
 #' @param stratifications list to stratify the data used 
 #' @return conservation index results that are added to the object
@@ -90,7 +91,7 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
     metadata <- get_metadata_for_columns(object = object, 
                                          which_data = i, 
                                          columns = cols_for_meta, 
-                                         names = c("name", "group"), 
+                                         names = names(cols_for_meta[[1]]), 
                                          index_of_names = "id")
     out <- list()
     combinations <- lapply(1:ncol(index_time_combinations), function(y) {

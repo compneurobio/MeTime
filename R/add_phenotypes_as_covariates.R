@@ -46,8 +46,8 @@ setMethod("add_phenotypes_as_covariates", "metime_analyser", function(object, wh
 			} else {
 				list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 				for(i in 1:length(which_data)) {
-					dummy <- list_of_row_data[[which_data[i]]]
-					dummy <- dummy[ ,covariates[[i]]]
+					dummy <- object@list_of_row_data[[which_data[i]]]
+					dummy <- dummy[ ,covariates]
 					dummy <- dummy[order(rownames(dummy)), ]
 					data <- list_of_data[[i]]
 					data <- data[rownames(data) %in% rownames(dummy), ]
@@ -59,7 +59,7 @@ setMethod("add_phenotypes_as_covariates", "metime_analyser", function(object, wh
 					 		if(class(vec) %in% "character" | class(vec) %in% "factor") {
 					 			new_data <- class.ind(vec)
 					 			list_of_data[[i]] <- list_of_data[[i]][ ,!(names(list_of_data[[i]]) %in% covariates[i])]
-					 			list_of_data[[i]] <- as.data.frame(cbind(list_of_data[[i]], new_data))
+					 			list_of_data[[i]] <- cbind.data.frame(list_of_data[[i]], new_data)
 							}
 					 	}
 					 } else {
@@ -68,7 +68,7 @@ setMethod("add_phenotypes_as_covariates", "metime_analyser", function(object, wh
 					 			if(class(vec) %in% "character" | class(vec) %in% "factor") {
 					 				new_vec <- as.numeric(vec)
 					 				list_of_data[[i]] <- list_of_data[[i]][ ,!(names(list_of_data[[i]]) %in% covariates[i])]
-					 				list_of_data[[i]] <- as.data.frame(cbind(list_of_data[[i]], new_vec))
+					 				list_of_data[[i]] <- cbind.data.frame(list_of_data[[i]], new_vec)
 					 			}
 					 		}
 					 }

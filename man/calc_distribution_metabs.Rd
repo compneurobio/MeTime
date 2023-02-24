@@ -16,9 +16,9 @@ calc_distribution_metabs(
 
 \item{which_data}{A Character vector to define the dataset of interest}
 
-\item{name}{Character to name the results}
+\item{cols}{character vector to define the columns whose distributions are wanted from col_data#' @param which_data Name of the dataset from which the samples will be extracted}
 
-\item{col_metabs}{character vector to define the columns whose distributions are wanted from col_data#' @param which_data Name of the dataset from which the samples will be extracted}
+\item{name}{Character to name the results}
 }
 \value{
 S4 object with updated plot_data and plots

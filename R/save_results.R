@@ -41,7 +41,7 @@ setMethod("save_results", "metime_analyser", function(object, results_index, typ
 								quote=FALSE, sep='\t', row.names = FALSE)
 						} else if(type %in% "xlsx") {
 							xlsx::write.xlsx(results$plot_data[[x]], 
-								file=paste(, ".xlsx", sep=""), row.names=FALSE)
+								file=paste(".xlsx", sep=""), row.names=FALSE)
 						}
 					})
 			}

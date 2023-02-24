@@ -17,11 +17,11 @@ calc_distribution_samples(
 
 \item{which_data}{Name of the dataset from which the samples will be extracted}
 
+\item{cols}{character vector to define the columns whose distributions are wanted from row_data}
+
 \item{stratifications}{List to define the stratification of interest}
 
 \item{name}{Character to name the results}
-
-\item{col_samples}{character vector to define the columns whose distributions are wanted from row_data}
 }
 \value{
 S4 object with updated plot_data and plots

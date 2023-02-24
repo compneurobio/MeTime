@@ -10,7 +10,6 @@ setGeneric("mod_mutate", function(object, which_data, type="data", ...) standard
 setMethod("mod_mutate", "metime_analyser", function(object, which_data, type="data", ...) {
 		stopifnot(length(which_data)==1)
 		stopifnot(which_data %in% names(object@list_of_data))
-		# add_function_info "..." will be in params
 		stopifnot(type %in% c("data", "row_data", "col_data"))
 		if(type %in% "data") {
 			data <- object %>% get_data(which_data=which_data)
@@ -25,5 +24,11 @@ setMethod("mod_mutate", "metime_analyser", function(object, which_data, type="da
 			data <- data %>% dplyr::mutate(...)
 			object@list_of_row_data[[which_data]] <- data
 		}
+		exprs <- as.list(substitute(list(...))[-1])
+		str <- paste0(names(exprs), "=", sapply(exprs, function(x) {
+		   if (is.character(x)) paste0('"', x, '"')
+		   else as.character(x)
+		 }), collapse = ", ")
+		object <- object %>% add_function_info(function_name="mod_mutate", params=list(which_data=which_data, type=type, mutations=str))
 		return(object)
 	})
