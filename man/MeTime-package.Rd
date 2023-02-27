@@ -4,16 +4,17 @@
 \name{MeTime-package}
 \alias{MeTime}
 \alias{MeTime-package}
-\title{MeTime: What the Package Does (One Line, Title Case)}
+\title{MeTime: Metabolomics Time}
 \description{
-What the package does (one paragraph).
+R Package to aid in longitudinal data analysis with a focus on metabolomics data.
 }
 \author{
 \strong{Maintainer}: Bharadwaj Marella \email{bharadwaj.marella@helmholtz-muenchen.de}
 
 Authors:
 \itemize{
-  \item Patrick Dreher \email{patrick.dreher@helmholtz-muenchen.de}
+  \item Patrick Weinisch \email{patrick.weinisch@helmholtz-muenchen.de}
+  \item Matthias Arnold \email{matthias.arnold@helmholtz-muenchen.de}
 }
 
 }

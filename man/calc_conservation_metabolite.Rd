@@ -20,7 +20,8 @@ calc_conservation_metabolite(
 
 \item{verbose}{Information provided on steps being processed}
 
-\item{cols_for_meta}{A list of a Character vector to define column names that are to be used for plotting purposes}
+\item{cols_for_meta}{A list of a Character vector to define column names that are to be used for plotting purposes
+the characters should be named the same way eg: list(lipid_data=c(id="id", sub_pathway="sub_pathway"), nmr_data=c(id="id", sub_pathway="Group"))}
 
 \item{stratifications}{list to stratify the data used}
 

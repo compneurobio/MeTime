@@ -20,11 +20,11 @@ setMethod("save_results", "metime_analyser", function(object, results_index, typ
 				if(type %in% "csv") {
 					write.csv(node, paste(results$information$calc_info, "_node.csv", sep=""), row.names=FALSE)
 					write.csv(edge, paste(results$information$calc_info, "_edge.csv", sep=""), row.names=FALSE)
-					write.csv(meta, paste(results$information$calc_info, "_metadta.csv", sep=""), row.names=FALSE)
+					write.csv(meta, paste(results$information$calc_info, "_metadata.csv", sep=""), row.names=FALSE)
 				} else if(type %in% "tsv") {
 					write.table(node, file=paste(results$information$calc_info, "_node.tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)
-					write.table(edge, file=paste(results$information$calc_info, "_node.tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)
-					write.table(meta, file=paste(results$information$calc_info, "_node.tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)
+					write.table(edge, file=paste(results$information$calc_info, "_edge.tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)
+					write.table(meta, file=paste(results$information$calc_info, "_metadata.tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)
 				} else if(type %in% "xlsx") {
 					xlsx::write.xlsx(node, file=paste(results$information$calc_info, ".xlsx", sep=""), sheetName="Node Information", row.names=FALSE)
 					xlsx::write.xlsx(edge, file=paste(results$information$calc_info, ".xlsx", sep=""), sheetName="Edge Information", row.names=FALSE)
@@ -41,7 +41,7 @@ setMethod("save_results", "metime_analyser", function(object, results_index, typ
 								quote=FALSE, sep='\t', row.names = FALSE)
 						} else if(type %in% "xlsx") {
 							xlsx::write.xlsx(results$plot_data[[x]], 
-								file=paste(".xlsx", sep=""), row.names=FALSE)
+								file=paste(results$information$calc_info[x], ".xlsx", sep=""), row.names=FALSE)
 						}
 					})
 			}

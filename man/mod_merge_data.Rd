@@ -2,20 +2,22 @@
 % Please edit documentation in R/mod_merge_data.R
 \name{mod_merge_data}
 \alias{mod_merge_data}
-\title{Function to merge two sets of data for any analysis}
+\title{Modification (mod) function to merge two sets of data for any analysis}
 \usage{
-mod_merge_data(object, which_data, name)
+mod_merge_data(object, which_data, filter_samples, name)
 }
 \arguments{
-\item{object}{An S4 object of class metime_analyser}
+\item{object}{a S4 object of class metime_analyser.}
 
-\item{which_data}{Datasets to be merged. Only two or more are allowed}
+\item{which_data}{a vector of character defining which data should be merged. Has to contain two or more values.}
 
-\item{name}{character vector to define the name of the new dataset}
+\item{filter_samples}{a character specifying if samples should be filtered. Default set to no filtering. Other options include common samples (samples used if found in all datasets), or set to name of dataset (samples filtered by samples of one dataset)}
+
+\item{name}{a character vector to define the name of a new dataset.}
 }
 \value{
-A new S4 object of class metime_analyser with the new merged dataset appended to it
+a new S4 object of class metime_analyser with the  new merged dataset appended to it
 }
 \description{
-A function to merge two or more datasets and use it for analysis
+a modification function that merges two sets of data including data, col_data and row_data.
 }
