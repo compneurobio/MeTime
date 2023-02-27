@@ -49,6 +49,7 @@ setMethod("mod_filter", "metime_analyser", function(object, which_data, type="da
     if (is.character(x)) paste0('"', x, '"')
     else as.character(x)
   }), collapse = ", ")
+  
   object <- object %>% add_function_info(function_name="mod_filter", params=list(which_data=which_data, type=type, mutations=str))
   return(object)
 })

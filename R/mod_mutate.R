@@ -15,14 +15,28 @@ setMethod("mod_mutate", "metime_analyser", function(object, which_data, type="da
 			data <- object %>% get_data(which_data=which_data)
 			data <- data %>% dplyr::mutate(...)
 			object@list_of_data[[which_data]] <- data
+			#adjust row data accordingly
+    		object@list_of_row_data[[which_data]] <- object %>% 
+      			get_rowdata(which_data=which_data) %>%  
+      			dplyr::filter(id %in% rownames(object@list_of_data[[which_data]]))
 		} else if(type %in% "col_data") {
 			data <- object %>% get_coldata(which_data=which_data)
 			data <- data %>% dplyr::mutate(...)
 			object@list_of_col_data[[which_data]] <- data
+			 #adjust data accordingly
+   			 object@list_of_data[[which_data]] <- object %>% 
+      				get_data(which_data=which_data) %>% 
+      				dplyr::select(any_of(object@list_of_col_data[[which_data]]$id))
 		} else if(type %in% "row_data") {
 			data <- object %>% get_rowdata(which_data=which_data)
 			data <- data %>% dplyr::mutate(...)
 			object@list_of_row_data[[which_data]] <- data
+			#adjust data accordingly
+    		object@list_of_data[[which_data]] <- object %>% 
+      			get_data(which_data=which_data) %>%
+      			dplyr::mutate(id = rownames(.[])) %>% 
+      			dplyr::filter(id %in% object@list_of_row_data[[which_data]]$id) %>% 
+      			dplyr::select(-id)
 		}
 		exprs <- as.list(substitute(list(...))[-1])
 		str <- paste0(names(exprs), "=", sapply(exprs, function(x) {
