@@ -68,7 +68,7 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
       dplyr::mutate(type=method)
     out <- get_make_results(data=list(out), object=object, metadata=metadata, calc_type="pairwise_distance", 
                       calc_info = paste(which_data, "and" , method, "pairwise_distance", sep=" "),
-                      name=name) %>% update_plots(type="pairwise_distance")
+                      name=name)
   }
   else {
     out=NA

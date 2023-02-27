@@ -103,7 +103,7 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
           out <- add_function_info(object=out, function_name="calc_ggm_genenet", 
             params=list(which_data=which_data, threshold=threshold, all=all,
               cols_for_meta=cols_for_meta, covariates=covariates, stratifications=stratifications, 
-              name=name, ...)) %>% update_plots(type="genenet_ggm")
+              name=name, ...))
           return(out)
 
         } else {
@@ -149,7 +149,7 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
           out <- add_function_info(object=out, function_name="calc_ggm_genenet", 
             params=list(which_data=which_data, threshold=threshold, all=all,
               cols_for_meta=cols_for_meta, covariates=covariates, stratifications=stratifications, 
-              name=name, ...)) %>% update_plots(type="genenet_ggm")
+              name=name, ...))
           return(out)
         }
 

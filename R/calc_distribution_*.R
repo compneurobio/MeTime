@@ -42,7 +42,7 @@ setMethod("calc_distribution_samples", "metime_analyser",function(object, which_
     	name=name) %>%
     	add_function_info(function_name="calc_distribution_samples", 
     		params=list(which_data=which_data, cols_for_meta=cols,
-    			stratifications=stratifications, name=name)) %>% update_plots(type="distribution")
+    			stratifications=stratifications, name=name))
     return(out)
 })
 
@@ -80,6 +80,6 @@ setMethod("calc_distribution_metabs", "metime_analyser",function(object, which_d
     	name=name) %>%
     	add_function_info(function_name="calc_distribution_metabs", 
     		params=list(which_data=which_data, cols_for_meta=cols,
-    			name=name)) %>% update_plots(type="distribution")
+    			name=name))
 })
 

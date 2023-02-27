@@ -99,7 +99,7 @@ setMethod("calc_temporal_network", "metime_analyser", function(object, which_dat
             object <- add_function_info(object=object, function_name="calc_temporal_network", 
                         params=list(which_data=which_data, lag=lag, 
                         stratifications=stratifications, alpha=alpha, nfolds=nfolds, 
-                        cols_for_meta=cols_for_meta, cores=cores, names=names[i])) %>% update_plots(type="temporal_network")
+                        cols_for_meta=cols_for_meta, cores=cores, names=names[i]))
         }
         out <- object
         return(out)

@@ -70,8 +70,7 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
           out <- get_make_results(object=object, data=list(out), metadata=metadata, calc_type="colinearity", 
                   calc_info=paste("colinearity test of: ", which_data, sep=""), name=name) %>%
                 add_function_info(function_name="calc_colinearity", 
-                  params=list(which_data=which_data, cols_for_meta=cols_for_meta, show_all=show_all, stratifications=stratifications)) %>%
-                  update_plots(type="colinearity")
+                  params=list(which_data=which_data, cols_for_meta=cols_for_meta, show_all=show_all, stratifications=stratifications))
           return(out)
       } else {
           out <- out[out$colinear==TRUE, ]

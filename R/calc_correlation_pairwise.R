@@ -66,7 +66,7 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
 
     out <- get_results(data=list(out), object=object, metadata=metadata, calc_type="pairwise_correlation", 
                       calc_info = paste(which_data, "_and_" , method, "_pairwise_correlation", sep=""), 
-                      name=name) %>% update_plots(type="pairwise_correlation")
+                      name=name)
     return(out)
 })
 

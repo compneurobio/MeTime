@@ -106,7 +106,7 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
                                 name=name)
       out <- add_function_info(object=out, function_name="calc_conservation_metabolite", 
           params=list(which_data=which_data, verbose=verbose, cols_for_meta=cols_for_meta, 
-              name=name[i], stratifications=stratifications)) %>% update_plots(type="CI_metabolite")
+              name=name[i], stratifications=stratifications))
   }
   return(out)
 })
