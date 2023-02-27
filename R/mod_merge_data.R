@@ -41,7 +41,7 @@ setMethod("mod_merge_data", "metime_analyser", function(object, which_data, filt
       use_rows <- lapply(which_data, function(x) object@list_of_row_data[[x]]$id) %>% 
         Reduce(f=intersect) %>% sort()
     }else if(filter_samples %in% names(object@list_of_row_data)){
-      use_rows = object@list_of_row_data[[x]]$id
+      use_rows = object@list_of_row_data[[filter_samples]]$id
     }
     data <- data[use_rows,]
     row_data <- row_data[which(row_data$id %in% use_rows),]
