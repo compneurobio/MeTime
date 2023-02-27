@@ -7,6 +7,7 @@
 #' @export
 setGeneric("get_coldata", function(object, which_data) standardGeneric("get_coldata"))
 setMethod("get_coldata", "metime_analyser", function(object, which_data) {
+				stopifnot(!is.null(which_data))
 				data <- object@list_of_col_data[[which_data]]
 				return(as.data.frame(data))
 	})
