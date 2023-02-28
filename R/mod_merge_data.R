@@ -7,7 +7,7 @@
 #' @param name a character vector to define the name of a new dataset.
 #' @return a new S4 object of class metime_analyser with the  new merged dataset appended to it
 #' @export 
-setGeneric("mod_merge_data", function(object, which_data, filter_samples, name) standardGeneric("mod_merge_data")) 
+setGeneric("mod_merge_data", function(object, which_data, filter_samples=NULL, name="merged_data") standardGeneric("mod_merge_data")) 
 setMethod("mod_merge_data", "metime_analyser", function(object, which_data, filter_samples=NULL, name="merged_data")	{
   stopifnot(length(which_data)>=2) # two or more data index are needed for merging
   stopifnot(!name %in% names(object@list_of_data)) # name has to be unique

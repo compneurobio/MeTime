@@ -1,16 +1,19 @@
 
-#' Function to calculate metabolite conservation index
-#' @description Method applied on the object metime_analyser to calculate the metabotype conservation index
-#' @examples #calculating metabolite_conservation_index 
-#' out <- calc_metabolite_conservation(object=metime_analyser_object, which_data="Name of the dataset")
-#' @param object An object of class metime_analyser
-#' @param which_data Name of the dataset to be used
-#' @param verbose Information provided on steps being processed
-#' @param cols_for_meta A list of a Character vector to define column names that are to be used for plotting purposes
-#' the characters should be named the same way eg: list(lipid_data=c(id="id", sub_pathway="sub_pathway"), nmr_data=c(id="id", sub_pathway="Group"))
-#' @param name character vector to define the name of the results generated. length should be equal to which_data
-#' @param stratifications list to stratify the data used 
-#' @return conservation index results that are added to the object
+
+#' Calculation function to analyze the metabolite conservation index
+#' @description Calculation function to analyze the metabolite conservation index
+#' 
+#' @param object a S4 object of class metime_analyser.
+#' @param which_data a character specifiying the name of the dataset to be used.
+#' @param verbose a logical whether the status of processing should be printed. Default set to FALSE, no status information.
+#' @param cols_for_meta a list of a character vectors that define column names to be used for plotting purposes.
+#' The characters should be named the same way as eg: list(lipid_data=c(id="id", sub_pathway="sub_pathway"), nmr_data=c(id="id", sub_pathway="Group")). The default is set to NULL, thereby not adding columns as metadata.
+#' @param stratifications a list of parameters by which the data should be stratified. I.e. stratifications = list(timepoint=c(0,1,2)). In this case the dataset will be filtered to timepoints 0, 1, and 2. Default set to NULL, with no stratification applied.
+#' @param name a character vector to define the name of the results generated. The length should be equal to which_data. The default is set to conservation_index_metabolite_1.
+#' @details The metabolite conservation index compares the metabolite profiles across all subjects at two time points. The metabolite conservation index quantifies the conservation (stability) of a single metabolite in comparison to all other measured metabolites. The processed data of the metime_analyzer are used to calculate the metabolite conservation index CI(x) for metabolite x as \deqn{CI(x)=1-(rank(x)-1)/(N-1)}, where \deqn{rank(x)=N-z and z=|{y∈⟦1,N⟧≠x∨ρ_p (M_x^bl,M_x^fu )≥ρ_p (M_x^bl,M_y^fu )}|}, with N being the number of subjects, M_i^bl being the aggregated metabolite profile i across all subjects at baseline, M_i^fu being the aggregated metabolite profile i of all subjects at follow up, and ρ_p \deqn{M_i^bl,M_j^fu}) being the Pearson correlation coefficient of metabolite i at baseline and metabolite j at follow up for \deqn{x,i,j∈⟦1,N⟧}. The resulting index ranges between 0 and 1, with 0 = no conservation and 1 = maximal conservation. 
+#' This approach has been first described by \link[https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4145193/](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4145193/)]{Yousri et al. 2014, Long-term conservation of human metabolic phenotypes and link to heritability. *Metabolomics*} 
+#' @seealso [calc_conservation_metabotype], [get_metadata_for_columns]
+#' @return a S4 object with the analysis output saved in the results section defined by name.
 #' @export
 setGeneric("calc_conservation_metabolite", function(object, which_data, verbose=F, cols_for_meta=NULL, stratifications=NULL, name="conservation_index_metabolite_1") standardGeneric("calc_conservation_metabolite"))
 setMethod("calc_conservation_metabolite", "metime_analyser", function(object, which_data, verbose=F, cols_for_meta=NULL, stratifications=NULL, name="conservation_index_metabolite_1") {

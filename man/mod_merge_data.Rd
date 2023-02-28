@@ -4,7 +4,7 @@
 \alias{mod_merge_data}
 \title{Modification (mod) function to merge two sets of data for any analysis}
 \usage{
-mod_merge_data(object, which_data, filter_samples, name)
+mod_merge_data(object, which_data, filter_samples = NULL, name = "merged_data")
 }
 \arguments{
 \item{object}{a S4 object of class metime_analyser.}

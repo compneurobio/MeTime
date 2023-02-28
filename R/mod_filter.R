@@ -1,3 +1,4 @@
+
 #' Modification function to filter columns in data, row_data or col_data
 #' @description Modification (mod) function to filter columns in data, row_data or col_data
 #' @param object A S4 object of class metime_analyser.
@@ -13,7 +14,7 @@ setMethod("mod_filter", "metime_analyser", function(object, which_data, type="da
     stopifnot(type %in% c("data", "row_data", "col_data"))
 
     filter_exprs <- enquos(...)
-    filter_exprs_str <- purrr::map_chr(filter_exprs, ~as.character(quo_text(.)))
+    filter_exprs_str <- purrr::map_chr(filter_exprs, ~as.character(rlang::quo_text(.)))
 
     if(type %in% "data") {
       #filter dataset
