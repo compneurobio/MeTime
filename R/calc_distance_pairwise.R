@@ -38,9 +38,7 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
   } else {
        metadata <- get_metadata_for_columns(object = object, 
                                          which_data = which_data, 
-                                         columns = cols_for_meta, 
-                                         names = c("name", "group"), 
-                                         index_of_names = "id")
+                                         columns = cols_for_meta)
   }
   
   my_data <-  lapply(which_data, function(x) object@list_of_data[[x]] %>% 

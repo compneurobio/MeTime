@@ -90,9 +90,8 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
 
     metadata <- get_metadata_for_columns(object = object, 
                                          which_data = i, 
-                                         columns = cols_for_meta, 
-                                         names = names(cols_for_meta[[1]]), 
-                                         index_of_names = "id")
+                                         columns = cols_for_meta 
+                                         )
     out <- list()
     combinations <- lapply(1:ncol(index_time_combinations), function(y) {
               t <- paste(index_time_combinations[,y], collapse="vs")

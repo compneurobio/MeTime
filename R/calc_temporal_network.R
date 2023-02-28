@@ -89,8 +89,8 @@ setMethod("calc_temporal_network", "metime_analyser", function(object, which_dat
                    results$to <- unlist(lapply(strsplit(as.character(results$to), split="_time:"), function(x) return(x[1])))  
                    return(results)
             })
-        metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta, 
-                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
+        metadata <- get_metadata_for_columns(object=object, which_data=which_data, 
+            columns=cols_for_meta)
         for(i in seq_along(model_seqs)) {
             object <- get_make_results(object=object, data=out[[i]], metadata=metadata, 
                 calc_type="temporal_network", calc_info=paste("temporal_network", model_seqs[[i]], "for", which_data,

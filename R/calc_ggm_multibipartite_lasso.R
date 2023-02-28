@@ -110,8 +110,8 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
                       idvar="uids", direction="wide")
         edge_lists$node1 <- gsub(edge_lists$uid, pattern="_[a-z|A-Z|.|0-9]+", replacement="") %>% as.character()
         edge_lists$node2 <- gsub(edge_lists$uid, pattern="[a-z|A-Z|.|0-9]+_", replacement="") %>% as.character()
-        metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta, 
-                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
+        metadata <- get_metadata_for_columns(object=object, which_data=which_data, 
+            columns=cols_for_meta)
         out <- get_make_results(object=object, data=list(edge_lists), metadata=metadata, 
                 calc_type="multibipartite_ggm", calc_info=paste("multibipartite_ggm for ", which_data,
                     "with", ifelse(is.null(stratifications)), "full data", stratifications, sep=" "), 

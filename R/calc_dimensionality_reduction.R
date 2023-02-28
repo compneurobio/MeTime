@@ -89,8 +89,8 @@ setMethod("calc_dimensionality_reduction_metabs", "metime_analyser", function(ob
       data_list <- get_stratified_data(object=object, which_data=which_data, stratifications=stratifications)
       data <- data_list[["data"]]
       row_data <- data_list[["row_data"]]
-      metadata_metabs <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_metabs, 
-                 names=c("name", "pathway"), index_of_names=rep("id", each=length(which_data)))
+      metadata_metabs <- get_metadata_for_columns(object=object, 
+        which_data=which_data, columns=cols_for_metabs)
       if(type %in% "PCA") {
         pca_metabs <- prcomp(t(data), retx=TRUE, scale.=TRUE, center=TRUE, tol = NULL, ...)
         dr_data_metabs <- as.data.frame(pca_metabs$x[,1:2])

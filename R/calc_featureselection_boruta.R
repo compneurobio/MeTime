@@ -68,9 +68,8 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
   # Add metadata to the results
   metadata <- get_metadata_for_columns(object = object, 
                                          which_data = i, 
-                                         columns = cols_for_meta, 
-                                         names = c("name", "group"), 
-                                         index_of_names = "id")
+                                         columns = cols_for_meta 
+                                         )
 
   object <- object %>% get_make_results(data = list(results), 
                               metadata = metadata, 

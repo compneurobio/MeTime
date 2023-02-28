@@ -369,8 +369,18 @@ setMethod("show", "metime_analyser", function(object) {
 				dim(object@list_of_data[[i]])[1], "samples", "and", dim(object@list_of_data[[i]])[2], "metabolites",sep=" "))
 				cat("\n")
 			}
-			return(NULL)
 		})
+		if(is.null(names(object@results))) return()
+		out2 <- lapply(seq_along(object@results), function(j) {
+				if(names(object@results)[j] %in% "") {
+					return()
+				}
+				cat(paste(j, names(object@results)[j], sep="."))
+				cat(" : ")
+				cat("\n")
+				cat(paste(object@results[[j]]$information$calc_info, collapse="\n"))
+				cat("\n")
+			})
 	})
 
 

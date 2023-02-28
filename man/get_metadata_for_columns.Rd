@@ -4,13 +4,7 @@
 \alias{get_metadata_for_columns}
 \title{Get metadata for columns(in most cases for metabolites)}
 \usage{
-get_metadata_for_columns(
-  object,
-  which_data,
-  columns,
-  names,
-  index_of_names = "id"
-)
+get_metadata_for_columns(object, which_data, columns = NULL)
 }
 \arguments{
 \item{object}{S4 object of class MeTime Analyser}
@@ -18,11 +12,9 @@ get_metadata_for_columns(
 \item{which_data}{Names of dataset/s to be used}
 
 \item{columns}{A list of character vectors for the columns of interest. Length of the list should be
-same as length of which_data. list(nmr_data=c("id", "Group"), lipid_data=c("id", "sub_pathway"))}
-
-\item{names}{A Character vector with the new names for the columns mentioned above id should always be first in order}
-
-\item{index_of_names}{character vector to define the name of the column in which names of the variables are stored}
+same as length of which_data. List can be named or unnamed but the character vectors should be named.
+Moreover, they should have same names. Default is set to NULL which results in empty metadata dataframe.
+Ex: list(nmr_data=c(id="id", sub_pathway="Group"), lipid_data=c(id="id", sub_pathway="sub_pathway"))}
 }
 \value{
 data.frame with metadata information

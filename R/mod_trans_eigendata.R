@@ -4,6 +4,7 @@
 #' @param which_data character to define which dataset is to be used
 #' @param append logical if set to true adds the new data to the object used else creates new object
 #' @param clusters logical if set to true will add already existing cluster info otherwise creates new
+#' @param cols_for_meta A list of named character vector to extract col_data to add it for the eigendata
 #' @param ... arguments for add_clusters_wgcna
 #' @return metime_analyser object with new dataset with eigendata of the metabolites
 #' @export  
@@ -41,21 +42,20 @@ setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data,
                   return(col_info)
           	}) %>% do.call(what=rbind.data.frame)           
 
-            col_data <- get_metadata_for_columns(object=object, which_data=which_data, columns=list(c("id", "sub_pathway")), 
-                 names=c("id", "pathway"), index_of_names=rep("id", each=length(which_data)))
+            col_data <- get_metadata_for_columns(object=object, which_data=which_data, 
+              columns=cols_for_meta)
           	col_data_true <- col_data[col_data$id %in% colnames(data_to_append), ]
           	col_data_true <- col_data_true[order(col_data_true$id), ]
-          	col_data_true <- col_data_true[,1:2]
-          	colnames(col_data_true)[2] <- "pathway"
+
           	cluster_data_true <- colnames(data_to_append)[grep("eigen*", colnames(data_to_append))]
-          	cluster_data_true <- data.frame(id=cluster_data_true, pathway=cluster_data_true)
+          	cluster_data_true <- data.frame(id=cluster_data_true)
           	rownames(cluster_data_true) <- cluster_data_true$id
           
-          	col_data_true <- rbind.data.frame(col_data_true, cluster_data_true)
+          	col_data_true <- plyr::rbind.fill(col_data_true, cluster_data_true)
           	col_data_true <- col_data_true[order(col_data_true$id), ]
           	col_info <- col_info[order(col_info$id), ]
           	col_data_true <- cbind.data.frame(col_data_true, col_info$modules)
-          	colnames(col_data_true)[3] <- c("modules")
+            colnames(col_data_true)[length(colnames(col_data_true))] <- "modules"
           
           	if(append) {
           		out <- get_append_analyser_object(object, data=final_data_true, col_data=col_data_true, 

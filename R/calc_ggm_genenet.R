@@ -94,8 +94,8 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
           network <- met.ggm.edges.filtered[-edge2rem,]
           network <- network[!network$node1 %in% covariates, ]
           network <- network[!network$node2 %in% covariates, ]
-          metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta, 
-                 names=names(cols_for_meta[[1]]), index_of_names="id")
+          metadata <- get_metadata_for_columns(object=object, which_data=which_data, 
+              columns=cols_for_meta)
          out <- get_make_results(object=object, data=list(network), metadata=metadata, calc_type="genenet_ggm", 
               calc_info=paste("GeneNet GGM results for:", paste(which_data, collapse=" & "), "with",  
               ifelse(length(stratifications)>=1, paste(stratifications, collapse="_"), "full data"), sep=" "),

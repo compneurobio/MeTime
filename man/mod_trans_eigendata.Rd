@@ -16,6 +16,8 @@ mod_trans_eigendata(object, which_data, append, clusters, ...)
 \item{clusters}{logical if set to true will add already existing cluster info otherwise creates new}
 
 \item{...}{arguments for add_clusters_wgcna}
+
+\item{cols_for_meta}{A list of named character vector to extract col_data to add it for the eigendata}
 }
 \value{
 metime_analyser object with new dataset with eigendata of the metabolites
