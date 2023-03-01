@@ -326,7 +326,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
     					hues <- seq(15, 375, length.out = num_vals)
     					chroma <- 90
     					luminance <- 65
-    					colors <- hcl(h = hues, c = chroma, l = luminance)
+    					colors <- grDevices::hcl(h = hues, c = chroma, l = luminance)
     					names(colors) <- unique_vals
     					node_list$color <- colors[as.character(data[[column]])]
   					}
