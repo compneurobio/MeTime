@@ -4,16 +4,16 @@
 \alias{mod_filter}
 \title{Modification function to filter columns in data, row_data or col_data}
 \usage{
-mod_filter(object, which_data, type = "data", ...)
+mod_filter(object, which_data, ..., type = "data")
 }
 \arguments{
 \item{object}{A S4 object of class metime_analyser.}
 
 \item{which_data}{a vector of character defining which data should be merged.}
 
-\item{type}{a character defining which data to filter. Can be "data","row_data", or "col_data". Default set to "data". Note: if a dataset is filtered the row_data will be changed accordingly}
-
 \item{...}{arguments to pass directly into dplyr::filter() function.}
+
+\item{type}{a character defining which data to filter. Can be "data","row_data", or "col_data". Default set to "data". Note: if a dataset is filtered the row_data will be changed accordingly}
 }
 \value{
 object with mutated data, col_data or row_data

@@ -17,11 +17,11 @@ calc_temporal_network(
 )
 }
 \arguments{
-\item{object}{S4 object of class metab_analyser}
+\item{object}{S4 object of class metime_analyser}
 
 \item{which_data}{dataset or datasets to be used}
 
-\item{lag}{which lagged model to use. 1 means one-lagged model, similary 2,3,..etc}
+\item{lag}{which lagged model to use. 1 means one-lagged model, similarly 2,3,..etc}
 
 \item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
 

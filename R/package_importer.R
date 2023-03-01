@@ -231,7 +231,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						} 
 						return(plot)
 					} else if(results$information$calc_type[ind_data] %in% "GAMM" | 
-						results$information$calc_type[ind_data] %in% "LMM") {
+						results$information$calc_type[ind_data] %in% "LMM" |
+						results$information$calc_type[ind_data] %in% "LM") {
 						if(plot_type %in% "forrest") {
 							plot <- ggplot(results$plot_data[[ind_data]], 
 							aes_string(x="x", y="y", xmin="xmin", xmax="xmax", 
@@ -353,21 +354,23 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 #' @return structure of the S4 object
 #' @export
 setMethod("show", "metime_analyser", function(object) {
+		cat("Datasets: \n")
 		out <- lapply(seq_along(object@list_of_data), function(i) {
 			if(names(object@list_of_data)[i] %in% object@annotations$phenotype) {
-				cat(paste("Dataset:", names(object@list_of_data)[i], "with", 
+				cat(paste(" - Dataset:", names(object@list_of_data)[i], "with", 
 				dim(object@list_of_data[[i]])[1], "samples", "and", dim(object@list_of_data[[i]])[2], "phenotypes",sep=" "))
 				cat("\n")
 			} else if(names(object@list_of_data)[i] %in% object@annotations$medication) {
-				cat(paste("Dataset:", names(object@list_of_data)[i], "with", 
+				cat(paste(" - Dataset:", names(object@list_of_data)[i], "with", 
 				dim(object@list_of_data[[i]])[1], "samples", "and", dim(object@list_of_data[[i]])[2], "medicines", sep=" "))
 				cat("\n")
 			} else {
-				cat(paste("Dataset:", names(object@list_of_data)[i], "with", 
+				cat(paste(" - Dataset:", names(object@list_of_data)[i], "with", 
 				dim(object@list_of_data[[i]])[1], "samples", "and", dim(object@list_of_data[[i]])[2], "metabolites",sep=" "))
 				cat("\n")
 			}
 		})
+		cat("Results: \n")
 		if(is.null(names(object@results))) return()
 		out2 <- lapply(seq_along(object@results), function(j) {
 				if(names(object@results)[j] %in% "") {
@@ -376,7 +379,7 @@ setMethod("show", "metime_analyser", function(object) {
 				cat(paste(j, names(object@results)[j], sep="."))
 				cat(" : ")
 				cat("\n")
-				cat(paste(object@results[[j]]$information$calc_info, collapse="\n"))
+				cat(paste(" - ", object@results[[j]]$information$calc_info, collapse="\n"), sep="")
 				cat("\n")
 			})
 	})
@@ -544,10 +547,10 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				results$plots[[length(results$plots)+1]] <- plots
 			}
 			object@results[[length(object@results)]] <- results
-		} else if(type %in% "GAMM" | type %in% "LMM") {
+		} else if(type %in% "GAMM" | type %in% "LMM" | type %in% "LM") {
 			plots <- list()
 			plots <-  plot(object, results_index=length(object@results), 
-				interactive=.interactive, type="forrest")
+				interactive=.interactive, plot_type="forrest")
 			plots <- list(plots)
 			names(plots) <- results$information$calc_info
 			if(results$plots %>% length() == 1) {
@@ -585,4 +588,10 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 	})
 
 
-#### ADD quantiles for continuous variables 	
+#### ADD quantiles for continuous variables - done	
+
+### GAMMs and LMMs to the code - done
+### Plots for GAMMS - code ready to test
+### add_data function into the package - done
+### Manhattan plot into the package - need to do 
+### testing the other networks - need to do

@@ -7,8 +7,8 @@
 #' @param ... arguments to pass directly into dplyr::filter() function.
 #' @returns object with mutated data, col_data or row_data
 #' @export
-setGeneric("mod_filter", function(object, which_data, type="data", ...) standardGeneric("mod_filter"))
-setMethod("mod_filter", "metime_analyser", function(object, which_data, type="data", ...) {
+setGeneric("mod_filter", function(object, which_data, ..., type="data") standardGeneric("mod_filter"))
+setMethod("mod_filter", "metime_analyser", function(object, which_data, ..., type="data") {
     stopifnot(length(which_data)==1)
     stopifnot(which_data %in% names(object@list_of_data))
     stopifnot(type %in% c("data", "row_data", "col_data"))

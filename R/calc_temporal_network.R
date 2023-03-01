@@ -1,8 +1,8 @@
 
 #' An automated function to caluclate temporal network with lagged model
 #' @description calculates temporal networks for each dataset with a lagged model as used in graphical VAR
-#' @param object S4 object of class metab_analyser
-#' @param lag which lagged model to use. 1 means one-lagged model, similary 2,3,..etc
+#' @param object S4 object of class metime_analyser
+#' @param lag which lagged model to use. 1 means one-lagged model, similarly 2,3,..etc
 #' @param which_data dataset or datasets to be used
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @param alpha parameter for regression coefficient. Set to 1 for lasso regression
@@ -42,6 +42,7 @@ setMethod("calc_temporal_network", "metime_analyser", function(object, which_dat
             count <- count + 1
         }
         if(!length(names)==length(model_seqs)) {
+            warning("Names are not of correct length and hence using new names")
             names <- lapply(model_seqs, function(a) {
                     a <- paste(paste(a, collapse="-"), which_data, sep="_")
                     return(a)
@@ -71,13 +72,13 @@ setMethod("calc_temporal_network", "metime_analyser", function(object, which_dat
                    xmat <- network_data[ ,!(colnames(network_data) %in% colnames(ymat))]
                    ymat <- as.matrix(na.omit(ymat))
                    xmat <- as.matrix(na.omit(xmat))
-                   results <- parallel::mclapply(seq_along(colnames(ymat)), function(y) {
+                   results <- parallel::mclapply(colnames(ymat), function(y) {
                             result <- glmnet::cv.glmnet(x=xmat, y=ymat[,y], alpha=alpha, nfolds=nfolds)
                             coeffs <- coef(result)[,1]
                             coeffs <- coeffs[!(coeffs==0)]
                             coeffs <- coeffs[-1]
                             from <- names(coeffs)
-                            to <- rep(colnames(ymat)[y], each=length(coeffs))
+                            to <- rep(y, each=length(coeffs))
                             result <- as.data.frame(cbind(source, target, coeffs))
                             return(result)
                     }, max.cores=cores) %>% do.call(what=rbind.data.frame)

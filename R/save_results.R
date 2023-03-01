@@ -14,21 +14,19 @@ setMethod("save_results", "metime_analyser", function(object, results_index, typ
 			stopifnot(type %in% c("csv", "xlsx", "tsv"))
 			results <- obejct@results[[results_index]]
 			if(all(names(plot_data) %in% c("node", "edge", "metadata"))) {
+				
 				node <- results$plot_data$node 
 				edge <-	results$plot_data$edge 
-				meta <-	results$plot_data$metadata
+			
 				if(type %in% "csv") {
 					write.csv(node, paste(results$information$calc_info, "_node.csv", sep=""), row.names=FALSE)
 					write.csv(edge, paste(results$information$calc_info, "_edge.csv", sep=""), row.names=FALSE)
-					write.csv(meta, paste(results$information$calc_info, "_metadata.csv", sep=""), row.names=FALSE)
 				} else if(type %in% "tsv") {
 					write.table(node, file=paste(results$information$calc_info, "_node.tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)
-					write.table(edge, file=paste(results$information$calc_info, "_edge.tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)
-					write.table(meta, file=paste(results$information$calc_info, "_metadata.tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)
+					write.table(edge, file=paste(results$information$calc_info, "_edge.tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)	
 				} else if(type %in% "xlsx") {
 					xlsx::write.xlsx(node, file=paste(results$information$calc_info, ".xlsx", sep=""), sheetName="Node Information", row.names=FALSE)
-					xlsx::write.xlsx(edge, file=paste(results$information$calc_info, ".xlsx", sep=""), sheetName="Edge Information", row.names=FALSE)
-					xlsx::write.xlsx(meta, file=paste(results$information$calc_info, ".xlsx", sep=""), sheetName="Metadata Information", row.names=FALSE)
+					xlsx::write.xlsx(edge, file=paste(results$information$calc_info, ".xlsx", sep=""), sheetName="Edge Information", row.names=FALSE, append=TRUE)
 				}
 			} else {
 				lapply(seq_along(results$plot_data), function(x) {
