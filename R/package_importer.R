@@ -19,6 +19,7 @@ usethis::use_import_from("dynamicTreeCut", fun="cutreeDynamic")
 usethis::use_package("rmarkdown", type="Imports")
 usethis::use_package("rmdformats", type="Imports")
 usethis::use_package("htmltools", type="Imports")
+usethis::use_package("rlang", type="Imports")
 
 
 #' Validity function to check if the object is valid or not
@@ -297,55 +298,47 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 				names(all_plots) <- results$information$calc_info
 				return(all_plots)
 			} else {
-				metadata <- results$plot_data$metadata
 				node_list <- results$plot_data$node
 				edge_list <- results$plot_data$edge
 				#Choosing colors and shapes for visualization
+				if(length(unique(node_list$class))>1) {
+					shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
+					shapes_data <- data.frame(name=unique(node_list$class), shape=shapes[1:length(unique(node_list$class))])
+					node_list <- node_list %>%
+						dplyr::mutate(shape = shapes_data$shape[match(class, shapes_data$name)])				
+				}
+
         		if(is.null(node_list$color)) {
-            		shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
-            		colors_for_nodes <- node_list$group
-            		colors <- grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
-            		colors_code <- cbind.data.frame(unique(node_list$group), colors[1:length(unique(node_list$group))])
-            		colnames(colors_code) <- c("group", "color")
-            		colors_new <- c()
-            		for(i in 1:length(colors_for_nodes)) {
-            			colors_new[i] <- colors_code$color[colors_code$group %in% colors_for_nodes[i]]
-            		}
-            		color <- colors_new
-            		node_list <- as.data.frame(cbind(node_list, color))
-        		} else {
-            		shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
-        		}
-        		if(length(unique(metadata$class)) > 1) {
-        			classes <- unique(metadata$class)
-            		groups <-  unique(metadata$group)
-            		graph <- visNetwork::visNetwork(nodes=node_list, edges=edge_list) %>%
-                    	visNetwork::visIgraphLayout(layout="layout.fruchterman.reingold", physics = F, smooth = F) %>%
-                    	visNetwork::visPhysics(stabilization = FALSE)
-            		for(i in 1:length(classes)) {
-                		graph <- graph %>% visNetwork::visGroups(graph=graph, groupname = classes[i], shape = shapes[i])
-            		}
-            		graph <- graph %>% visNetwork::visLegend(useGroups = T) %>% 
-                    	visNetwork::visNodes(borderWidth = 3, color=list(background=colors_for_nodes)) %>%
-                    	visNetwork::visEdges(smooth = FALSE, shadow = TRUE) %>%
-                        visNetwork::visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
-                        visNetwork::visInteraction(navigationButtons = T) %>%
-                       	visNetwork::visExport(type="pdf", name=ifelse(is.null(add$title), "network_metime", add$title),
-                       		float="right")
-        		} else {
-        			graph <- visNetwork::visNetwork(nodes=node_list, edges=edge_list) %>%
+        			if(!is.null(add$color)) {
+        				column <- add$color
+        			} else {
+        				column <- "class"
+        			}
+            		if(is.numeric(node_list[[column]])){
+    					# Create a gradient of colors using colorRampPalette
+    					n_colors <- length(unique(node_list[[column]]))
+    					colors <- colorRampPalette(rainbow(n_colors))(n_colors)
+    					node_list$color <- colors
+  					} else {
+    					# Create random colors using rainbow() for non-numeric columns
+    					n_colors <- length(unique(node_list[[column]]))
+    					colors <- rainbow(n_colors)
+   	 					node_list$color <- colors[as.numeric(factor(node_list[[column]]))]
+  					}
+        		} 
+        		
+       			graph <- visNetwork::visNetwork(nodes=node_list, edges=edge_list) %>%
                     	visNetwork::visIgraphLayout(layout="layout.fruchterman.reingold", physics = F, smooth = F) %>%
                     	visNetwork::visPhysics(stabilization = FALSE) %>%
                     	visNetwork::visLegend(useGroups = T) %>% 
                     	visNetwork::visNodes(borderWidth = 3) %>%
                     	visNetwork::visEdges(smooth = FALSE, shadow = TRUE) %>%
-                    	visNetwork::visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = "group") %>%
+                    	visNetwork::visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = column) %>%
                     	visNetwork::visInteraction(navigationButtons = T) %>%
                     	visNetwork::visExport(type="pdf", name=ifelse(is.null(add$title), "network_metime", add$title), 
                     		float="right")		
         		}
-        		return(graph)
-        	}
+        		return(list(network=graph))
 	})
 
 #' Setting new print definition for the metime_analyser object
@@ -438,11 +431,27 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 		} else {
 			results <- object@results[[results_index]]
 		}
+
 		if(grep("ggm|network", type) %>% length() == 1) {
 			# chooses colors as combinations
-			network <- plot(object, results_index=length(object@results), 
-				interactive=.interactive, plot_type="network")
-			results$plots <- network
+			cols_of_int <- colnames(results$plot_data$node)
+			cols_of_int <- cols_of_int[!cols_of_int %in% c("id", "label")]
+			if(!"color" %in% cols_of_int) {
+				networks <- lapply(cols_of_int, function(a) {	
+					network <- plot(object, results_index=length(object@results), 
+						interactive=.interactive, plot_type="network", color=a)
+					return(network)
+				})
+				names(networks) <- cols_of_int
+			} else {
+				networks <- list(no_meta=plot(object, results_index=length(object@results), 
+						interactive=.interactive, plot_type="network"))
+			}
+			if(length(results$plots)==0) {
+				results$plots[[1]] <- networks
+			} else {
+				results$plots[[length(results$plots)+1]] <- networks
+			}
 			object@results[[length(object@results)]] <- results
 		} else if(type %in% "dimensionality_reduction") {
 			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in%

@@ -19,42 +19,43 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 			stopifnot(length(calc_type)==length(data))
 			stopifnot(length(calc_info)==length(data))
 			if(length(grep("ggm|network", calc_type))==1) {
+				#Getting data
 				data <- data[[1]]
+				#Getting node list along with metadata
 				nodes <- unique(c(data$node1, data$node2))
-    			node_list <- data.frame(id=1:length(nodes), label=nodes, group=as.character(1:length(nodes)))
-    			for(i in 1:length(node_list$label)) {
-          			g <- metadata[as.character(metadata$name) %in% as.character(node_list$label[i]), 2]
-           			node_list$group[i] <- g
-    			}
+    			nodes <- data.frame(id=1:length(nodes), label=nodes)
+				nodes <- dplyr::left_join(nodes, metadata, by=c("label"="id"))
     			#Getting edge list
-    			edge_list <- data.frame(from=1:length(data$node1), to=1:length(data$node2))
-    			for(i in 1:length(data$node1)) {
-        			edge_list$from[i] <- node_list[as.character(node_list$label) %in% as.character(data$node1[i]), "id"]
-        			edge_list$to[i] <- node_list[as.character(node_list$label) %in% as.character(data$node2[i]), "id"]
-   			 	}
+    			edges <- data %>%
+  						dplyr::mutate(from = match(node1, nodes$label),
+         						to = match(node2, nodes$label))
+  				#Adjusting edge list based on the type of the network
    			 	if(calc_type %in% "genenet_ggm") {
-   			 			dashes <- ifelse(data$pcor > 0, FALSE, TRUE)
-   			 			edge_list$dashes <- dashes
-    					edge_list$values <- data$pcor
+   			 		dashes <- ifelse(data$pcor > 0, FALSE, TRUE)
+   			 		edges$dashes <- dashes
+    				edges$values <- data$pcor
+    				edges$title <- paste(edges$node1, "-", 
+    								edges$node2, " : ", edges$values, sep="")
    			 	} else if(calc_type %in% "multibipartite_ggm") {
-   			 			dashes <- ifelse(data$coeffs.1 > 0 & data$coeffs.2 > 0, FALSE, TRUE)
-   			 			edge_list$dashes <- dashes
-    					edge_list$values <- (data$coeffs.1 + data$coeffs.2)/2 
-    					edge_list$title <- paste("coeff1: ", data$coeffs.1, "<br /> coeff2: ", data$coeffs.2, sep=" ")
+   			 		dashes <- ifelse(data$coeffs.1 > 0 & data$coeffs.2 > 0, FALSE, TRUE)
+   			 		edges$dashes <- dashes
+    				edges$values <- (data$coeffs.1 + data$coeffs.2)/2 
+    				edges$title <- paste("coeff1: ", 
+    					data$coeffs.1, "<br /> coeff2: ", data$coeffs.2, sep=" ")
    			 	} else if(calc_type %in% "temporal_network") {
-   			 			dashes <- ifelse(data$coeffs > 0, FALSE, TRUE)
-   			 			edge_list$values <- data$coeffs
-   			 			edge_list$dashes <- dashes
-   			 			edge_list$arrows <- rep("from", each=length(edge_list$dashes))
+   			 		dashes <- ifelse(data$coeffs > 0, FALSE, TRUE)
+   			 		edges$values <- data$coeffs
+   			 		edges$dashes <- dashes
+   			 		edges$title <- paste(edges$node1, "-", edges$node2, " : ", edges$values, sep="")
+   			 		edges$arrows <- rep("from", each=length(edges$dashes))
    			 	}
    			 	if(length(grep("calc_|mod_merge_results", names(object@results[[length(object@results)]]$functions_applied))) ==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
-						plot_data=list(node=node_list, edge=edge_list, metadata=metadata),
+						plot_data=list(node=nodes, edge=edges),
 						information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {
-					object@results[[length(object@results)]]$plot_data$node <- node_list
-					object@results[[length(object@results)]]$plot_data$edge <- edge_list
-					object@results[[length(object@results)]]$plot_data$metadata <- metadata
+					object@results[[length(object@results)]]$plot_data$node <- nodes
+					object@results[[length(object@results)]]$plot_data$edge <- edges
 					object@results[[length(object@results)]]$information$calc_type <- calc_type
 					object@results[[length(object@results)]]$information$calc_info <- calc_info
 					object@results[[length(object@results)]]$plots <- list()
@@ -64,24 +65,24 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 					plot_data <- data
 				} else {
 					plot_data <- lapply(seq_along(data), function(x) {
-							if(length(metadata)==0) {
-								return(data[[x]])
-							}
-							if(class(metadata) %in% "list") {	
-								data[[x]] <- data[[x]][order(rownames(data[[x]])), ]
-								dummy_metadata <- metadata[[x]][rownames(metadata[[x]]) %in% rownames(data[[x]]), ]
-								data[[x]] <- data[[x]][rownames(data[[x]]) %in% rownames(dummy_metadata), ]
-							} else {
-								data[[x]] <- data[[x]][order(rownames(data[[x]])), ]
-								dummy_metadata <- metadata[rownames(metadata) %in% rownames(data[[x]]), ]
-								data[[x]] <- data[[x]][rownames(data[[x]]) %in% rownames(dummy_metadata), ]
-							}
-							return(cbind.data.frame(data[[x]], dummy_metadata))
+						if(length(metadata)==0) {
+							return(data[[x]])
+						}
+						if(class(metadata) %in% "list") {	
+							data[[x]] <- data[[x]][order(rownames(data[[x]])), ]
+							dummy_metadata <- metadata[[x]][rownames(metadata[[x]]) %in% rownames(data[[x]]), ]
+							data[[x]] <- data[[x]][rownames(data[[x]]) %in% rownames(dummy_metadata), ]
+						} else {
+							data[[x]] <- data[[x]][order(rownames(data[[x]])), ]
+							dummy_metadata <- metadata[rownames(metadata) %in% rownames(data[[x]]), ]
+							data[[x]] <- data[[x]][rownames(data[[x]]) %in% rownames(dummy_metadata), ]
+						}
+						return(cbind.data.frame(data[[x]], dummy_metadata))
 					})
 				}
 				if(length(grep("calc_|mod_merge_results", names(object@results[[length(object@results)]]$functions_applied)))==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), plot_data=plot_data,
-											information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
+							information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {
 					object@results[[length(object@results)]]$plot_data <- plot_data
 					object@results[[length(object@results)]]$information$calc_type <- calc_type
