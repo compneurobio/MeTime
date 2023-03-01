@@ -320,10 +320,15 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
     					colors <- colorRampPalette(rainbow(n_colors))(n_colors)
     					node_list$color <- colors
   					} else {
-    					# Create random colors using rainbow() for non-numeric columns
-    					n_colors <- length(unique(node_list[[column]]))
-    					colors <- rainbow(n_colors)
-   	 					node_list$color <- colors[as.numeric(factor(node_list[[column]]))]
+    					# Creating a contrasting color palette for pathway coloring
+    					unique_vals <- unique(data[[column]])
+    					num_vals <- length(unique_vals)
+    					hues <- seq(15, 375, length.out = num_vals)
+    					chroma <- 90
+    					luminance <- 65
+    					colors <- hcl(h = hues, c = chroma, l = luminance)
+    					names(colors) <- unique_vals
+    					node_list$color <- colors[as.character(data[[column]])]
   					}
         		} 
         		
