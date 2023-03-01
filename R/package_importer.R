@@ -322,14 +322,14 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
     					node_list$color <- colors
   					} else {
     					# Creating a contrasting color palette for pathway coloring
-    					unique_vals <- unique(data[[column]])
+    					unique_vals <- unique(node_list[[column]])
     					num_vals <- length(unique_vals)
     					hues <- seq(15, 375, length.out = num_vals)
     					chroma <- 90
     					luminance <- 65
     					colors <- grDevices::hcl(h = hues, c = chroma, l = luminance)
     					names(colors) <- unique_vals
-    					node_list$color <- colors[as.character(data[[column]])]
+    					node_list$color <- colors[as.character(node_list[[column]])]
   					}
         		} 
         		
