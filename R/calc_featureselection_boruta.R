@@ -44,23 +44,15 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
     return(my_stats) 
   }, max.cores=4) %>% do.call(what=rbind.data.frame)
 
-  #change the below part to lapply
-  count <- 1
-  for(i in colnames(y_data)) {
-    if(i %in% my_results$id_x) {
-      dummy <- my_results$id_y[results$id_x %in% i]
-      dummy <- paste(dummy, collapse="###")
-      final <- data.frame()
-      final$id[count] <- i
-      final$covarites[count] <- dummy
-      count <- count +1
-    } else {
-      dummy <- NA
-      final$id[count] <- i
-      final$covariates[count] <- dummy
-      count <- count +1
-    }
-  }
+  final <- lapply(colnames(y_data), function(a) {
+        if(a %in% my_results$id_x) {
+            dummy <- my_results$id_y[results$id_x %in% i]
+            dummy <- paste(dummy, collapse="###")
+            return(data.frame(id=a, covariates=dummy))
+        } else {
+            return(data.frame(id=a, covariates=NA))
+        }
+    }) %>% do.call(what=rbind.data.frame)
   final <- final[order(final$id), ]
   object@list_of_col_data[[which_y]] <- object@list_of_col_data[[which_y]][order(object@list_of_data[[which_y]]$id), ]
   object@list_of_col_data[[which_y]]$covariates <- final$covariates

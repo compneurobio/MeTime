@@ -10,6 +10,7 @@ calc_gamm(
   stratifications = NULL,
   cols_for_meta = NULL,
   random = "subject",
+  threshold = "nominal",
   interaction = NULL,
   verbose = T,
   name = "regression_gamm_1"
@@ -25,6 +26,9 @@ calc_gamm(
 \item{cols_for_meta}{a character vector to define column names that are to be used for plotting purposes. Default set to NULL, therby not adding columns as metadata.}
 
 \item{random}{a character vector defining which variables should be treated as random effects. Default set to "subject".}
+
+\item{threshold}{a character of length 1 to define the type of threshold for significant interactions.
+allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)}
 
 \item{interaction}{a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.}
 

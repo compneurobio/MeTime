@@ -51,11 +51,11 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
    			 	}
    			 	if(length(grep("calc_|mod_merge_results", names(object@results[[length(object@results)]]$functions_applied))) ==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
-						plot_data=list(node=nodes, edge=edges),
+						plot_data=list(network=list(node=nodes, edge=edges)),
 						information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {
-					object@results[[length(object@results)]]$plot_data$node <- nodes
-					object@results[[length(object@results)]]$plot_data$edge <- edges
+					object@results[[length(object@results)]]$plot_data$network$node <- nodes
+					object@results[[length(object@results)]]$plot_data$network$edge <- edges
 					object@results[[length(object@results)]]$information$calc_type <- calc_type
 					object@results[[length(object@results)]]$information$calc_info <- calc_info
 					object@results[[length(object@results)]]$plots <- list()

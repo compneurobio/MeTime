@@ -35,7 +35,8 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 					out <- lapply(seq_along(col_data), function(a) {
 							data <- col_data[[a]][ ,c("id", columns[[a]])]
 							colnames(data) <- c("id", names_check)
-							rownames(data) <- data$id 
+							rownames(data) <- data$id
+							data$id <- NULL 
 							data$class <- rep(which_data[a], each=length(data$id))
 							return(data)
 						}) %>% do.call(what=rbind.data.frame)
@@ -44,7 +45,8 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 							data <- col_data[[a]][ ,columns[[a]]]
 							colnames(data) <- names_check
 							col_of_int <- names(columns[[a]])[which(columns[[a]] %in% "id")]
-							rownames(data) <- data[ ,col_of_int] 
+							rownames(data) <- data[ ,col_of_int]
+							data[ ,col_of_int] <- NULL 
 							data$class <- rep(which_data[a], each=length(data$id))
 							return(data)
 						}) %>% do.call(what=rbind.data.frame)

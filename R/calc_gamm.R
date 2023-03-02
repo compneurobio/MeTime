@@ -7,16 +7,19 @@
 #' @param name a character vector to define the index within the results. Should be equal to length of which_data. Default set to regression_gamm_1.
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
 #' @param random a character vector defining which variables should be treated as random effects. Default set to "subject".
+#' @param threshold a character of length 1 to define the type of threshold for significant interactions. 
+#'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 #' @param interaction a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.
 #' @details The calculation function fits multiple generalized additive mixed models (GAMMs) on a longitudinal dataset. Here, one model fits one metabolite vs one trait. The degree of smoothness of a model term is estimated as part of the fitting. 
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
-setGeneric("calc_gamm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, random="subject",interaction = NULL,verbose=T,name="regression_gamm_1") standardGeneric("calc_gamm"))
+setGeneric("calc_gamm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, random="subject", threshold="nominal", interaction = NULL,verbose=T,name="regression_gamm_1") standardGeneric("calc_gamm"))
 setMethod("calc_gamm", "metime_analyser", function(object,
                                                    which_data,
                                                    stratifications = NULL,
                                                    cols_for_meta=NULL,
                                                    random="subject",
+                                                   threshold="nominal",
                                                    interaction=NULL,
                                                    verbose=T,
                                                    name="regression_gamm_1") {
@@ -117,12 +120,34 @@ setMethod("calc_gamm", "metime_analyser", function(object,
   
   annotated_results <- annotated_results %>% 
     dplyr::mutate(x=beta, xmin=beta-abs(se), xmax=beta+abs(se), y=met)
+
+  rownames(annotated_results) <- annotated_results$y
+
+  if(threshold %in% "nominal") {
+      annotated_results$color <- ifelse(annotated_results$pval<=0.05, "blue", "grey")
+  } else if(threshold %in% "FDR") {
+      annotated_results$pval.FDR <- p.adjust(annotated_results$pval, method="BH")
+      annotated_results$color <- ifelse(annotated_results$pval.FDR<=0.05, "blue", "grey")
+  } else if(threshold %in% "bonferroni") {
+      annotated_results$pval.bonferroni <- p.adjust(annotated_results$pval, method="bonferroni")
+      annotated_results$color <- ifelse(annotated_results$pval.FDR<=0.05, "blue", "grey")
+  } else if(threshold %in% "li") {
+      warning("li threshold is still not implemented in the package proceeding with nominal") 
+      annotated_results$color <- ifelse(annotated_results$pval<=0.05, "blue", "grey")
+  }
+
+  if(is.null(cols_for_meta)) {
+    metadata <- NULL
+  } else {
+    metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta)
+  }
+     
   
   # continue here
   out <- get_make_results(object = object, 
                           data = list(annotated_results), 
-                          metadata = NULL, 
-                          calc_type = "GAMM", 
+                          metadata = metadata, 
+                          calc_type = "regression", 
                           calc_info = paste("gamm_calculation_for_", which_data, sep=""),
                           name = name) %>%
     add_function_info(function_name = "calc_gamm", 

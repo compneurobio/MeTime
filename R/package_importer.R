@@ -20,6 +20,7 @@ usethis::use_package("rmarkdown", type="Imports")
 usethis::use_package("rmdformats", type="Imports")
 usethis::use_package("htmltools", type="Imports")
 usethis::use_package("rlang", type="Imports")
+usethis::use_package("MatrixEQTL", type="Imports")
 
 
 #' Validity function to check if the object is valid or not
@@ -230,16 +231,21 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							plot <- make_interactive(.plot=plot, j=ind_data, col="X1")
 						} 
 						return(plot)
-					} else if(results$information$calc_type[ind_data] %in% "GAMM" | 
-						results$information$calc_type[ind_data] %in% "LMM" |
-						results$information$calc_type[ind_data] %in% "LM") {
-						if(plot_type %in% "forrest") {
-							plot <- ggplot(results$plot_data[[ind_data]], 
-							aes_string(x="x", y="y", xmin="xmin", xmax="xmax", 
-								color=add$color, metabolite=add$grp)) +
-        						geom_point() +
-        						geom_errorbar(width=.2,position=position_dodge(0.05))
-        						scale_color_manual(values=c("grey"="grey","blue"="blue"))
+					} else if(results$information$calc_type[ind_data] %in% "regression") {
+						if(is.null(add$group)) add$group <- "y"
+						if(plot_type %in% "forest") {
+							if(!all(c("xmin", "xmax") %in% colnames(results$plot_data[[ind_data]]))) {
+								plot <- ggplot(results$plot_data[[ind_data]], 
+									aes_string(x="x", y=add$group, color="color", 
+										fill="color")) +
+        								geom_point()
+							} else {
+								plot <- ggplot(results$plot_data[[ind_data]], 
+										aes_string(x="x", y=add$group, xmin="xmin", xmax="xmax", 
+										color="color", fill="color")) +
+        								geom_point() +
+        								geom_errorbar(width=.2, position=position_dodge(0.05))
+							}
 						} else {
 							stop("This type of plot is not available for this calculation")
 						}
@@ -299,8 +305,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 				names(all_plots) <- results$information$calc_info
 				return(all_plots)
 			} else {
-				node_list <- results$plot_data$node
-				edge_list <- results$plot_data$edge
+				node_list <- results$plot_data$network$node
+				edge_list <- results$plot_data$network$edge
 				#Choosing colors and shapes for visualization
 				if(length(unique(node_list$class))>1) {
 					shapes <- c("square", "triangle", "box", "circle", "dot", "star", "ellipse", "database", "text", "diamond")
@@ -452,7 +458,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				})
 				names(networks) <- cols_of_int
 			} else {
-				networks <- list(no_meta=plot(object, results_index=length(object@results), 
+				networks <- list(node_feature=plot(object, results_index=length(object@results), 
 						interactive=.interactive, plot_type="network"))
 			}
 			if(length(results$plots)==0) {
@@ -547,12 +553,24 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				results$plots[[length(results$plots)+1]] <- plots
 			}
 			object@results[[length(object@results)]] <- results
-		} else if(type %in% "GAMM" | type %in% "LMM" | type %in% "LM") {
-			plots <- list()
-			plots <-  plot(object, results_index=length(object@results), 
-				interactive=.interactive, plot_type="forrest")
-			plots <- list(plots)
-			names(plots) <- results$information$calc_info
+		} else if(type %in% "regression") {
+			data <- results$plot_data[[1]]
+			cols_of_int <- colnames(data)[!colnames(data) %in% 
+				c("x", "y", "xmin", "xmax", "pval", "tval", 
+					"beta", "trait", "met", "se", "level", 
+					"statistic","pvalue","FDR", "time")]
+			if(length(cols_of_int) >= 1) {
+				plots <- lapply(cols_of_int, function(x) {
+						plots <-  plot(object, results_index=length(object@results), 
+								interactive=.interactive, plot_type="forrest", group=x)
+						return(plots)
+					})
+				names(plots) <- cols_of_int
+			} else {
+				plots <-  plot(object, results_index=length(object@results), 
+					interactive=.interactive, plot_type="forest")
+				plots <- list(no_meta=plots)
+			}
 			if(results$plots %>% length() == 1) {
 				results$plots[[1]] <- plots
 			} else {
@@ -583,6 +601,8 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				results$plots[[length(results$plots)+1]] <- plots
 			}
 			object@results[[length(object@results)]] <- results
+		} else if(type %in% "feature_selection") {
+			data <- results$plot_data
 		}
 		return(object)
 	})
@@ -595,3 +615,4 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 ### add_data function into the package - done
 ### Manhattan plot into the package - need to do 
 ### testing the other networks - need to do
+### 
