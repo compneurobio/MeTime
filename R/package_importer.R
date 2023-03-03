@@ -335,22 +335,29 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
     					luminance <- 65
     					colors <- grDevices::hcl(h = hues, c = chroma, l = luminance)
     					names(colors) <- unique_vals
-    					node_list$color <- colors[as.character(node_list[[column]])]
+    					node_list$color <- colors[as.character(node_list[[column]])]	
   					}
-        		} 
-        		
-       			graph <- visNetwork::visNetwork(nodes=node_list, edges=edge_list) %>%
+        			
+        		} else {
+        			if(is.null(add$group)) {
+        				column=NULL
+        			} else {
+        				column=add$group
+        			}
+        		}
+        		graph <- visNetwork::visNetwork(nodes=node_list, edges=edge_list) %>%
                     	visNetwork::visIgraphLayout(layout="layout.fruchterman.reingold", physics = F, smooth = F) %>%
                     	visNetwork::visPhysics(stabilization = FALSE) %>%
                     	visNetwork::visLegend(useGroups = T) %>% 
                     	visNetwork::visNodes(borderWidth = 3) %>%
                     	visNetwork::visEdges(smooth = FALSE, shadow = TRUE) %>%
-                    	visNetwork::visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy = column) %>%
+                    	visNetwork::visOptions(highlightNearest = list(enabled=T, hover=T), nodesIdSelection = T, selectedBy=column) %>%
                     	visNetwork::visInteraction(navigationButtons = T) %>%
                     	visNetwork::visExport(type="pdf", name=ifelse(is.null(add$title), "network_metime", add$title), 
-                    		float="right")		
-        		}
-        		return(list(network=graph))
+                    		float="right")	
+                    	return(list(network=graph))
+        	}
+        	
 	})
 
 #' Setting new print definition for the metime_analyser object
@@ -448,8 +455,8 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 
 		if(grep("ggm|network", type) %>% length() == 1) {
 			# chooses colors as combinations
-			cols_of_int <- colnames(results$plot_data$node)
-			cols_of_int <- cols_of_int[!cols_of_int %in% c("id", "label")]
+			cols_of_int <- colnames(results$plot_data$network$node)
+			cols_of_int <- cols_of_int[!cols_of_int %in% c("id", "label", "title")]
 			if(!"color" %in% cols_of_int) {
 				networks <- lapply(cols_of_int, function(a) {	
 					network <- plot(object, results_index=length(object@results), 
@@ -579,7 +586,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			object@results[[length(object@results)]] <- results
 		} else if(type %in% "distribution") {
 			data <- results$plot_data[[1]]
-			plots <- lapply(colnames(data)[!colnames(data) %in% c("id", "time")], function(.col) {
+			plots <- lapply(colnames(data)[!colnames(data) %in% c("id", "time", "subject")], function(.col) {
 						vec <- data[,.col] 
 						vec <- na.omit(vec)
 						if(is.character(vec)==TRUE | is.factor(vec)==TRUE) var_type <- "bar"
@@ -594,7 +601,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 							results_index=length(object@results), col=.col, plot_type=var_type)
 						return(plots)
 					})
-			names(plots) <- colnames(data)[!colnames(data) %in% c("id", "time")]
+			names(plots) <- colnames(data)[!colnames(data) %in% c("id", "time", "subject")]
 			if(results$plots %>% length() == 0) {
 				results$plots[[1]] <- plots
 			} else {

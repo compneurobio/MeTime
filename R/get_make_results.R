@@ -22,9 +22,10 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 				#Getting data
 				data <- data[[1]]
 				#Getting node list along with metadata
-				nodes <- unique(c(data$node1, data$node2))
-    			nodes <- data.frame(id=1:length(nodes), label=nodes)
+				nodes_names <- unique(c(data$node1, data$node2))
+    			nodes <- data.frame(id=1:length(nodes_names), label=nodes_names)
 				nodes <- dplyr::left_join(nodes, metadata, by=c("label"="id"))
+				nodes$title <- nodes$label
     			#Getting edge list
     			edges <- data %>%
   						dplyr::mutate(from = match(node1, nodes$label),
@@ -77,6 +78,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 							dummy_metadata <- metadata[rownames(metadata) %in% rownames(data[[x]]), ]
 							data[[x]] <- data[[x]][rownames(data[[x]]) %in% rownames(dummy_metadata), ]
 						}
+						dummy_metadata$id <- NULL
 						return(cbind.data.frame(data[[x]], dummy_metadata))
 					})
 				}
