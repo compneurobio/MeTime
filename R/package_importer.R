@@ -569,7 +569,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			if(length(cols_of_int) >= 1) {
 				plots <- lapply(cols_of_int, function(x) {
 						plots <-  plot(object, results_index=length(object@results), 
-								interactive=.interactive, plot_type="forrest", group=x)
+								interactive=.interactive, plot_type="forest", group=x)
 						return(plots)
 					})
 				names(plots) <- cols_of_int
