@@ -26,7 +26,7 @@ calc_distribution_samples(
 \value{
 S4 object with updated plot_data and plots
 with plots being either 1) density plot
-2) bar plot and a line plot
+2) bar plot
 }
 \description{
 A method to be applied onto s4 object so as to obtain distributions of various phenotypic variables

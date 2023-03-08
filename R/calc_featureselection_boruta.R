@@ -8,6 +8,7 @@
 #' @param file_name name of the out file
 #' @param verbose Information provided on steps being processed
 #' @param cols_for_meta A list of a Character vector to define column names that are to be used for plotting purposes
+#' @importClassesFrom metime_analyser
 #' @return List of conservation index results
 #' @export
 #' 

@@ -9,6 +9,7 @@
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
 #' @details Add details here
+#' @importClassesFrom metime_analyser
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
 setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold="nominal", verbose=T,name="regression_lm_1") standardGeneric("calc_lm"))

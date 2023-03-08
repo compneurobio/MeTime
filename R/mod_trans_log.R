@@ -6,6 +6,7 @@
 #' @param object An object of class metime_analyser
 #' @param which_data Name of the dataset to be used
 #' @param base base of log to be used
+#' @importClassesFrom metime_analyser
 #' @return An object of class metime_analyser with processed data
 #' @export
 setGeneric("mod_trans_log", function(object, which_data, base) standardGeneric("mod_trans_log"))

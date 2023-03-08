@@ -13,6 +13,7 @@
 #' @param name name of the results should be of length=1
 #' @param cols_for_meta list equal to length of which_data defining the columns for metadata
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
+#' @importClassesFrom metime_analyser
 #' @return data.frame with pairwise results
 #' @export
 setGeneric("calc_distance_pairwise", function(object, which_data, method, name="calc_distance_pairwise_1", cols_for_meta, stratifications) standardGeneric("calc_distance_pairwise"))

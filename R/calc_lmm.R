@@ -11,6 +11,7 @@
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 #' @param interaction a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.
 #' @details Add details here
+#' @importClassesFrom metime_analyser
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
 setGeneric("calc_lmm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, random="subject", threshold="nominal",interaction = NULL,verbose=T,name="regression_lmm_1") standardGeneric("calc_lmm"))

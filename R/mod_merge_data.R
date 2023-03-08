@@ -5,6 +5,7 @@
 #' @param which_data a vector of character defining which data should be merged. Has to contain two or more values.
 #' @param filter_samples a character specifying if samples should be filtered. Default set to no filtering. Other options include common samples (samples used if found in all datasets), or set to name of dataset (samples filtered by samples of one dataset)
 #' @param name a character vector to define the name of a new dataset.
+#' @importClassesFrom metime_analyser
 #' @return a new S4 object of class metime_analyser with the  new merged dataset appended to it
 #' @export 
 setGeneric("mod_merge_data", function(object, which_data, filter_samples=NULL, name="merged_data") standardGeneric("mod_merge_data")) 

@@ -2,6 +2,7 @@
 #' Function to remove duplicates
 #' @description Function to remove duplicates from the analyser object
 #' @param object An S4 object of class metime_analyser
+#' @importClassesFrom metime_analyser
 #' @return object after removing duplicated data
 #' @export
 setGeneric("mod_remove_duplicates", function(object) standardGeneric("mod_remove_duplicates"))

@@ -4,6 +4,7 @@
 #' @param which_data Dataset of interest. Has to be of length=1
 #' @param type either "row" for row_data or "col" for col_data or "data" for data. Set to "data" as default
 #' @param ... arguments to pass directly into dplyr::mutate() function.
+#' @importClassesFrom metime_analyser
 #' @returns object with mutated col_data and row_data
 #' @export
 setGeneric("mod_mutate", function(object, which_data, type="data", ...) standardGeneric("mod_mutate"))

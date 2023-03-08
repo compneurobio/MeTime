@@ -5,6 +5,7 @@
 #' object <- mod_zscore(object, which_data="name of the dataset")
 #' @param object An object of class metime_analyser
 #' @param which_data Name of the dataset to be used
+#' @importClassesFrom metime_analyser
 #' @return An object of class metime_analyser with processed data
 #' @export
 setGeneric("mod_trans_zscore", function(object, which_data) standardGeneric("mod_trans_zscore"))

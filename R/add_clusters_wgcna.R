@@ -4,6 +4,7 @@
 #' @param which_data character to define which dataset is to be used
 #' @param baseline character to define the timepoint to be used as baseline to predict clusters
 #' @param ... other parameters for cutreeDynamic function such minClusterSize, pamDendroRespect etc
+#' @importClassesFrom metime_analyser
 #' @return metime_analyser object with updated column info about the clustersize
 #' @export
 setGeneric("add_clusters_wgcna", function(object, which_data, baseline, ...) standardGeneric("add_clusters_wgcna"))

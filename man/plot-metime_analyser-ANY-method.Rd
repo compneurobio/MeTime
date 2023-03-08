@@ -11,7 +11,7 @@
 
 \item{interactive}{logical. Set TRUE for interactive plot}
 
-\item{plot_type}{to define the type of plot. Accepted inputs are "dot", "tile", "box", "forrest"}
+\item{plot_type}{to define the type of plot. Accepted inputs are "dot", "tile", "box", "forrest", "manhattan"}
 
 \item{...}{other parameters to pass color, fill, strat, viz(character vector with colnames for interactive)}
 

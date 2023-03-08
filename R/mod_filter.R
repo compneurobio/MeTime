@@ -5,6 +5,7 @@
 #' @param which_data a vector of character defining which data should be merged. 
 #' @param type a character defining which data to filter. Can be "data","row_data", or "col_data". Default set to "data". Note: if a dataset is filtered the row_data will be changed accordingly
 #' @param ... arguments to pass directly into dplyr::filter() function.
+#' @importClassesFrom metime_analyser
 #' @returns object with mutated data, col_data or row_data
 #' @export
 setGeneric("mod_filter", function(object, which_data, ..., type="data") standardGeneric("mod_filter"))

@@ -7,6 +7,7 @@
 #' @param col_data data.frame containing col_data: id column of col data has to match colnames of data
 #' @param row_data data.frame containing row_data: id column of row data has to match rownames of data
 #' @param name Name of the new dataset
+#' @importClassesFrom metime_analyser
 #' @return An object of class metime_analyser
 #' @export
 setGeneric("get_append_analyser_object", function(object, data, col_data, row_data, name) standardGeneric("get_append_analyser_object"))

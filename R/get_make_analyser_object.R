@@ -7,6 +7,7 @@
 #' @param annotations_index a list to be filled as follows = list(phenotype="Name or index of the file/list", medication="Name or index of the files/list")
 #' @param name character. Name you want to assign to the new dataset that is being added on
 #' @param results list set to empty but can add any existing results
+#' @importClassesFrom metime_analyser
 #' @return An object of class metime_analyser
 #' @export
 

@@ -6,6 +6,7 @@
 #' @param clusters logical if set to true will add already existing cluster info otherwise creates new
 #' @param cols_for_meta A list of named character vector to extract col_data to add it for the eigendata
 #' @param ... arguments for add_clusters_wgcna
+#' @importClassesFrom metime_analyser
 #' @return metime_analyser object with new dataset with eigendata of the metabolites
 #' @export  
 setGeneric("mod_trans_eigendata", function(object, which_data, append, clusters, ...) standardGeneric("mod_trans_eigendata"))

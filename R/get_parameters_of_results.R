@@ -2,6 +2,7 @@
 #' @description Function to get parameters and functions applied to obtain results
 #' @param object An S4 object of class metime_analyser
 #' @param results_index name or index to get to the results of interest
+#' @importClassesFrom metime_analyser
 #' @return a dataframes with functions(rownames) and parameters(colnames)
 #' @export
 setGeneric("get_parameters_of_results", function(object, results_index) standardGeneric("get_parameters_of_results"))

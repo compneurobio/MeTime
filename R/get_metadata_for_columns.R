@@ -9,6 +9,7 @@
 #' same as length of which_data. List can be named or unnamed but the character vectors should be named.
 #' Moreover, they should have same names. Default is set to NULL which results in empty metadata dataframe.
 #' Ex: list(nmr_data=c(id="id", sub_pathway="Group"), lipid_data=c(id="id", sub_pathway="sub_pathway"))
+#' @importClassesFrom metime_analyser
 #' @return data.frame with metadata information
 #' @export
 setGeneric("get_metadata_for_columns", function(object, which_data, columns=NULL) standardGeneric("get_metadata_for_columns"))

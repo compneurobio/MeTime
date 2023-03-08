@@ -12,7 +12,7 @@ add_metabs_as_covariates(object, which_data, which_metabs)
 \item{which_data}{Dataset to which the metab data is to be added(please note that this a single character)}
 
 \item{which_metabs}{list of names of metabs and name of the list represents the dataset from which
-the metabs are to be acquired. eg: which_metabs=list(nmr_data=c("metab1", "metab2"), lipid_data=c(""))}
+the metabs are to be acquired. eg: which_metabs=list(nmr_data=c("metab1", "metab2"), lipid_data=c("metab3", "metab4"))}
 }
 \value{
 S4 object with metabs from one dataset added for analysis to another dataset

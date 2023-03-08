@@ -3,6 +3,7 @@
 #' @description Function to get rowdata 
 #' @param object An object of class S4 
 #' @param which_data Dataset of interest
+#' @importClassesFrom metime_analyser
 #' @return row data of the dataset of interest
 #' @export
 setGeneric("get_rowdata", function(object, which_data) standardGeneric("get_rowdata"))

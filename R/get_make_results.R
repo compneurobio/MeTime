@@ -11,6 +11,7 @@
 #' @param calc_info A string to define the information about calculation, should be the same length as the list
 #' data provided
 #' @param name Name of the result 
+#' @importClassesFrom metime_analyser
 #' @return object with results of the calculation updated
 #' @export
 setGeneric("get_make_results", function(object, data, metadata, calc_type, calc_info, name) standardGeneric("get_make_results"))
@@ -50,7 +51,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
    			 		edges$title <- paste(edges$node1, "-", edges$node2, " : ", edges$values, sep="")
    			 		edges$arrows <- rep("from", each=length(edges$dashes))
    			 	}
-   			 	if(length(grep("calc_|mod_merge_results", names(object@results[[length(object@results)]]$functions_applied))) ==1) {
+   			 	if(length(grep("calc_|mod_merge_results|add_result", names(object@results[[length(object@results)]]$functions_applied)))==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
 						plot_data=list(network=list(node=nodes, edge=edges)),
 						information=list(calc_type=calc_type, calc_info=calc_info), plots=list())

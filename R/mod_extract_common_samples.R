@@ -4,6 +4,7 @@
 #' @examples # extracting common samples across all datasets
 #' new_list_of_data <- mod_extract_common_samples(object=metime_analyser_object)
 #' @param object An object of class metime_anaylser
+#' @importClassesFrom metime_analyser
 #' @return list_of_data with common samples across all time points
 #' @export
 setGeneric("mod_extract_common_samples", function(object) standardGeneric("mod_extract_common_samples") )

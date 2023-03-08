@@ -3,6 +3,7 @@
 #' @description A method applied on S4 object to remove NA's and change data accordingly
 #' @param object S4 object of class metime_analyser
 #' @param which_data dataset/s for which the method is to be applied
+#' @importClassesFrom metime_analyser
 #' @return S4 object with NA's removed and data manipulated accordingly
 #' @export
 setGeneric("mod_remove_nas", function(object, which_data) standardGeneric("mod_remove_nas"))

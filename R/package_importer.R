@@ -63,7 +63,8 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' @param results_index Index/name of the results to be plotted
 #' @param interactive logical. Set TRUE for interactive plot
 #' @param ... other parameters to pass color, fill, strat, viz(character vector with colnames for interactive)
-#' @param plot_type to define the type of plot. Accepted inputs are "dot", "tile", "box", "forrest"
+#' @param plot_type to define the type of plot. Accepted inputs are "dot", "tile", "box", "forrest", "manhattan"
+#' @importClassesFrom metime_analyser
 #' @return plots for a certain set of results
 #' @export
 setMethod("plot", "metime_analyser", function(x, results_index, interactive, plot_type, ...) {
@@ -119,20 +120,28 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=x, y=ci)) + 
 								geom_point(aes_string(color=add$color, 
-								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
+								shape=add$shape)) + facet_wrap(add$strats) + theme_classic() +
+								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
 						} else if(plot_type %in% "box") {
 							if(is.null(add$box_x)) {
 								stop("Define x-axis for boxplot. Use box_x=variable as an argument in the plot function")
 							} 
-							median_data <- results$plot_data[[ind_data]]
+							median_data <- df
 							median_data <- median_data[median_data$ci != 1, ]
 							median_data$ci <- -log10(1-median_data$ci)
-							combinations <- combn(unique(results$plot_data[[ind_data]][ ,add$box_x]), 2)
+							combinations <- combn(unique(median_data[ ,add$box_x]), 2)
+							if(length(which(is.na(df[ ,add$box_x])))>=1) {
+								info <- paste("There are ", length(which(is.na(df[ ,add$box_x]))), "NAs in this variable and are removed")
+							} else {
+								info <- NULL
+							}
+							median_data <- median_data[!is.na(median_data[ ,add$box_x]), ]	
 							my_comparisons <- lapply(1:ncol(combinations), function(x) return(as.character(combinations[,x])))
 							plot <- ggpubr::ggboxplot(median_data, x=add$box_x, 
-								y="ci", color="black", fill=add$box_x, alpha=0.5, notch=T) +
+								y="ci", color="black", fill=add$box_x, alpha=0.5, notch=F) +
           						ggpubr::stat_compare_means(method="wilcox.test", comparisons=my_comparisons, 
-          						label.y=seq(from=3.5, to=11, by=0.5))
+          						label.y=seq(from=3.5, to=11, by=0.5)) 
+          					plot <-	ggpubr::ggpar(plot, ylab="-log10(1-ci)") + labs(caption=info)
 						} else {
 							stop("This type of plot is not available for this calculation")
 						}
@@ -176,7 +185,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=PC1, y=PC2)) + 
 								geom_point(aes_string(color=add$color, 
-								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
+								shape=add$shape)) + facet_wrap(add$strats) + theme_classic() +
+								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
 						} else {
 							stop("This type of plot is not available for this calculation")
 						}
@@ -200,7 +210,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=UMAP1, y=UMAP2)) + 
 								geom_point(aes_string(color=add$color, 
-								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
+								shape=add$shape)) + facet_wrap(add$strats) + theme_classic() +
+								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
 						} else {
 							stop("This type of plot is not available for this calculation")
 						}
@@ -223,7 +234,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=X1, y=X2)) + 
 								geom_point(aes_string(color=add$color, 
-								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()
+								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()+
+								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
 						} else {
 							stop("This type of plot is not available for this calculation")
 						}
@@ -263,13 +275,14 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							plot_data <- table(plot_data) %>% as.data.frame()
 							colnames(plot_data) <- c(add$col, "Frequency")
 							bar_plot <- ggplot(plot_data, aes_string(x=add$col, y="Frequency")) +
-												geom_bar(stat="identity") + theme_classic()
+												geom_bar(stat="identity") + theme_classic() + coord_flip()
 							return(bar_plot)
 						} else if(plot_type %in% "density") {
 							plot_data <- data[ ,add$col]
 							mean <- mean(data[,add$col])
 							density_plot <- ggplot(plot_data, aes_string(x=add$col)) + geom_density(alpha=0.5) +
-											geom_vline(data=plot_data, aes(xintercept=mean), linetype="dashed") + theme_classic()
+											geom_vline(data=plot_data, aes(xintercept=mean), linetype="dashed") + theme_classic() +
+											ylab("Density")
 							return(density_plot) 
 						} else {
 							stop("This type of plot is not available for this calculation")
@@ -285,7 +298,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							plot_data <- reshape2::melt(plot_data)
 							colnames(plot_data) <- c(add$col, "Timepoints", "Frequency")
 							bar_plot <- ggplot(data=plot_data, aes_string(x=add$col, y="Frequency", fill="Timepoints")) +
-											geom_bar(stat="identity") + theme_classic()
+											geom_bar(stat="identity") + theme_classic() + coord_flip()
 							return(bar_plot)
 						} else if(plot_type %in% "density") {
 							plot_data <- data[ ,c(add$col, "time")]
@@ -297,7 +310,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							colnames(mu)[2] <- "mean"
 							density_plot <- ggplot(plot_data, aes_string(x=add$col, fill="time")) + geom_density(alpha=0.3) + 
 										geom_vline(data=mu, aes(xintercept=mean, color=Timepoints), linetype="dashed") +
-			 							theme_classic()
+			 							theme_classic() + ylab("Density")
 			 				return(density_plot)
 						}
 					}
@@ -364,6 +377,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 #' @description function to see the structure of metime_analyser object
 #' @param object S4 object of class metime_analyser
 #' @examples structure(object)
+#' @importClassesFrom metime_analyser
 #' @return structure of the S4 object
 #' @export
 setMethod("show", "metime_analyser", function(object) {
@@ -403,6 +417,7 @@ setMethod("show", "metime_analyser", function(object) {
 #' @param object An S4 object of class metime_analyser
 #' @param which_data Dataset to be used
 #' @param stratifications list of variables and their values to stratified - list(name=value)
+#' @importClassesFrom metime_analyser
 #' @returns data with stratifications aforementioned
 #' @export
 setGeneric("get_stratified_data", function(object, which_data, stratifications) standardGeneric("get_stratified_data"))
@@ -440,7 +455,8 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
 #' Default will be set to NULL
 #' @param type character to define the type of calculation used for updating the plot
 #' cols_for_samples, cols_for_metabs, cols_for_meta etc will be used. So make sure you set those correctly
-#' for better results. 
+#' for better results.
+#' @importClassesFrom metime_analyser 
 #' @returns object with plots of the newest calculation
 #' @export
 

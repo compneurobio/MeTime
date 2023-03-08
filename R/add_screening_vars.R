@@ -5,6 +5,7 @@
 #' new_with_apoegrp_sex <- add_screening_vars(object=metime_analyser_object, vars=c("APOEGrp","PTGENDER"))
 #' @param object An object of class metime_analyser
 #' @param vars A character naming the vars of interest
+#' @importClassesFrom metime_analyser
 #' @return phenotype data which can be replaced into the original object or use it separately with a different object
 #' @export
 setGeneric("add_screening_vars", function(object, vars) standardGeneric("add_screening_vars"))

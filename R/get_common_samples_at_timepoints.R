@@ -3,6 +3,7 @@
 #' @param object An S4 object of class metime_analyser
 #' @param which_data Dataset/s of interest
 #' @param timepoints A character vector to define timepoints
+#' @importClassesFrom metime_analyser
 #' @returns character vector of common subjects at common timepoints
 #' @export
 setGeneric("get_common_samples_at_timepoints", function(object, which_data, timepoints) standardGeneric("get_common_samples_at_timepoints"))

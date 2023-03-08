@@ -3,6 +3,7 @@
 #' @param object An S4 object of class metime_analyser
 #' @param results_indices indices as a list to define which results to use. Eg: list(network=1/"name of the results", guide=2)
 #' @param which_calculation index for plot_data to be used. Set to 1 by default. 
+#' @importClassesFrom metime_analyser
 #' @return network plotter object with new node colors/features
 #' @export
 setGeneric("add_node_features", function(object, results_indices, which_calculation=1) standardGeneric("add_node_features"))

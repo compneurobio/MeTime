@@ -6,9 +6,10 @@
 #' @param which_data Name of the dataset from which the samples will be extracted
 #' @param stratifications List to define the stratification of interest
 #' @param name Character to name the results 
+#' @importClassesFrom metime_analyser
 #' @return S4 object with updated plot_data and plots 
 #' with plots being either 1) density plot
-#'							2) bar plot and a line plot
+#'							2) bar plot
 #' @export
 setGeneric("calc_distribution_samples", function(object, which_data, cols, stratifications, name="calc_distribution_samples_1") standardGeneric("calc_distribution_samples"))
 setMethod("calc_distribution_samples", "metime_analyser",function(object, which_data, cols, stratifications=NULL, name="calc_distribution_samples_1") {

@@ -6,6 +6,7 @@
 #' @param sub_results Vector to define indices of plot_data to be merged. Set to 1 by default.
 #' @param groups character vector to define the groups that are involved
 #' @param name character to name the new merged results
+#' @importClassesFrom metime_analyser
 #' @returns metime_analyser object with merged results   
 #' @export
 mod_merge_results <- function(object, results_index, sub_results=1, groups, name) {

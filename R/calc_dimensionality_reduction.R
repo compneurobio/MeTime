@@ -14,6 +14,7 @@
 #' @param cols_for_meta A Character vector to define columns names that are to be used for plotting purposes
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @param ... additional arguments that can be passed on to prcomp(), M3C::tsne() and umap::umap()
+#' @importClassesFrom metime_analyser
 #' @return  a list with two plotter objects containing the dimensionality reduction information that can be parsed into plotting function 
 #'                   
 #' @export
