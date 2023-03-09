@@ -101,7 +101,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 					return(plot)
 			}
 
-		if(is.null(names(results$plot_data))) {
+		if(is.null(results$plot_data$network)) {
 			all_plots <- lapply(seq_along(results$plot_data), function(ind_data) {
 					if(results$information$calc_type[ind_data] %in% "CI_metabolite" |
 						results$information$calc_type[ind_data] %in% "CI_metabotype") {
@@ -246,18 +246,31 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						if(is.null(add$group)) add$group <- "y"
 						if(plot_type %in% "forest") {
 							if(!all(c("xmin", "xmax") %in% colnames(results$plot_data[[ind_data]]))) {
-								plot <- ggplot(results$plot_data[[ind_data]], 
+								if("color" %in% colnames(results$plot_data[[ind_data]])) {
+									plot <- ggplot(results$plot_data[[ind_data]], 
 									aes_string(x="x", y=add$group, color="color", 
 										fill="color")) +
         								geom_point() + scale_color_manual(name="color", 
         									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#D4F582","fdr"="#82DEF5","bonferroni"="#EE6868"))
+        						} else {
+        							plot <- ggplot(results$plot_data[[ind_data]], 
+									aes_string(x="x", y=add$group)) +
+        								geom_point()
+        						}
 							} else {
-								plot <- ggplot(results$plot_data[[ind_data]], 
+								if("color" %in% colnames(results$plot_data[[ind_data]])) {
+									plot <- ggplot(results$plot_data[[ind_data]], 
 										aes_string(x="x", y=add$group, xmin="xmin", xmax="xmax", 
 										color="color", fill="color")) +
         								geom_point() +
         								geom_errorbar(width=.2, position=position_dodge(0.05))  + scale_color_manual(name="color", 
         									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#D4F582","fdr"="#82DEF5","bonferroni"="#EE6868"))
+        						} else {
+        							plot <- ggplot(results$plot_data[[ind_data]], 
+										aes_string(x="x", y=add$group, xmin="xmin", xmax="xmax")) +
+        								geom_point() +
+        								geom_errorbar(width=.2, position=position_dodge(0.05))
+        						}
 							}
 						} else {
 							stop("This type of plot is not available for this calculation")
@@ -321,7 +334,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 					} else if(results$information$calc_type[ind_data] %in% "feature_selection") {
 						data <- results$plot_data[[ind_data]]
 						if(plot_type %in% "manhattan") {
-							
+
 						}
 					}
 				})
