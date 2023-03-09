@@ -6,7 +6,6 @@
 #' # newdata <- get_samples_and_timepoints(object=metime_analyser_object, which_data="Name of dataset of interest")
 #' @param object An object of class metime_analyser
 #' @param which_data Name of the dataset in context
-#' @importClassesFrom metime_analyser
 #' @return A data table with timepoints and number of samples at each timepoint
 #' @export
 setGeneric("get_samples_and_timepoints", function(object, which_data) standardGeneric("get_samples_and_timepoints"))

@@ -8,7 +8,6 @@
 #' @param show_all logical. True will only filter out colinear data
 #' @param name character to define the name of the result
 #' @param stratifications List to stratify data into a subset. Usage list(name=values)
-#' @importClassesFrom metime_analyser
 #' @return plotter object with data for heatmap information
 #' @export
 setGeneric("calc_colinearity", function(object, which_data, cols_for_meta, show_all=F, name="calc_colinearity_1", stratifications=list()) standardGeneric("calc_colinearity"))

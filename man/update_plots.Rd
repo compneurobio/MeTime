@@ -13,7 +13,9 @@ update_plots(object, .interactive = FALSE, type, results_index = NULL)
 
 \item{type}{character to define the type of calculation used for updating the plot
 cols_for_samples, cols_for_metabs, cols_for_meta etc will be used. So make sure you set those correctly
-for better results.}
+for better results.
+Allowed inputs are: c("ggm|network", "dimensionality_reduction", "CI_metabotype", "CI_metabolite",
+"pairwise_distance", "pairwise_correlation", "colinearity", "distribution", "regression", "feature_selection")}
 
 \item{results_index}{character/numeric input to define the results that you want to plot or replot with our automation.
 Default will be set to NULL}

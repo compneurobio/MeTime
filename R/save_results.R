@@ -7,7 +7,6 @@
 #' @param object An object of class metime_analyser
 #' @param results_index character or numeric to define the results of interest
 #' @param type character to define outfile type that is "csv", "xlsx" or "tsv"
-#' @importClassesFrom metime_analyser
 #' @return saves the data into a csv and returns nothing
 #' @export
 setGeneric("save_results", function(object, results_index, type) standardGeneric("save_results"))

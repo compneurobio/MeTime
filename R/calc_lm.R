@@ -9,7 +9,6 @@
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
 #' @details Add details here
-#' @importClassesFrom metime_analyser
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
 setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold="nominal", verbose=T,name="regression_lm_1") standardGeneric("calc_lm"))
@@ -67,10 +66,18 @@ setMethod("calc_lm", "metime_analyser", function(object,
                    ) %>% 
     do.call(what=rbind.data.frame)
   
+  if(verbose){
+    add_progress_bar <- txtProgressBar(min = 1, max = nrow(my_runs), style = 3)
+    on.exit(close(add_progress_bar))
+    cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
+    on.exit(parallel::stopCluster(cl))
+  }
   
   results=parallel::mclapply(1:nrow(my_runs), 
-                             mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1, function(x) {
-                               if(verbose) cat(x, " , ") # report iteration
+                             mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
+                             mc.preschedule = TRUE,
+                             function(x) {
+                              # if(verbose) cat(x, " , ") # report iteration
                                # extract data 
                                met = unique(my_formula$met[which(my_formula$cov==my_runs$cov[x])])
                                trait = unique(my_formula$trait[which(my_formula$cov==my_runs$cov[x])])
@@ -109,17 +116,22 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                    ),
                                  silent = T)
                                  if(all(class(this_model)!="try-error")){
-                                   out <- results_list$all$eqtls %>%
+                                   out <- this_model$all$eqtls %>%
                                      dplyr::rename(trait=gene, met=snps) %>%
-                                     dplyr::mutate(x=beta, y=met, time=my_runs$time[x])
+                                     dplyr::mutate(x=beta, y=met)
+                                   out$time = as.character(my_runs$time[x])
+                                   out$type = out$time
                                  }else{
                                    out <- my_formula %>% 
                                      dplyr::select(met,trait) %>% 
-                                     dplyr::mutate(statistic=NA,pvalue=NA,FDR=NA,beta=NA, x=NA,y=met, time=my_runs$time[x])
+                                     dplyr::mutate(statistic=NA,pvalue=NA,FDR=NA,beta=NA, x=NA,y=met)
+                                   out$time = as.character(my_runs$time[x])
+                                   out$type = out$time
                                  }
                                  rownames(out) <- out$y
                                  out
                                })
+  if(verbose) setTxtProgressBar(add_progress_bar, nrow(my_runs))
   names(results) <- paste0(name,"_" ,unique(lm_data$data$time))
   
   if(is.null(cols_for_meta)) {

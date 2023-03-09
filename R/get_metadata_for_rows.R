@@ -4,7 +4,6 @@
 #' @param which_data Names of dataset/s to be used
 #' @param columns A list of character vectors for the columns of interest. Length of the list should be
 #' same as length of which_data
-#' @importClassesFrom metime_analyser
 #' @return data.frame with metadata information for rows
 #' @export
 setGeneric("get_metadata_for_rows", function(object, which_data, columns) standardGeneric("get_metadata_for_rows"))

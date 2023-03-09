@@ -5,7 +5,6 @@
 #' @param object An object of class metime_plotter
 #' @param which_data Character to specify the dataset
 #' @param type which type of output file. Can be "csv", "tsv" and "xlsx"
-#' @importClassesFrom metime_analyser
 #' @return saves the data in the working directory as a csv and returns nothing
 #' @export
 setGeneric("save_analyser_object", function(object, which_data, type) standardGeneric("save_analyser_object"))

@@ -4,7 +4,6 @@
 #' @examples # convert S4 object to a list
 #' s3_list <- mod_convert_s4_to_s3(object=metime_analyser_object)
 #' @param object An object of class metime_analyser
-#' @importClassesFrom metime_analyser
 #' @return An S3 object of the same data as metime_analyser in other words all slots are now converted into nested lists
 #' @export
 setGeneric("mod_convert_s4_to_s3", function(object) standardGeneric("mod_convert_s4_to_s3"))

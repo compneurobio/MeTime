@@ -4,7 +4,6 @@
 #' the object or not
 #' @param object S4 object of class of metime_analyser
 #' @param which_data dataset/s to check
-#' @importClassesFrom metime_analyser
 #' @return NULL if it passes all the sanity checks
 #' @export
 setGeneric("check_col_normality", function(object, which_data) standardGeneric("check_col_normality"))

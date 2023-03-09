@@ -11,7 +11,6 @@
 #' @param cores Number of cores to be used for the process. For more information see max.cores in parallel::mclapply()
 #' Default set to 4
 #' @param names character vector with the same length as that of possible models 
-#' @importClassesFrom metime_analyser
 #' @returns S4 object with updated temporal network results
 #' @export
 setGeneric("calc_temporal_network", function(object, which_data, lag, stratifications, alpha=1, nfolds=3, cols_for_meta, cores=4, names) standardGeneric("calc_temporal_network"))

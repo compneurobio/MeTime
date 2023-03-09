@@ -59,12 +59,11 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 
 #' Setting a plotting method for the metime_analyser class
 #' @description Function to plot results of a certain calculation 
-#' @param object An S4 object of class metime_analyser
+#' @param x An S4 object of class metime_analyser
 #' @param results_index Index/name of the results to be plotted
 #' @param interactive logical. Set TRUE for interactive plot
 #' @param ... other parameters to pass color, fill, strat, viz(character vector with colnames for interactive)
 #' @param plot_type to define the type of plot. Accepted inputs are "dot", "tile", "box", "forrest", "manhattan"
-#' @importClassesFrom metime_analyser
 #' @return plots for a certain set of results
 #' @export
 setMethod("plot", "metime_analyser", function(x, results_index, interactive, plot_type, ...) {
@@ -121,7 +120,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							plot <- ggplot(df, aes(x=x, y=ci)) + 
 								geom_point(aes_string(color=add$color, 
 								shape=add$shape)) + facet_wrap(add$strats) + theme_classic() +
-								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
+								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape]))) + xlab("Subject order")
 						} else if(plot_type %in% "box") {
 							if(is.null(add$box_x)) {
 								stop("Define x-axis for boxplot. Use box_x=variable as an argument in the plot function")
@@ -250,13 +249,15 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 								plot <- ggplot(results$plot_data[[ind_data]], 
 									aes_string(x="x", y=add$group, color="color", 
 										fill="color")) +
-        								geom_point()
+        								geom_point() + scale_color_manual(name="color", 
+        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#D4F582","fdr"="#82DEF5","bonferroni"="#EE6868"))
 							} else {
 								plot <- ggplot(results$plot_data[[ind_data]], 
 										aes_string(x="x", y=add$group, xmin="xmin", xmax="xmax", 
 										color="color", fill="color")) +
         								geom_point() +
-        								geom_errorbar(width=.2, position=position_dodge(0.05))
+        								geom_errorbar(width=.2, position=position_dodge(0.05))  + scale_color_manual(name="color", 
+        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#D4F582","fdr"="#82DEF5","bonferroni"="#EE6868"))
 							}
 						} else {
 							stop("This type of plot is not available for this calculation")
@@ -297,21 +298,30 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							plot_data <- table(plot_data)
 							plot_data <- reshape2::melt(plot_data)
 							colnames(plot_data) <- c(add$col, "Timepoints", "Frequency")
+							levels <- plot_data$Timepoints %>% unique() %>% gsub(pattern="[a-z|A-Z]", replacement="") %>% as.numeric() %>% sort()
+							plot_data$Timepoints <- factor(plot_data$Timepoints, levels=paste("t", levels, sep=""))
 							bar_plot <- ggplot(data=plot_data, aes_string(x=add$col, y="Frequency", fill="Timepoints")) +
-											geom_bar(stat="identity") + theme_classic() + coord_flip()
+											geom_bar(stat="identity") + theme_classic()
 							return(bar_plot)
 						} else if(plot_type %in% "density") {
 							plot_data <- data[ ,c(add$col, "time")]
 							levels <- data$time %>% unique() %>% gsub(pattern="[a-z|A-Z]", replacement="") %>% as.numeric() %>% sort()
-							data$time <- factor(data$time, levels=paste("t", levels, sep=""))
+							plot_data$time <- factor(plot_data$time, levels=paste("t", levels, sep=""))
+							colnames(plot_data) <- c(add$col, "Timepoints")
 							plot_data <- na.omit(plot_data)
-							mu <- as.data.frame(aggregate(plot_data[,add$col], list(Timepoints=plot_data$time), FUN=mean))
-							mu$Timepoints <- factor(mu$Timepoints, levels=paste("t", levels, sep=""))
+							mu <- as.data.frame(aggregate(plot_data[,add$col], list(Timepoints=plot_data$Timepoints), FUN=mean))
 							colnames(mu)[2] <- "mean"
-							density_plot <- ggplot(plot_data, aes_string(x=add$col, fill="time")) + geom_density(alpha=0.3) + 
+							density_plot <- ggplot(plot_data, aes_string(x=add$col, fill="Timepoints")) + geom_density(alpha=0.3) + 
 										geom_vline(data=mu, aes(xintercept=mean, color=Timepoints), linetype="dashed") +
 			 							theme_classic() + ylab("Density")
 			 				return(density_plot)
+						} else {
+							stop("This type of plot is not available for this calculation")
+						}
+					} else if(results$information$calc_type[ind_data] %in% "feature_selection") {
+						data <- results$plot_data[[ind_data]]
+						if(plot_type %in% "manhattan") {
+							
 						}
 					}
 				})
@@ -377,7 +387,6 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 #' @description function to see the structure of metime_analyser object
 #' @param object S4 object of class metime_analyser
 #' @examples structure(object)
-#' @importClassesFrom metime_analyser
 #' @return structure of the S4 object
 #' @export
 setMethod("show", "metime_analyser", function(object) {
@@ -417,7 +426,6 @@ setMethod("show", "metime_analyser", function(object) {
 #' @param object An S4 object of class metime_analyser
 #' @param which_data Dataset to be used
 #' @param stratifications list of variables and their values to stratified - list(name=value)
-#' @importClassesFrom metime_analyser
 #' @returns data with stratifications aforementioned
 #' @export
 setGeneric("get_stratified_data", function(object, which_data, stratifications) standardGeneric("get_stratified_data"))
@@ -455,8 +463,9 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
 #' Default will be set to NULL
 #' @param type character to define the type of calculation used for updating the plot
 #' cols_for_samples, cols_for_metabs, cols_for_meta etc will be used. So make sure you set those correctly
-#' for better results.
-#' @importClassesFrom metime_analyser 
+#' for better results. 
+#' Allowed inputs are: c("ggm|network", "dimensionality_reduction", "CI_metabotype", "CI_metabolite", 
+#' "pairwise_distance", "pairwise_correlation", "colinearity", "distribution", "regression", "feature_selection")
 #' @returns object with plots of the newest calculation
 #' @export
 
@@ -581,7 +590,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			cols_of_int <- colnames(data)[!colnames(data) %in% 
 				c("x", "y", "xmin", "xmax", "pval", "tval", 
 					"beta", "trait", "met", "se", "level", 
-					"statistic","pvalue","FDR", "time")]
+					"statistic","pvalue","FDR", "time", "type", "color")]
 			if(length(cols_of_int) >= 1) {
 				plots <- lapply(cols_of_int, function(x) {
 						plots <-  plot(object, results_index=length(object@results), 

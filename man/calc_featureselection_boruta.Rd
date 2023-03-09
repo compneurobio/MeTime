@@ -11,7 +11,8 @@ calc_featureselection_boruta(
   verbose,
   output_loc,
   file_name,
-  cols_for_meta
+  cols_for_meta_x = NULL,
+  cols_for_meta_y = NULL
 )
 }
 \arguments{
@@ -27,7 +28,10 @@ calc_featureselection_boruta(
 
 \item{file_name}{name of the out file}
 
-\item{cols_for_meta}{A list of a Character vector to define column names that are to be used for plotting purposes}
+\item{cols_for_meta_x}{A list of a Character vector to define columns for meta info of which_x
+Names of the character vector in this case should always start with "color_".}
+
+\item{cols_for_meta_y}{A list of a Character vector to define columns for meta info of which_y}
 }
 \value{
 List of conservation index results

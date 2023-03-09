@@ -6,7 +6,6 @@
 #' @param which_data Name of the dataset from which the samples will be extracted
 #' @param stratifications List to define the stratification of interest
 #' @param name Character to name the results 
-#' @importClassesFrom metime_analyser
 #' @return S4 object with updated plot_data and plots 
 #' with plots being either 1) density plot
 #'							2) bar plot

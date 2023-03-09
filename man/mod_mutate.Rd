@@ -4,14 +4,17 @@
 \alias{mod_mutate}
 \title{Function to mutate columns in row_data or col_data}
 \usage{
-mod_mutate(object, which_data, type = "data", ...)
+mod_mutate(object, which_data, type = "data", results_index = NULL, ...)
 }
 \arguments{
 \item{object}{An S4 object of class metime_analyser}
 
 \item{which_data}{Dataset of interest. Has to be of length=1}
 
-\item{type}{either "row" for row_data or "col" for col_data or "data" for data. Set to "data" as default}
+\item{type}{either "row" for row_data or "col" for col_data or "data" for data and "results" for results.
+Set to "data" as default}
+
+\item{results_index}{Index to define the results of interest. Can be character and numeric}
 
 \item{...}{arguments to pass directly into dplyr::mutate() function.}
 }

@@ -6,7 +6,6 @@
 #' @param type a character defining the data which should be appended. Can only be data, col_data, row_data. Default set to data
 #' @param x a data.frame that is merged to the data.
 #' @param id a character defining the column to be used for matching. Default set to NULL (first column of x will be used as id column)
-#' @importClassesFrom metime_analyser
 #' @return a new S4 object of class metime_analyser with the  new merged dataset appended to it
 #' @export 
 #' 

@@ -4,7 +4,6 @@
 #' @param object an S4 object of class metime_analyser
 #' @param which_data dataset to be used for testing
 #' @param verbose Logical to print out the number of independent tests
-#' @importClassesFrom metime_analyser
 #' @return li threshold value
 #' @export
 setGeneric("get_li_thresh", function(object, which_data, verbose) standardGeneric("get_li_thresh"))

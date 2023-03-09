@@ -3,7 +3,6 @@
 #' @param object An S4 object of class metime_analyser
 #' @param results_indices indices as a list to define which results to use. Eg: list(network=1/"name of the results", guide=2)
 #' @param which_calculation index for plot_data to be used. Set to 1 by default. 
-#' @importClassesFrom metime_analyser
 #' @return network plotter object with new node colors/features
 #' @export
 setGeneric("add_node_features", function(object, results_indices, which_calculation=1) standardGeneric("add_node_features"))
@@ -12,20 +11,7 @@ setMethod("add_node_features", "metime_analyser", function(object, results_indic
 		stopifnot(length(results_indices$network)==1)
 		stopifnot(length(results_indices$guide)==1)
 		color.gradient <- function(x, colors=c("blue","gray","red"), colsteps=50) {
-			#adding a flag here to get more colors
-			if(length(unique(x))<length(x)) {
-				colors <- colorRampPalette(colors) (colsteps)[findInterval(unique(x), seq(-1, 1, length.out=colsteps))]
-				colors_data <- cbind.data.frame(colors, unique(x))
-				colnames(colors_data) <- c("colors", "values")
-				final <- c()
-				for(i in seq_along(x)) {
-					final[i] <- colors_data[colors_data$values %in% x[i], "colors"] %>% as.character()
-				}
-				return(final)
-			} else {
 				return(colorRampPalette(colors) (colsteps)[findInterval(x, seq(-1, 1, length.out=colsteps))])
-			}
-  			
 		}
 		network <- object@results[[results_indices$network]]
 		guide <- object@results[[results_indices$guide]]

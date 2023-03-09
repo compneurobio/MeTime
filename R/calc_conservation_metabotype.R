@@ -9,7 +9,6 @@
 #' @param cols_for_meta Character vector to define column names that are to be used for plotting purposes
 #' @param name character vector to define the results. Should be equal to length of which_data
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
-#' @importClassesFrom metime_analyser
 #' @return List of conservation index results
 #' @export
 setGeneric("calc_conservation_metabotype", function(object, which_data, verbose=F, cols_for_meta, stratifications, name="calc_conservation_metabotype_1") standardGeneric("calc_conservation_metabotype"))

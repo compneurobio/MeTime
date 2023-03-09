@@ -12,7 +12,6 @@
 #' @param cols_for_meta list equal to length of which_data defining the columns for metadata
 #' @param name name of the results should be of length=1
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
-#' @importClassesFrom metime_analyser
 #' @return data.frame with pairwise results
 #' @export
 setGeneric("calc_correlation_pairwise", function(object, which_data, method, cols_for_meta, name="calc_correlation_pairwise_1", stratifications) standardGeneric("calc_correlation_pairwise"))

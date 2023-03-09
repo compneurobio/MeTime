@@ -11,7 +11,6 @@
 #' @param name character to define the name of the results
 #' @param cores number of cores to be used in parallel::mclapply(). Default set to 4. 
 #' @param ... additional arguments for cv.glmnet function
-#' @importClassesFrom metime_analyser
 #' @returns Analyser object with updated results of this calculation 
 #' @export
 setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cores=4) standardGeneric("calc_ggm_multibipartite_lasso"))

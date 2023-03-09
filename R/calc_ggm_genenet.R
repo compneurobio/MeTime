@@ -11,7 +11,6 @@
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @param name Name of the result
 #' @param ... additional arguments for GeneNet
-#' @importClassesFrom metime_analyser
 #' @return Network data as a plotter object
 #' @export
 setGeneric("calc_ggm_genenet", function(object, which_data, threshold, all, cols_for_meta, covariates, stratifications, name, ...) standardGeneric("calc_ggm_genenet"))

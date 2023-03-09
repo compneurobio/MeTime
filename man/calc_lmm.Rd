@@ -10,7 +10,7 @@ calc_lmm(
   stratifications = NULL,
   cols_for_meta = NULL,
   random = "subject",
-  threshold = "nominal",
+  threshold = c("none", "nominal", "li", "fdr", "bonferroni"),
   interaction = NULL,
   verbose = T,
   name = "regression_lmm_1"

@@ -11,7 +11,6 @@
 #' @param calc_info A string to define the information about calculation, should be the same length as the list
 #' data provided
 #' @param name Name of the result 
-#' @importClassesFrom metime_analyser
 #' @return object with results of the calculation updated
 #' @export
 setGeneric("get_make_results", function(object, data, metadata, calc_type, calc_info, name) standardGeneric("get_make_results"))

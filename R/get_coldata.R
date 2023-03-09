@@ -3,7 +3,6 @@
 #' @description Function to get coldata 
 #' @param object An object of class S4 
 #' @param which_data Dataset of interest
-#' @importClassesFrom metime_analyser
 #' @return col data of the dataset of interest
 #' @export
 setGeneric("get_coldata", function(object, which_data) standardGeneric("get_coldata"))

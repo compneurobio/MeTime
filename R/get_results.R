@@ -2,7 +2,6 @@
 #' @description function to get results from S4 object
 #' @param object An S4 object of class metime_analyser
 #' @param which_result character/index to define the result of interest
-#' @importClassesFrom metime_analyser
 #' @returns list with results data list and information regarding 
 #' the functions applied and type of calculation
 #' @export

@@ -5,7 +5,6 @@
 #' @param covariates character vector names of covariates. 
 #' @param class.ind Logical to convert factor variables into class.ind style or not
 #' @param phenotype Logical. If True will extract from phenotype dataset else uses row data
-#' @importClassesFrom metime_analyser
 #' @return S4 object with covariates added to the dataset
 #' @export
 setGeneric("add_phenotypes_as_covariates", function(object, which_data, covariates, class.ind=FALSE, phenotype=FALSE) standardGeneric("add_phenotypes_as_covariates"))

@@ -7,6 +7,8 @@
 \S4method{plot}{metime_analyser,ANY}(x, results_index, interactive, plot_type, ...)
 }
 \arguments{
+\item{x}{An S4 object of class metime_analyser}
+
 \item{results_index}{Index/name of the results to be plotted}
 
 \item{interactive}{logical. Set TRUE for interactive plot}
@@ -14,8 +16,6 @@
 \item{plot_type}{to define the type of plot. Accepted inputs are "dot", "tile", "box", "forrest", "manhattan"}
 
 \item{...}{other parameters to pass color, fill, strat, viz(character vector with colnames for interactive)}
-
-\item{object}{An S4 object of class metime_analyser}
 }
 \value{
 plots for a certain set of results

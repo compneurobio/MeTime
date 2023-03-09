@@ -11,20 +11,22 @@
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 #' @param interaction a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.
 #' @details The calculation function fits multiple generalized additive mixed models (GAMMs) on a longitudinal dataset. Here, one model fits one metabolite vs one trait. The degree of smoothness of a model term is estimated as part of the fitting. 
-#' @importClassesFrom metime_analyser
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
-setGeneric("calc_gamm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, random="subject", threshold="nominal", interaction = NULL,verbose=T,name="regression_gamm_1") standardGeneric("calc_gamm"))
+setGeneric("calc_gamm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, random="subject", threshold=c("none","nominal","li","fdr","bonferroni"), interaction = NULL,verbose=T,name="regression_gamm_1") standardGeneric("calc_gamm"))
 setMethod("calc_gamm", "metime_analyser", function(object,
                                                    which_data,
                                                    stratifications = NULL,
                                                    cols_for_meta=NULL,
                                                    random="subject",
-                                                   threshold="nominal",
+                                                   threshold=c("none","nominal","li","fdr","bonferroni"),
                                                    interaction=NULL,
                                                    verbose=T,
                                                    name="regression_gamm_1") {
-  out=list()
+  # sanity checks ----
+  ## check that covariates (cov) and type are set in the col_data
+  if(!all(c("cov","type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lmm() needs the columns cov and type to specify the model")
+  
   if(grep(name, names(object@results)) %>% length() >= 1) {
     warning("name of the results was previously used, using a different name")
     index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
@@ -32,21 +34,23 @@ setMethod("calc_gamm", "metime_analyser", function(object,
     name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
   }
   
-  #stratify data
+  # Data processing ----
+  ## stratify data
   gamm_data <- get_stratified_data(which_data=which_data, 
                                  object=object, stratifications=stratifications)
-  stopifnot(all(c("cov","type") %in% names(gamm_data$col_data)))
+
   
-  # find list of metabolites
+  ## find list of metabolites
   my_met <- object@list_of_col_data[[which_data]] %>% 
     dplyr::filter(type=="met") %>% 
     dplyr::pull(id)
   
-  # find list of traits
+  ## find list of traits
   my_trait <- object@list_of_col_data[[which_data]] %>% 
     dplyr::filter(type=="trait") %>% 
     dplyr::pull(id)
   
+  ## make list of formulas
   my_formula <- lapply(unique(my_trait),function(x)
       test <- object@list_of_col_data[[which_data]] %>% 
         dplyr::select(cov, type, id) %>% 
@@ -57,8 +61,12 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                                    object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
     do.call(what=rbind.data.frame)
   
-  results=parallel::mclapply(1:nrow(my_formula), 
-                             mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1, function(x) {
+  # model calculation ----
+  
+  results=parallel::mclapply(1:10,#nrow(my_formula), 
+                             mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
+                             mc.preschedule = TRUE,
+                             function(x) {
     if(verbose) cat(x, " , ") # report iteration
     # extract data 
     this_data <-  gamm_data$data %>% 
@@ -112,31 +120,54 @@ setMethod("calc_gamm", "metime_analyser", function(object,
       out_this_model <- data.frame(
         stringsAsFactors = F,
         met = my_formula$met[x],
-        trait = my_formula$trait[x]#,
+        trait = my_formula$trait[x],
+        level=NA,
+        beta= NA,
+        se=NA,
+        pval=NA,
+        tval=NA
       )
     }
     return(out_this_model)
   })
   annotated_results <- plyr::rbind.fill(results)
   
+  ## modify results to for pipeline
   annotated_results <- annotated_results %>% 
-    dplyr::mutate(x=beta, xmin=beta-abs(se), xmax=beta+abs(se), y=met)
-
-  rownames(annotated_results) <- annotated_results$y
-
-  if(threshold %in% "nominal") {
-      annotated_results$color <- ifelse(annotated_results$pval<=0.05, "blue", "grey")
-  } else if(threshold %in% "FDR") {
-      annotated_results$pval.FDR <- p.adjust(annotated_results$pval, method="BH")
-      annotated_results$color <- ifelse(annotated_results$pval.FDR<=0.05, "blue", "grey")
-  } else if(threshold %in% "bonferroni") {
-      annotated_results$pval.bonferroni <- p.adjust(annotated_results$pval, method="bonferroni")
-      annotated_results$color <- ifelse(annotated_results$pval.FDR<=0.05, "blue", "grey")
-  } else if(threshold %in% "li") {
-      warning("li threshold is still not implemented in the package proceeding with nominal") 
-      annotated_results$color <- ifelse(annotated_results$pval<=0.05, "blue", "grey")
+    dplyr::mutate(x=beta, 
+                  xmin=beta-abs(se), 
+                  xmax=beta+abs(se), 
+                  y=met, 
+                  color= "none",
+                  type=ifelse(!is.na(level), paste0(trait, ".", level), trait))
+  
+  for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
+    if(i=="none"){
+      annotated_results<-annotated_results %>% 
+        dplyr::mutate(color="none") 
+    }else if(i=="nominal"){
+      annotated_results<-annotated_results %>% 
+        dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))
+    }else if(i == "li"){
+      eigenvals <- cor(object@list_of_data[[which_data]][,my_met]) %>%
+        eigen()
+      li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+      annotated_results<-annotated_results%>% 
+        dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color))
+    }else if(i=="fdr"){
+      annotated_results<-annotated_results %>% 
+        dplyr::mutate(fdr=p.adjust(pval, method="BH")) %>% 
+        dplyr::mutate(color=ifelse(fdr<=0.05, "fdr",color)) %>% 
+        dplyr::select(-fdr)
+    }else if(i=="bonferroni"){
+      annotated_results=annotated_results %>% 
+        dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color))
+    }
   }
-
+  # split into single results files ----
+  out_results <- lapply(unique(annotated_results$type), function(y) annotated_results[which(annotated_results$type==y),])
+  names(out_results) <- unique(annotated_results$type)
+  
   if(is.null(cols_for_meta)) {
     metadata <- NULL
   } else {
@@ -146,10 +177,10 @@ setMethod("calc_gamm", "metime_analyser", function(object,
   
   # continue here
   out <- get_make_results(object = object, 
-                          data = list(annotated_results), 
+                          data = out_results, 
                           metadata = metadata, 
-                          calc_type = "regression", 
-                          calc_info = paste("gamm_calculation_for_", which_data, sep=""),
+                          calc_type = rep("regression",length(out_results)), 
+                          calc_info = paste("Generalized additive mixed models for ", which_data,"_", names(out_results),sep=""),
                           name = name) %>%
     add_function_info(function_name = "calc_gamm", 
                       params = list(which_data = which_data, 

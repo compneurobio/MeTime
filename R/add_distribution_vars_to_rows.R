@@ -8,7 +8,6 @@
 #' @param distribution_vars A character naming the vars of interest
 #' @param screening_vars Logical to call add_screening_vars() before updating rows
 #' @param which_data dataset to which the information is to be added(only 1 can be used at a time)
-#' @importClassesFrom metime_analyser
 #' @return object of class metime_analyser with phenotype data added to row data
 #' @export
 setGeneric("add_distribution_vars_to_rows", function(object, screening_vars, distribution_vars, which_data) standardGeneric("add_distribution_vars_to_rows"))

@@ -8,7 +8,6 @@
 #' @param type type of test, "shapiro" and "kruskal" are available
 #' @param metab_names column that has the metabolite names in col_data.
 #' @param all logical to add all kinds of available stats.
-#' @importClassesFrom metime_analyser
 #' @return S4 object with shapiro wilk test related data in the col_data
 #' @export
 setGeneric("add_col_stats", function(object, which_data, type, metab_names, all) standardGeneric("add_col_stats"))

@@ -2,7 +2,6 @@
 #' Function to check the ids in the data and data format
 #' @description sanity check to check for ids and order of the data
 #' @param object S4 object of class of metime_analyser
-#' @importClassesFrom metime_analyser
 #' @return NULL if it passes all the sanity checks
 #' @export
 setGeneric("check_ids_and_classes",  function(object) standardGeneric("check_ids_and_classes")) 
@@ -35,7 +34,6 @@ setMethod("check_ids_and_classes", "metime_analyser", function(object) {
 #' Function to check the format of rownames and colnames and if they are same or not
 #' @description sanity check to check for rownames of the data
 #' @param object S4 object of class of metime_analyser
-#' @importClassesFrom metime_analyser
 #' @return NULL if it passes all the sanity checks
 #' @export
 setGeneric("check_rownames_and_colnames", function(object) standardGeneric("check_rownames_and_colnames"))
@@ -77,7 +75,6 @@ setMethod("check_rownames_and_colnames", "metime_analyser", function(object) {
 #' Function to check the format of results if they exist
 #' @description sanity check to check for results of the analysis
 #' @param object S4 object of class of metime_analyser
-#' @importClassesFrom metime_analyser
 #' @return NULL if it passes all the sanity checks
 #' @export
 setGeneric("check_results", function(object) standardGeneric("check_results"))

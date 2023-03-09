@@ -4,7 +4,7 @@
 \alias{mod_filter}
 \title{Modification function to filter columns in data, row_data or col_data}
 \usage{
-mod_filter(object, which_data, ..., type = "data")
+mod_filter(object, which_data, ..., type = "data", results_index = NULL)
 }
 \arguments{
 \item{object}{A S4 object of class metime_analyser.}
@@ -13,7 +13,10 @@ mod_filter(object, which_data, ..., type = "data")
 
 \item{...}{arguments to pass directly into dplyr::filter() function.}
 
-\item{type}{a character defining which data to filter. Can be "data","row_data", or "col_data". Default set to "data". Note: if a dataset is filtered the row_data will be changed accordingly}
+\item{type}{either "row" for row_data or "col" for col_data or "data" for data and "results" for results.
+Set to "data" as default}
+
+\item{results_index}{Index to define the results of interest. Can be character and numeric}
 }
 \value{
 object with mutated data, col_data or row_data

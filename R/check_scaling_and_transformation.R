@@ -4,7 +4,6 @@
 #' @description Function to be applied on metime_analyser to check for log transformation and scaling
 #' @param object An S4 object of metime_anlyser class
 #' @param which_data the dataset/s to be checked
-#' @importClassesFrom metime_analyser
 #' @returns NULL but checks if the data is scaled or not
 #' @export
 setGeneric("check_scaling_and_transformation", function(object, which_data) standardGeneric("check_scaling_and_transformation")) 

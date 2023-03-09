@@ -3,7 +3,6 @@
 #' @param object S4 object of class metime_analyser
 #' @param function_name name of the function used
 #' @param params other parameters used wrapped as a list
-#' @importClassesFrom metime_analyser
 #' @return object of class metime_analyser with the information of method applied
 #' @export 
 setGeneric("add_function_info", function(object, function_name, params) standardGeneric("add_function_info"))
