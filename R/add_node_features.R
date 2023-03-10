@@ -10,8 +10,15 @@ setMethod("add_node_features", "metime_analyser", function(object, results_indic
 		stopifnot(all(names(results_indices) %in% c("network", "guide")))
 		stopifnot(length(results_indices$network)==1)
 		stopifnot(length(results_indices$guide)==1)
-		color.gradient <- function(x, colors=c("blue","gray","red"), colsteps=50) {
+		color.gradient <- function(x, colors=c("blue","gray","red"), colsteps=50, type=NULL) {
+			if(is.null(type)) {
 				return(colorRampPalette(colors) (colsteps)[findInterval(x, seq(-1, 1, length.out=colsteps))])
+			} else if(type %in% "ci"){
+				return(ifelse(x==1, "#FFFF00", colorRampPalette(colors) (colsteps)[findInterval(x, seq(-1, 1, length.out=colsteps))]))
+			} else {
+				warning("No colors are added as this type is not available")
+				return(x)
+			}
 		}
 		network <- object@results[[results_indices$network]]
 		guide <- object@results[[results_indices$guide]]
@@ -22,16 +29,20 @@ setMethod("add_node_features", "metime_analyser", function(object, results_indic
 		if(guide$information$calc_type[which_calculation] %in% "regression") {
 			column_for_colors <- data_of_interest[ ,c("beta", "pval")]
 			column_for_colors <- sign(column_for_colors$beta) * -log10(column_for_colors$pval)
+			gradient <- color.gradient(column_for_colors)
 		} else if(guide$information$calc_type[which_calculation] %in% "CI_metabolite") {
 			column_for_colors <- data_of_interest[ ,"ci"]
+			gradient <- color.gradient(column_for_colors, type="ci")
 		} else if(guide$information$calc_type[which_calculation] %in% "PCA") {
 			column_for_colors <- data_of_interest[ ,"PC1"]
+			gradient <- color.gradient(column_for_colors)
 		} else if(guide$information$calc_type[which_calculation] %in% "UMAP") {
 			column_for_colors <- data_of_interest[ ,"UMAP1"]
+			gradient <- color.gradient(column_for_colors)
 		} else if(guide$information$calc_type[which_calculation] %in% "tSNE") {
 			column_for_colors <- data_of_interest[ ,"X1"]
+			gradient <- color.gradient(column_for_colors)
 		}
-		gradient <- color.gradient(column_for_colors)
 		network$plot_data$network$node$color <- gradient
 		object@results[[results_indices$network]] <- network
 		return(object)

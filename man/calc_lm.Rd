@@ -9,7 +9,7 @@ calc_lm(
   which_data,
   stratifications = NULL,
   cols_for_meta = NULL,
-  threshold = "nominal",
+  threshold = c("none", "nominal", "li", "fdr", "bonferroni"),
   verbose = T,
   name = "regression_lm_1"
 )
@@ -23,7 +23,7 @@ calc_lm(
 
 \item{cols_for_meta}{a character vector to define column names that are to be used for plotting purposes. Default set to NULL, therby not adding columns as metadata.}
 
-\item{threshold}{a character of length 1 to define the type of threshold for significant interactions.
+\item{threshold}{a character vector to define the type of threshold for significant interactions. Default set to all availabe thresholds: c("none","nominal","li","fdr","bonferroni").
 allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)}
 
 \item{verbose}{a logical on whether to print the calculation progress. Default set to FALSE.}

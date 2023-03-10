@@ -26,12 +26,12 @@ setMethod("get_report", "metime_analyser", function(object, title=NULL, file=NUL
                       " rmdformats::readthedown:\n  highlight: kate\n  code_folding: hide\n--- \n"))
     }else if(type == "pdf"){
       out <- paste0('---\n',
-                      'title: "', title,'"\n',
-                      'date: ',Sys.Date(),'\n',
-                      ifelse(!is.null(author), paste0('author: ',paste0(author, collapse=", "),'\n'),''),
-                      'output: \npdf_document:\n',
-                          'toc: true\n',
-                           'toc_depth: 2\n',
+                    'title: "', title,'"\n',
+                    'date: ',Sys.Date(),'\n',
+                    ifelse(!is.null(author), paste0('author: ',paste0(author, collapse=", "),'\n'),''),
+                    'output: \npdf_document:\n',
+                    'toc: true\n',
+                    'toc_depth: 2\n',
                     '---\n')
     }else{
       out=NULL
@@ -42,9 +42,9 @@ setMethod("get_report", "metime_analyser", function(object, title=NULL, file=NUL
   get_analyzer_info <- function(object){
     # function that prints all information of the analyzer object in rmarkdown
     out <- paste0("# Analyzer info\n```{r,echo=F, warning=FALSE, message=FALSE}\n",
-             'results <- object@results\n ',
-             'print(object)',
-             "\n```\n", collapse="")
+                  'results <- object@results\n ',
+                  'print(object)',
+                  "\n```\n", collapse="")
     return(out)
   }
   
@@ -71,12 +71,13 @@ setMethod("get_report", "metime_analyser", function(object, title=NULL, file=NUL
   }
   
   get_table <- function(table_location, caption=NULL, rownames=F, type="html"){
+    table_location <- table_location %>% gsub(pattern='"', replacement = "'")
     if(type=="html"){
-      out <- paste0('DT::datatable(',table_location,', caption = "',caption,'", rownames=',rownames, ',' ,
-      'extensions = "Buttons,\n options = list(dom = "Blfrtip,\nbuttons = c("csv", "excel")))')
+      out <- paste0('```{r ,echo=F}\nDT::datatable(',table_location,', caption = "',caption,'", rownames=',rownames, ',' ,
+                    'extensions = "Buttons",\n options = list(dom = "Blfrtip",\nbuttons = c("csv", "excel")))\n``` ')
     }
     else if(type=="pdf"){
-      out <- paste0('knitr::kable(',table_location,'caption = "',caption,'", rownames=',rownames,'")')
+      out <- paste0('```{r ,echo=F}\nknitr::kable(',table_location,', caption = "',caption,'", rownames=',rownames,'")\n```')
     }
     else{
       out <- ""
@@ -158,8 +159,8 @@ setMethod("get_report", "metime_analyser", function(object, title=NULL, file=NUL
                                               paste0(this_info$par[which(this_info$var==y)],"'"), 
                                               paste0("c('",paste0(this_info$par[which(this_info$var==y)], collapse=" , "),")")))
                              }
-                             })%>%
-            paste0(collapse = ", "), ")") %>% gsub(pattern='"',replacement = "'",fixed=T)
+                           })%>%
+                             paste0(collapse = ", "), ")") %>% gsub(pattern='"',replacement = "'",fixed=T)
         paste0('   <button class=button_fun data-toggle=modal data-target=',paste0("#",prefix,x),' >', names(list)[x],'</button><span>',my_params,' %>% </span><br>')
       })
       pipe_info[[length(pipe_info)]] <- pipe_info[[length(pipe_info)]] %>% gsub(pattern="%>%", replacement = "", fixed=T)
@@ -174,22 +175,22 @@ setMethod("get_report", "metime_analyser", function(object, title=NULL, file=NUL
       }) %>% unlist()
       
       out <- c(paste0("\n```{r, echo=F}\n", 
-                    'htmltools::HTML("<div class=body_fun> object %>% <br>',
-                    '<div style= margin-left:5px>',
-                    paste0(pipe_info, collapse=""), 
-                    '</div>',
-                            '</div>")\n```\n'
-                    ),
-               pipe_modal
-               )
+                      'htmltools::HTML("<div class=body_fun> object %>% <br>',
+                      '<div style= margin-left:5px>',
+                      paste0(pipe_info, collapse=""), 
+                      '</div>',
+                      '</div>")\n```\n'
+      ),
+      pipe_modal
+      )
     }
     else if(type=="pdf"){
       out <- lapply(seq_along(list), function(x){
         this_info <- data.frame(var = names(list[[x]]) %>% gsub(pattern="[0-9]", replacement = ""), par=as.character(list[[x]]), stringsAsFactors = F)
         my_params <-paste0("(",lapply(unique(this_info$var), function(y) 
           paste0(y, " = ", ifelse(length(which(this_info$var==y))==1,
-                                paste0("'",this_info$par[which(this_info$var==y)],"'"), 
-                                paste0("c('",paste0(this_info$par[which(this_info$var==y)], collapse="', '"),"')")))) %>%
+                                  paste0("'",this_info$par[which(this_info$var==y)],"'"), 
+                                  paste0("c('",paste0(this_info$par[which(this_info$var==y)], collapse="', '"),"')")))) %>%
             paste0(collapse = ", "), ")") %>% gsub(pattern='"',replacement = "'",fixed=T)
         out <- paste0("\n >> ###### ", names(list)[x],"", my_params," *%>%*\n")
       })
@@ -212,7 +213,7 @@ setMethod("get_report", "metime_analyser", function(object, title=NULL, file=NUL
   out_analyzer <- get_analyzer_info(object = object)
   # CSS block 
   out_css <- ifelse(device=="html", 
-  "```{css, echo=FALSE}
+                    "```{css, echo=FALSE}
 #content{max-width:100%}
 #sidebar{bacgkround:black}
 #postamble{border-top:solid 10px black}
@@ -220,20 +221,18 @@ setMethod("get_report", "metime_analyser", function(object, title=NULL, file=NUL
 .button_fun:hover{padding: 0 2px; border:transparent; background:transparent; color:#9F2042;font-weight:bold}
 .body_fun{border-radius: 10px; background:rgb(214, 214, 214); padding:10px; margin:10px 0; }
 ```",
-  "")
+                    "")
   # JS block
   out_js <- ''
   
   #### body ####
-  table_list <- list()
-  table_info <- data.frame()
   out_body <- lapply(names(results), function(section_name){
     # add section title
     section_title = get_heading(text=section_name, tabset=T, level=1, type=device)
     section_sub_title = get_p(#'\n',"General information",'\n',
-                              #'\n',paste0("Calculation type:  ", results[[section_name]][["information"]]$calc_type)%>% gsub(pattern='"', replacement = "'", fixed=T),
-                              '\n',paste0("Information:  ", results[[section_name]][["information"]]$calc_info)%>% gsub(pattern='"', replacement = "'", fixed=T),
-                              '\n', '\n')
+      #'\n',paste0("Calculation type:  ", results[[section_name]][["information"]]$calc_type)%>% gsub(pattern='"', replacement = "'", fixed=T),
+      '\n',paste0("Information:  ", results[[section_name]][["information"]]$calc_info)%>% gsub(pattern='"', replacement = "'", fixed=T),
+      '\n', '\n')
     section_pipe = get_pipe(results[[section_name]][["functions_applied"]], prefix=section_name, type=device)
     
     # add tabs to section
@@ -244,7 +243,7 @@ setMethod("get_report", "metime_analyser", function(object, title=NULL, file=NUL
           lapply(seq_along(results[[section_name]][["plots"]][[tab_nr]][[section_plots]]), function(section_sub_plots){
             if(is.data.frame(results[[section_name]][["plots"]][[tab_nr]][[section_plots]][[section_sub_plots]])){
               c(get_heading(text=names(results[[section_name]][["plots"]][[tab_nr]])[section_plots], level=2, tabset=F, type=device), # add plot name
-                get_table(plot_location = paste0('results[["',section_name,'"]][["plots"]][[',tab_nr,']][[',section_plots,']][[',section_sub_plots,']]'), type=device)
+                get_table(table_location = paste0('results[["',section_name,'"]][["plots"]][[',tab_nr,']][[',section_plots,']][[',section_sub_plots,']]'), type=device)
               )
             }else{
               #add a plot to the report
@@ -261,13 +260,6 @@ setMethod("get_report", "metime_analyser", function(object, title=NULL, file=NUL
         # add all plots
       }) %>% unlist()
     }) %>% unlist()
-    # save_plot_data 
-    if(table){
-      table_list<- append(table_list, results[[section_name]][["plot_data"]])
-      names(table_list) = NULL
-      table_info = rbind(table_info, data.frame(calc_type=results[[section_name]]$information$calc_type,
-                                                calc_info=results[[section_name]]$information$calc_info))
-    }
     
     c(
       section_title,
@@ -282,13 +274,23 @@ setMethod("get_report", "metime_analyser", function(object, title=NULL, file=NUL
   out_footer <- "# Session info\n```{r session_info,include=T, warning=FALSE, message=FALSE}\nprint(sessionInfo())\n```\n"
   
   # Write xlsx
+  # save_plot_data 
   if(table){
-    name(table_list)
-    my_info$sheet_nr <- 1:nrow(my_info)
-    xlsx::write.xlsx(x=my_info, file = paste0(out_file,".xlsx"),sheetName = "info")
+    table_list <- list()
+    table_info <- data.frame()
+    for(section_name in names(results)){
+      table_list <- append(table_list,results[[section_name]][["plot_data"]])
+      table_info <- rbind(table_info, data.frame(calc_type=results[[section_name]]$information$calc_type,
+                                                 calc_info=results[[section_name]]$information$calc_info,
+                                                 stringsAsFactors = F
+      ))
+    }
+    table_info$sheet_name <- paste0("sheet_",1:nrow(table_info))
+    names(table_list) <- paste0("sheet_",1:length(table_list))
     
-    for(x in seq_along(my_tables)){
-      xlsx::write.xlsx(x=my_tables[[x]], file = paste0(out_file,".xlsx"),sheetName = paste0("sheet",my_info$sheet_nr[x]), append = T)
+    xlsx::write.xlsx(x=table_info, file = paste0(out_file,".xlsx"),sheetName = "info")
+    for(x in names(table_list)){
+      xlsx::write.xlsx(x=table_list[[x]], file = paste0(out_file,".xlsx"),sheetName = x, append = T)
     }
   }
   # write report ####

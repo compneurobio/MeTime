@@ -251,11 +251,12 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 									aes_string(x="x", y=add$group, color="color", 
 										fill="color")) +
         								geom_point() + scale_color_manual(name="color", 
-        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#D4F582","fdr"="#82DEF5","bonferroni"="#EE6868"))
+        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#D4F582","fdr"="#82DEF5","bonferroni"="#EE6868")) +
+        								xlab("beta +- se")
         						} else {
         							plot <- ggplot(results$plot_data[[ind_data]], 
 									aes_string(x="x", y=add$group)) +
-        								geom_point()
+        								geom_point() + xlab("beta +- se")
         						}
 							} else {
 								if("color" %in% colnames(results$plot_data[[ind_data]])) {
@@ -263,13 +264,15 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 										aes_string(x="x", y=add$group, xmin="xmin", xmax="xmax", 
 										color="color", fill="color")) +
         								geom_point() +
-        								geom_errorbar(width=.2, position=position_dodge(0.05))  + scale_color_manual(name="color", 
-        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#D4F582","fdr"="#82DEF5","bonferroni"="#EE6868"))
+        								geom_errorbar(width=.2, position=position_dodge(0.05))  + scale_color_manual(name="color",  
+        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#D4F582","fdr"="#82DEF5","bonferroni"="#EE6868")) +
+        								xlab("beta +- se")
         						} else {
         							plot <- ggplot(results$plot_data[[ind_data]], 
 										aes_string(x="x", y=add$group, xmin="xmin", xmax="xmax")) +
         								geom_point() +
-        								geom_errorbar(width=.2, position=position_dodge(0.05))
+        								geom_errorbar(width=.2, position=position_dodge(0.05)) +
+        								xlab("beta +- se")
         						}
 							}
 						} else {
@@ -333,8 +336,19 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						}
 					} else if(results$information$calc_type[ind_data] %in% "feature_selection") {
 						data <- results$plot_data[[ind_data]]
+						if(is.null(add$group)) add$group <- "id_y"
 						if(plot_type %in% "manhattan") {
-
+							if(is.null(add$color)) {
+								data$color <- ifelse(data$meanImp > 30, "red", "grey")
+								plot <- ggplot(data, aes_string(x=add$group, y="meanImp", color="color")) + geom_point() + geom_jitter() +
+										geom_hline(yintercept=30, linetype="dashed", color="green")
+							} else {
+								plot <- ggplot(data, aes_string(x=add$group, y="meanImp", color=add$color)) + geom_point() + geom_jitter() +
+										geom_hline(yintercept=30, linetype="dashed", color="green") 
+							}
+							return(plot)
+						} else {
+							stop("This type of plot is not available for this calculation")
 						}
 					}
 				})
@@ -511,7 +525,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			} else {
 				results$plots[[length(results$plots)+1]] <- networks
 			}
-			object@results[[length(object@results)]] <- results
+			#object@results[[length(object@results)]] <- results
 		} else if(type %in% "dimensionality_reduction") {
 			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in%
 			c("PC1", "PC2", "UMAP1", "UMAP2", "X1", "X2", "time", "id", "subject", "name")]
@@ -540,7 +554,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			} else {
 				results$plots[[length(results$plots)+1]] <- plots
 			}
-			object@results[[length(object@results)]] <- results
+			#object@results[[length(object@results)]] <- results
 		} else if(type %in% "CI_metabotype" | type %in% "CI_metabolite") {
 			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in% c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "samples", "timepoints", "name")]
 			if(length(cols_of_int) < 2) {
@@ -586,7 +600,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				results$plots[[length(results$plots)+1]] <- dotplots
 				results$plots[[length(results$plots)+1]] <- boxplots
 			}
-			object@results[[length(object@results)]] <- results
+			#object@results[[length(object@results)]] <- results
 		} else if(type %in% "pairwise_distance" | type %in% "pairwise_correlation" | type %in% "colinearity") {
 			plots <- plot(object, results_index=length(object@results), interactive=.interactive,
 				plot_type="tile")
@@ -597,7 +611,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			} else {
 				results$plots[[length(results$plots)+1]] <- plots
 			}
-			object@results[[length(object@results)]] <- results
+			#object@results[[length(object@results)]] <- results
 		} else if(type %in% "regression") {
 			data <- results$plot_data[[1]]
 			cols_of_int <- colnames(data)[!colnames(data) %in% 
@@ -621,7 +635,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			} else {
 				results$plots[[length(results$plots)+1]] <- plots
 			}
-			object@results[[length(object@results)]] <- results
+			#object@results[[length(object@results)]] <- results
 		} else if(type %in% "distribution") {
 			data <- results$plot_data[[1]]
 			plots <- lapply(colnames(data)[!colnames(data) %in% c("id", "time", "subject")], function(.col) {
@@ -645,9 +659,46 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			} else {
 				results$plots[[length(results$plots)+1]] <- plots
 			}
-			object@results[[length(object@results)]] <- results
+			#object@results[[length(object@results)]] <- results
 		} else if(type %in% "feature_selection") {
-			data <- results$plot_data
+			data <- results$plot_data[[1]]
+			cols_of_int <- colnames(data)[!colnames(data) %in% "id_x", "id_y", "id","y","id_met", "meanImp", "medianImp", "minImp", "maxImp", "normHits", "decision"]
+			if(length(cols_of_int)==0) {
+				plots <- list(no_meta=plot(object, interactive=.interactive, results_index=length(object@results),
+					plot_type="manhattan"))
+			} else {
+				if(grep("color_", cols_of_int) %>% length() != 0) {
+					cols_of_int_color <- cols_of_int[grep("color_", cols_of_int)]
+					cols_of_int_x <- cols_of_int[!grep("color_", cols_of_int)]
+					combinations <- expand.grid(cols_of_int_x, cols_of_int_color) %>% t() %>% as.matrix()
+					plots <- lapply(1:ncol(combinations), function(y) {
+							plots <- plot(object, interactive=.interactive, results_index=length(object@results),
+									plot_type="manhattan", 
+									group=as.character(combinations[1, y]), 
+									color=as.character(combinations[2, y]))
+							return(plots)
+						})
+					names(plots) <- apply(combinations, 2, paste, collapse="-")
+				} else {
+					plots <- lapply(cols_of_int, function(x) {
+							plots <- plot(object, interactive=.interactive, results_index=length(object@results),
+									plot_type="manhattan", group=x)
+							return(plots)
+						})
+					names(plots) <- cols_of_int
+				}
+			}
+			if(results$plots %>% length() == 0) {
+				results$plots[[1]] <- plots
+			} else {
+				results$plots[[length(results$plots)+1]] <- plots
+			}
+			#object@results[[length(results$plots)+1]] <- plots
+		}
+		if(is.null(results_index)) {
+			object@results[[length(results$plots)+1]] <- results
+		} else {
+			object@results[[results_index]] <- results
 		}
 		return(object)
 	})

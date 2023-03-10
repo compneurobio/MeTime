@@ -5,21 +5,23 @@
 #' @param verbose a logical on whether to print the calculation progress. Default set to FALSE.
 #' @param cols_for_meta a character vector to define column names that are to be used for plotting purposes. Default set to NULL, therby not adding columns as metadata.
 #' @param name a character vector to define the index within the results. Should be equal to length of which_data. Default set to regression_lm_1.
-#' @param threshold a character of length 1 to define the type of threshold for significant interactions. 
+#' @param threshold a character vector to define the type of threshold for significant interactions. Default set to all availabe thresholds: c("none","nominal","li","fdr","bonferroni").
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
 #' @details Add details here
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
-setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold="nominal", verbose=T,name="regression_lm_1") standardGeneric("calc_lm"))
+setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold=c("none","nominal","li","fdr","bonferroni"), verbose=T,name="regression_lm_1") standardGeneric("calc_lm"))
 setMethod("calc_lm", "metime_analyser", function(object,
                                                   which_data,
                                                   stratifications = NULL,
                                                   cols_for_meta=NULL,
-                                                  threshold="nominal",
+                                                  threshold=c("none","nominal","li","fdr","bonferroni"),
                                                   verbose=T,
                                                   name="regression_lm_1") {
-  out=list()
+  #sanity checks
+  if(!all(c("cov", "type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lm() requires columns with covariates (named 'cov') and type")
+
   if(grep(name, names(object@results)) %>% length() >= 1) {
     warning("name of the results was previously used, using a different name")
     index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
@@ -30,7 +32,6 @@ setMethod("calc_lm", "metime_analyser", function(object,
   #stratify data
   lm_data <- get_stratified_data(which_data=which_data, 
                                   object=object, stratifications=stratifications)
-  stopifnot(all(c("cov", "type") %in% names(lm_data$col_data)))
   
   # add time and subject to dataframe
   lm_data$data <-  lm_data$data %>% 
@@ -66,18 +67,11 @@ setMethod("calc_lm", "metime_analyser", function(object,
                    ) %>% 
     do.call(what=rbind.data.frame)
   
-  if(verbose){
-    add_progress_bar <- txtProgressBar(min = 1, max = nrow(my_runs), style = 3)
-    on.exit(close(add_progress_bar))
-    cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
-    on.exit(parallel::stopCluster(cl))
-  }
-  
   results=parallel::mclapply(1:nrow(my_runs), 
                              mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
                              mc.preschedule = TRUE,
                              function(x) {
-                              # if(verbose) cat(x, " , ") # report iteration
+                               if(verbose) cat(x, " , ") # report iteration
                                # extract data 
                                met = unique(my_formula$met[which(my_formula$cov==my_runs$cov[x])])
                                trait = unique(my_formula$trait[which(my_formula$cov==my_runs$cov[x])])
@@ -117,7 +111,7 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                  silent = T)
                                  if(all(class(this_model)!="try-error")){
                                    out <- this_model$all$eqtls %>%
-                                     dplyr::rename(trait=gene, met=snps) %>%
+                                     dplyr::rename(trait=gene, met=snps, pval=pvalue) %>%
                                      dplyr::mutate(x=beta, y=met)
                                    out$time = as.character(my_runs$time[x])
                                    out$type = out$time
@@ -129,9 +123,35 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                    out$type = out$time
                                  }
                                  rownames(out) <- out$y
+                                 out <- out %>% dplyr::mutate(
+                                   color= "none")
+  
+                                      for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
+                                        if(i=="none"){
+                                          out<-out %>% 
+                                            dplyr::mutate(color="none") 
+                                        }else if(i=="nominal"){
+                                          out<-out %>% 
+                                            dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))
+                                        }else if(i == "li"){
+                                          eigenvals <- cor(lm_data$data[which(lm_data$data$time == my_runs$time[x]),my_met]) %>%
+                                            eigen()
+                                          li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+                                          out<-out%>% 
+                                            dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color))
+                                        }else if(i=="fdr"){
+                                          out<-out %>% 
+                                            dplyr::mutate(fdr=p.adjust(pval, method="BH")) %>% 
+                                            dplyr::mutate(color=ifelse(fdr<=0.05, "fdr",color)) %>% 
+                                            dplyr::select(-fdr)
+                                        }else if(i=="bonferroni"){
+                                          out=out %>% 
+                                            dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color))
+                                        }
+                                      }
                                  out
                                })
-  if(verbose) setTxtProgressBar(add_progress_bar, nrow(my_runs))
+  
   names(results) <- paste0(name,"_" ,unique(lm_data$data$time))
   
   if(is.null(cols_for_meta)) {
