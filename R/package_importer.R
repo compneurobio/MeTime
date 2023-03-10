@@ -248,10 +248,9 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							if(!all(c("xmin", "xmax") %in% colnames(results$plot_data[[ind_data]]))) {
 								if("color" %in% colnames(results$plot_data[[ind_data]])) {
 									plot <- ggplot(results$plot_data[[ind_data]], 
-									aes_string(x="x", y=add$group, color="color", 
-										fill="color")) +
+									aes_string(x="x", y=add$group, color="color")) +
         								geom_point() + scale_color_manual(name="color", 
-        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#D4F582","fdr"="#82DEF5","bonferroni"="#EE6868")) +
+        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#ffa500","fdr"="#82DEF5","bonferroni"="#EE6868")) +
         								xlab("beta +- se")
         						} else {
         							plot <- ggplot(results$plot_data[[ind_data]], 
@@ -262,10 +261,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 								if("color" %in% colnames(results$plot_data[[ind_data]])) {
 									plot <- ggplot(results$plot_data[[ind_data]], 
 										aes_string(x="x", y=add$group, xmin="xmin", xmax="xmax", 
-										color="color", fill="color")) +
+										color="color")) +
         								geom_point() +
         								geom_errorbar(width=.2, position=position_dodge(0.05))  + scale_color_manual(name="color",  
-        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#D4F582","fdr"="#82DEF5","bonferroni"="#EE6868")) +
+        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#ffa500","fdr"="#82DEF5","bonferroni"="#EE6868")) +
         								xlab("beta +- se")
         						} else {
         							plot <- ggplot(results$plot_data[[ind_data]], 
