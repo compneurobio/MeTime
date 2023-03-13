@@ -82,7 +82,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 						return(cbind.data.frame(data[[x]], dummy_metadata))
 					})
 				}
-				if(length(grep("calc_|mod_merge_results", names(object@results[[length(object@results)]]$functions_applied)))==1) {
+				if(length(grep("calc_|mod_merge_results|add_result", names(object@results[[length(object@results)]]$functions_applied)))==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), plot_data=plot_data,
 							information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {

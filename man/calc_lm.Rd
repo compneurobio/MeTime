@@ -21,7 +21,8 @@ calc_lm(
 
 \item{stratifications}{list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.}
 
-\item{cols_for_meta}{a character vector to define column names that are to be used for plotting purposes. Default set to NULL, therby not adding columns as metadata.}
+\item{cols_for_meta}{a character vector to define column names that are to be used for plotting purposes. Default set to NULL, therby not adding columns as metadata.
+If you want automated facet wrapping option then set your new_columns as "facet_your_name"}
 
 \item{threshold}{a character vector to define the type of threshold for significant interactions. Default set to all availabe thresholds: c("none","nominal","li","fdr","bonferroni").
 allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)}

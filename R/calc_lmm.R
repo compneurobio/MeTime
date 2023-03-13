@@ -3,7 +3,8 @@
 #' @param object an S4 object of class metime_analyser                      
 #' @param which_data  a character defining the name of the dataset to be used.
 #' @param verbose a logical on whether to print the calculation progress. Default set to FALSE.
-#' @param cols_for_meta a character vector to define column names that are to be used for plotting purposes. Default set to NULL, therby not adding columns as metadata.
+#' @param cols_for_meta a list of character vector to define column names that are to be used for plotting purposes. Default set to NULL, therby not adding columns as metadata.
+#' If you want automated facet wrapping option then set your new_columns as "facet_your_name"
 #' @param name a character vector to define the index within the results. Should be equal to length of which_data. Default set to regression_gamm_1.
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
 #' @param random a character vector defining which variables should be treated as random effects. Default set to "subject".

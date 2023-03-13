@@ -114,19 +114,23 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   										} else {
   											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
   										}
-  										return(cut(a, breaks = breaks, labels = c("Q1", "Q2", "Q3", "Q4")))
+  										return(cut(a, breaks = breaks, 
+  											labels = c(paste("Q1_(", breaks[1], " - ", ")",breaks[2], sep=""), 
+  												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
+  												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
+  												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
 						})
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=x, y=ci)) + 
-								geom_point(aes_string(color=add$color, 
-								shape=add$shape)) + facet_wrap(add$strats) + theme_classic() +
+								geom_point(aes(color=.data[[add$color]], 
+								shape=.data[[add$shape]])) + facet_wrap(add$strats) + theme_classic() +
 								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape]))) + xlab("Subject order")
 						} else if(plot_type %in% "box") {
 							if(is.null(add$box_x)) {
 								stop("Define x-axis for boxplot. Use box_x=variable as an argument in the plot function")
 							} 
 							median_data <- df
-							median_data <- median_data[median_data$ci != 1, ]
+							#median_data <- median_data[median_data$ci != 1, ]
 							median_data$ci <- -log10(1-median_data$ci)
 							combinations <- combn(unique(median_data[ ,add$box_x]), 2)
 							if(length(which(is.na(df[ ,add$box_x])))>=1) {
@@ -179,12 +183,16 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   										} else {
   											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
   										}
-  										return(cut(a, breaks = breaks, labels = c("Q1", "Q2", "Q3", "Q4")))
+  										return(cut(a, breaks = breaks, 
+  											labels = c(paste("Q1_(", breaks[1], " - ", ")",breaks[2], sep=""), 
+  												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
+  												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
+  												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
 						})
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=PC1, y=PC2)) + 
-								geom_point(aes_string(color=add$color, 
-								shape=add$shape)) + facet_wrap(add$strats) + theme_classic() +
+								geom_point(aes(color=.data[[add$color]], 
+								shape=.data[[add$shape]])) + facet_wrap(add$strats) + theme_classic() +
 								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
 						} else {
 							stop("This type of plot is not available for this calculation")
@@ -203,13 +211,17 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   										} else {
   											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
   										}
-  										return(cut(a, breaks = breaks, labels = c("Q1", "Q2", "Q3", "Q4")))
+  										return(cut(a, breaks = breaks, 
+  											labels = c(paste("Q1_(", breaks[1], " - ", ")",breaks[2], sep=""), 
+  												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
+  												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
+  												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
 
 						})
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=UMAP1, y=UMAP2)) + 
-								geom_point(aes_string(color=add$color, 
-								shape=add$shape)) + facet_wrap(add$strats) + theme_classic() +
+								geom_point(aes(color=.data[[add$color]], 
+								shape=.data[[add$shape]])) + facet_wrap(add$strats) + theme_classic() +
 								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
 						} else {
 							stop("This type of plot is not available for this calculation")
@@ -228,12 +240,16 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   										} else {
   											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
   										}
-  										return(cut(a, breaks = breaks, labels = c("Q1", "Q2", "Q3", "Q4")))
+  										return(cut(a, breaks = breaks, 
+  											labels = c(paste("Q1_(", breaks[1], " - ", ")",breaks[2], sep=""), 
+  												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
+  												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
+  												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
 						})
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=X1, y=X2)) + 
-								geom_point(aes_string(color=add$color, 
-								shape=add$shape)) + facet_wrap(add$strats) + theme_classic()+
+								geom_point(aes(color=.data[[add$color]], 
+								shape=.data[[add$shape]])) + facet_wrap(add$strats) + theme_classic()+
 								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
 						} else {
 							stop("This type of plot is not available for this calculation")
@@ -248,30 +264,31 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							if(!all(c("xmin", "xmax") %in% colnames(results$plot_data[[ind_data]]))) {
 								if("color" %in% colnames(results$plot_data[[ind_data]])) {
 									plot <- ggplot(results$plot_data[[ind_data]], 
-									aes_string(x="x", y=add$group, color="color")) +
+									aes(x=x, y=.data[[add$group]], color=color)) +
         								geom_point() + scale_color_manual(name="color", 
         									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#ffa500","fdr"="#82DEF5","bonferroni"="#EE6868")) +
-        								xlab("beta +- se")
+        								xlab("beta +- se") + facet_wrap(add$strats)
         						} else {
         							plot <- ggplot(results$plot_data[[ind_data]], 
-									aes_string(x="x", y=add$group)) +
-        								geom_point() + xlab("beta +- se")
+									aes(x=x, y=.data[[add$group]])) +
+        								geom_point() + xlab("beta +- se") + facet_wrap(add$strats)
         						}
 							} else {
 								if("color" %in% colnames(results$plot_data[[ind_data]])) {
 									plot <- ggplot(results$plot_data[[ind_data]], 
-										aes_string(x="x", y=add$group, xmin="xmin", xmax="xmax", 
+										aes(x=x, y=.data[[add$group]], 
+											xmin=xmin, xmax=xmax, 
 										color="color")) +
         								geom_point() +
         								geom_errorbar(width=.2, position=position_dodge(0.05))  + scale_color_manual(name="color",  
         									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#ffa500","fdr"="#82DEF5","bonferroni"="#EE6868")) +
-        								xlab("beta +- se")
+        								xlab("beta +- se") + facet_wrap(add$strats)
         						} else {
         							plot <- ggplot(results$plot_data[[ind_data]], 
-										aes_string(x="x", y=add$group, xmin="xmin", xmax="xmax")) +
+										aes(x=x, y=.data[[add$group]], xmin=xmin, xmax=xmax)) +
         								geom_point() +
         								geom_errorbar(width=.2, position=position_dodge(0.05)) +
-        								xlab("beta +- se")
+        								xlab("beta +- se") + facet_wrap(add$strats)
         						}
 							}
 						} else {
@@ -290,13 +307,13 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							plot_data <- data[ ,add$col]
 							plot_data <- table(plot_data) %>% as.data.frame()
 							colnames(plot_data) <- c(add$col, "Frequency")
-							bar_plot <- ggplot(plot_data, aes_string(x=add$col, y="Frequency")) +
+							bar_plot <- ggplot(plot_data, aes(x=.data[[add$col]], y=Frequency)) +
 												geom_bar(stat="identity") + theme_classic() + coord_flip()
 							return(bar_plot)
 						} else if(plot_type %in% "density") {
 							plot_data <- data[ ,add$col]
 							mean <- mean(data[,add$col])
-							density_plot <- ggplot(plot_data, aes_string(x=add$col)) + geom_density(alpha=0.5) +
+							density_plot <- ggplot(plot_data, aes(x=.data[[add$col]])) + geom_density(alpha=0.5) +
 											geom_vline(data=plot_data, aes(xintercept=mean), linetype="dashed") + theme_classic() +
 											ylab("Density")
 							return(density_plot) 
@@ -315,7 +332,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							colnames(plot_data) <- c(add$col, "Timepoints", "Frequency")
 							levels <- plot_data$Timepoints %>% unique() %>% gsub(pattern="[a-z|A-Z]", replacement="") %>% as.numeric() %>% sort()
 							plot_data$Timepoints <- factor(plot_data$Timepoints, levels=paste("t", levels, sep=""))
-							bar_plot <- ggplot(data=plot_data, aes_string(x=add$col, y="Frequency", fill="Timepoints")) +
+							bar_plot <- ggplot(data=plot_data, aes(x=.data[[add$col]], y=Frequency, fill=Timepoints)) +
 											geom_bar(stat="identity") + theme_classic()
 							return(bar_plot)
 						} else if(plot_type %in% "density") {
@@ -326,7 +343,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							plot_data <- na.omit(plot_data)
 							mu <- as.data.frame(aggregate(plot_data[,add$col], list(Timepoints=plot_data$Timepoints), FUN=mean))
 							colnames(mu)[2] <- "mean"
-							density_plot <- ggplot(plot_data, aes_string(x=add$col, fill="Timepoints")) + geom_density(alpha=0.3) + 
+							density_plot <- ggplot(plot_data, aes(x=.data[[add$col]], fill=Timepoints)) + geom_density(alpha=0.3) + 
 										geom_vline(data=mu, aes(xintercept=mean, color=Timepoints), linetype="dashed") +
 			 							theme_classic() + ylab("Density")
 			 				return(density_plot)
@@ -339,10 +356,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						if(plot_type %in% "manhattan") {
 							if(is.null(add$color)) {
 								data$color <- ifelse(data$meanImp > 30, "red", "grey")
-								plot <- ggplot(data, aes_string(x=add$group, y="meanImp", color="color")) + geom_point() + geom_jitter() +
+								plot <- ggplot(data, aes(x=.data[[add$group]], y=meanImp, color=color)) + geom_point() + geom_jitter() +
 										geom_hline(yintercept=30, linetype="dashed", color="green")
 							} else {
-								plot <- ggplot(data, aes_string(x=add$group, y="meanImp", color=add$color)) + geom_point() + geom_jitter() +
+								plot <- ggplot(data, aes(x=.data[[add$group]], y=meanImp, color=.data[[add$color]])) + geom_point() + geom_jitter() +
 										geom_hline(yintercept=30, linetype="dashed", color="green") 
 							}
 							return(plot)
@@ -617,13 +634,29 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				c("x", "y", "xmin", "xmax", "pval", "tval", 
 					"beta", "trait", "met", "se", "level", 
 					"statistic","pvalue","FDR", "time", "type", "color")]
+			cols_of_int_facet <- cols_of_int[grep("facet_", cols_of_int)]
+			cols_of_int <- cols_of_int[!grep("facet_", cols_of_int)]
 			if(length(cols_of_int) >= 1) {
-				plots <- lapply(cols_of_int, function(x) {
+				if(length(cols_of_int_facet) > 1) {
+					combinations <- expand.grid(cols_of_int, cols_of_int_facet) %>% t() %>% as.matrix()
+					plots <- lapply(1:ncol(combinations), function(comb) {
+							plots <- plot(object, results_index=length(object@results), 
+								interactive=.interactive, plot_type="forest", 
+								group=combinations[1, comb],
+								strats=combinations[2, comb])
+							return(plots)
+						})
+					names(plots) <- apply(combinations, 2, paste, collapse="-")
+				} else {
+					plots <- lapply(cols_of_int, function(x) {
 						plots <-  plot(object, results_index=length(object@results), 
-								interactive=.interactive, plot_type="forest", group=x)
+								interactive=.interactive, plot_type="forest", 
+								group=x, strats=cols_of_int_facet)
 						return(plots)
 					})
-				names(plots) <- cols_of_int
+					names(plots) <- cols_of_int
+				}
+				
 			} else {
 				plots <-  plot(object, results_index=length(object@results), 
 					interactive=.interactive, plot_type="forest")
@@ -695,7 +728,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			#object@results[[length(results$plots)+1]] <- plots
 		}
 		if(is.null(results_index)) {
-			object@results[[length(results$plots)+1]] <- results
+			object@results[[length(object@results)]] <- results
 		} else {
 			object@results[[results_index]] <- results
 		}
