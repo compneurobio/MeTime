@@ -290,7 +290,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 											xmin=xmin, xmax=xmax, 
 										color="color")) +
         								geom_point(position = position_jitter(w = 0, h = 0.1)) +
-        								geom_errorbar(width=.2, position=position_jitter(w = 0, h = 0.1)) +
+        								geom_pointrange(width=.2, position=position_jitter(w = 0, h = 0.1)) +
         								scale_color_manual(values = c(none = "#EAE4E3", nominal = "#FCF6A4", 
                                 					li = "#ffa500", fdr = "#82DEF5", 
                                 					bonferroni = "#EE6868")) +
@@ -301,7 +301,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
         							plot <- ggplot(results$plot_data[[ind_data]], 
 										aes(x=x, y=.data[[add$group]], xmin=xmin, xmax=xmax)) +
         								geom_point(position = position_jitter(w = 0, h = 0.1)) +
-        								geom_errorbar(width=.2, position=position_jitter(w = 0, h = 0.1)) +
+        								geom_pointrange(width=.2, position=position_jitter(w = 0, h = 0.1)) +
         								facet_wrap(add$strats) + geom_vline(xintercept=0) +
         								ggpubr::theme_pubr(legend="right") +
   										labs(color="Significance level", x="beta +- se")
