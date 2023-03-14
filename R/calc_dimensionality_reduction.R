@@ -24,12 +24,12 @@ setMethod("calc_dimensionality_reduction_samples", "metime_analyser", function(o
       data_list <- get_stratified_data(object=object, which_data=which_data, stratifications=stratifications)
       data <- data_list[["data"]]
       row_data <- data_list[["row_data"]]
-      metadata_samples <- get_metadata_for_rows(object=object, which_data=which_data, columns=cols_for_samples)
+      metadata_samples <- get_metadata_for_rows(object=object, which_data=which_data, columns=cols_for_meta)
       if(type %in% "PCA") {
         pca_individuals <- prcomp(data, retx=TRUE, scale.=TRUE, center=TRUE, tol = NULL, ...)
         dr_data_samples <- as.data.frame(pca_individuals$x[,1:2])
         out <- get_make_results(object=object, data=list(dr_data_samples), 
-                metadata=list(metabs=metadata_metabs, samples=metadata_samples),
+                metadata=metadata_samples,
                 calc_type="PCA_samples", 
                 calc_info=paste("dimensionality reduction method:", 
                     type, "for samples data of", 
@@ -40,7 +40,7 @@ setMethod("calc_dimensionality_reduction_samples", "metime_analyser", function(o
         dr_data_samples <- as.data.frame(umap_individuals$layout)
         colnames(dr_data_samples) <- c("UMAP1", "UMAP2")
         out <- get_make_results(object=object, data=list(dr_data_samples), 
-                metadata=list(metabs=metadata_metabs, samples=metadata_samples),
+                metadata=metadata_samples,
                 calc_type="UMAP_samples", 
                 calc_info=paste("dimensionality reduction method:", 
                     type, "for samples data of", 
@@ -51,7 +51,7 @@ setMethod("calc_dimensionality_reduction_samples", "metime_analyser", function(o
         dr_data_samples <- as.data.frame(tsne_samples$data)
         rownames(dr_data_samples) <- rownames(data)
         out <- get_make_results(object=object, data=list(dr_data_samples), 
-                metadata=list(metabs=metadata_metabs, samples=metadata_samples),
+                metadata=metadata_samples,
                 calc_type="tSNE_samples", 
                 calc_info=paste("dimensionality reduction method:", 
                     type, "for samples data of", 
@@ -90,7 +90,7 @@ setMethod("calc_dimensionality_reduction_metabs", "metime_analyser", function(ob
       data <- data_list[["data"]]
       row_data <- data_list[["row_data"]]
       metadata_metabs <- get_metadata_for_columns(object=object, 
-        which_data=which_data, columns=cols_for_metabs)
+        which_data=which_data, columns=cols_for_meta)
       if(type %in% "PCA") {
         pca_metabs <- prcomp(t(data), retx=TRUE, scale.=TRUE, center=TRUE, tol = NULL, ...)
         dr_data_metabs <- as.data.frame(pca_metabs$x[,1:2])
