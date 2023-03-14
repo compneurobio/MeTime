@@ -20,8 +20,8 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 							samples <- rownames(out) %>% gsub(pattern="_[a-z|A-Z][-|0-9]+", replacement="")
 							levels <- timepoints %>% gsub(pattern="t", replacement="") %>% as.numeric() %>% sort()
 							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
-							out$samples <- samples
-							out$timepoints <- timepoints
+							out$subject <- samples
+							out$time <- timepoints
 						}
 					} else {
 						if(is.null(columns)) {
@@ -36,8 +36,8 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 							levels <- timepoints %>% gsub(pattern="t", replacement="") %>% as.numeric() %>% 
 										unique() %>% sort()	
 							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
-							out$timepoints <- timepoints
-							out$samples <- samples
+							out$time <- timepoints
+							out$subject <- samples
 						}
 					}
 					return(out)

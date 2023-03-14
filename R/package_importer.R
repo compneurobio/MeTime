@@ -106,7 +106,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 					if(results$information$calc_type[ind_data] %in% "CI_metabolite" |
 						results$information$calc_type[ind_data] %in% "CI_metabotype") {
 						df <- results$plot_data[[ind_data]]
-						exclude_cols <- c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "samples", "timepoints")
+						exclude_cols <- c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "subject", "time")
 						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
 						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
   										if(is.na(min(a)) | is.na(max(a))) {
@@ -265,13 +265,23 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 								if("color" %in% colnames(results$plot_data[[ind_data]])) {
 									plot <- ggplot(results$plot_data[[ind_data]], 
 									aes(x=x, y=.data[[add$group]], color=color)) +
-        								geom_point() + scale_color_manual(name="color", 
-        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#ffa500","fdr"="#82DEF5","bonferroni"="#EE6868")) +
-        								xlab("beta +- se") + facet_wrap(add$strats)
+        								geom_point(position = position_jitter(w = 0, h = 0.1)) + 
+  										scale_color_manual(values = c(none = "#EAE4E3", nominal = "#FCF6A4", 
+                                					li = "#ffa500", fdr = "#82DEF5", 
+                                					bonferroni = "#EE6868")) +
+        								facet_wrap(add$strats) + geom_vline(xintercept=0) +
+        								ggpubr::theme_pubr(legend="right") +
+  										labs(color="Significance level", x="beta +- se") 
         						} else {
         							plot <- ggplot(results$plot_data[[ind_data]], 
 									aes(x=x, y=.data[[add$group]])) +
-        								geom_point() + xlab("beta +- se") + facet_wrap(add$strats)
+        								geom_point(position = position_jitter(w = 0, h = 0.1)) + 
+  										scale_color_manual(values = c(none = "#EAE4E3", nominal = "#FCF6A4", 
+                                					li = "#ffa500", fdr = "#82DEF5", 
+                                					bonferroni = "#EE6868")) +
+        								facet_wrap(add$strats) + geom_vline(xintercept=0) +
+        								ggpubr::theme_pubr(legend="right") +
+  										labs(color="Significance level", x="beta +- se") 
         						}
 							} else {
 								if("color" %in% colnames(results$plot_data[[ind_data]])) {
@@ -279,16 +289,22 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 										aes(x=x, y=.data[[add$group]], 
 											xmin=xmin, xmax=xmax, 
 										color="color")) +
-        								geom_point() +
-        								geom_errorbar(width=.2, position=position_dodge(0.05))  + scale_color_manual(name="color",  
-        									values=c("none"="#EAE4E3","nominal"="#FCF6A4","li"="#ffa500","fdr"="#82DEF5","bonferroni"="#EE6868")) +
-        								xlab("beta +- se") + facet_wrap(add$strats)
+        								geom_point(position = position_jitter(w = 0, h = 0.1)) +
+        								geom_errorbar(width=.2, position=position_jitter(w = 0, h = 0.1)) +
+        								scale_color_manual(values = c(none = "#EAE4E3", nominal = "#FCF6A4", 
+                                					li = "#ffa500", fdr = "#82DEF5", 
+                                					bonferroni = "#EE6868")) +
+        								facet_wrap(add$strats) + geom_vline(xintercept=0) +
+        								ggpubr::theme_pubr(legend="right") +
+  										labs(color="Significance level", x="beta +- se")
         						} else {
         							plot <- ggplot(results$plot_data[[ind_data]], 
 										aes(x=x, y=.data[[add$group]], xmin=xmin, xmax=xmax)) +
-        								geom_point() +
-        								geom_errorbar(width=.2, position=position_dodge(0.05)) +
-        								xlab("beta +- se") + facet_wrap(add$strats)
+        								geom_point(position = position_jitter(w = 0, h = 0.1)) +
+        								geom_errorbar(width=.2, position=position_jitter(w = 0, h = 0.1)) +
+        								facet_wrap(add$strats) + geom_vline(xintercept=0) +
+        								ggpubr::theme_pubr(legend="right") +
+  										labs(color="Significance level", x="beta +- se")
         						}
 							}
 						} else {
@@ -572,7 +588,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			}
 			#object@results[[length(object@results)]] <- results
 		} else if(type %in% "CI_metabotype" | type %in% "CI_metabolite") {
-			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in% c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "samples", "timepoints", "name")]
+			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in% c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "subject", "time", "name")]
 			if(length(cols_of_int) < 2) {
 				if(length(cols_of_int)==1) {
 					combinations <- matrix(c(cols_of_int, cols_of_int), nrow=2, ncol=1)
