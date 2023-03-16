@@ -61,7 +61,10 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
             if(threshold=="FDR") {
               met.ggm.edges.filtered <- met.ggm.edges[which(met.ggm.edges$qval < 0.05),]
             } else if(threshold=="li") {
-              data <- data %>% as.matrix() %>% .[,] %>% as.data.frame()  
+              data <- data %>% as.matrix() %>% .[,] %>% as.data.frame() 
+              #removing cols with single value
+              cols_to_remove <- which(sapply(data, function(x) length(unique(x))) == 1)
+              data <- data[ ,-cols_to_remove]
               cordat <- cor(data)
               eigenvals <- eigen(cordat)$values
               li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
@@ -131,7 +134,7 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
               ggm_data <-  ggm_edges %>% filter(abs(pcor)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bh<=ggm_thresh])))
             } else if(threshold %in% "li") {
               data <- this_mat %>% as.matrix() %>% .[,] %>% as.data.frame()  
-              cordat <- cor(data)
+              cordat <- cor(data, use="pairwise.complete.obs")
               eigenvals <- eigen(cordat)$values
               li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
               ggm_data <- ggm_edges %>% filter(abs(pcor)>=min(abs(pval_mat$pcor[pval_mat$pval<=0.05/li.thresh])))

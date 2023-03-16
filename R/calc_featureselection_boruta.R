@@ -74,7 +74,7 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
                                           columns=cols_for_meta_x
                                           )
 
-  object <- object %>% get_make_results(data = list(results), 
+  object <- object %>% get_make_results(data = list(feature_selection=results), 
                               metadata = NULL, 
                               calc_type = "feature_selection", 
                               calc_info = paste("feature_selection", "_", sep = ""),

@@ -1,27 +1,3 @@
-usethis::use_import_from("rstatix", fun=c("wilcox_test", "t_test"))
-usethis::use_package("tidyverse", type="depends")
-usethis::use_package("DT", type="Imports")
-usethis::use_import_from("M3C", fun="tsne") # Also has umap - will change it
-usethis::use_import_from("umap", fun="umap")
-usethis::use_import_from("plotly", fun="ggplotly")
-usethis::use_package("visNetwork", type="Imports")
-usethis::use_package("GeneNet", type="Imports")
-usethis::use_package("longitudinal", type="Imports")
-usethis::use_package("glmnet", type="Imports")
-usethis::use_package("Boruta", type="Imports")
-usethis::use_import_from("multiway", fun="parafac") # get that manually - can't dependence
-usethis::use_import_from("xlsx", fun="write.xlsx") # No base function and same dependence issue
-usethis::use_package("mgcv", type="Imports")
-usethis::use_import_from("lmerTest", fun="lmer")
-usethis::use_import_from("parallel", fun="mclapply")
-usethis::use_package("WGCNA", type="Imports") # can't dependence
-usethis::use_import_from("dynamicTreeCut", fun="cutreeDynamic")
-usethis::use_package("rmarkdown", type="Imports")
-usethis::use_package("rmdformats", type="Imports")
-usethis::use_package("htmltools", type="Imports")
-usethis::use_package("rlang", type="Imports")
-usethis::use_package("MatrixEQTL", type="Imports")
-
 
 #' Validity function to check if the object is valid or not
 #' @description Function to check the validity of metime_analyser 
@@ -507,7 +483,10 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
 			row_data <- lapply(names(stratifications), function(x) {
               		row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
               		return(row_data) 
-          		}) %>% do.call(what=rbind.data.frame)
+          		})
+			row_data_samples <- lapply(seq_along(row_data), function(k) return(rownames(row_data[[k]])))
+			common_samples <- Reduce(intersect, row_data_samples)
+			row_data <- row_data[[1]][rownames(row_data[[1]]) %in% common_samples, ]
         	data <- data[rownames(data) %in% rownames(row_data), ]		
 		}
 		return(list(data=data, row_data=row_data, col_data=col_data))

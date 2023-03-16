@@ -10,6 +10,7 @@ calc_dimensionality_reduction_metabs(
   type,
   cols_for_meta,
   stratifications = list(),
+  name,
   ...
 )
 }
@@ -23,6 +24,8 @@ calc_dimensionality_reduction_metabs(
 \item{cols_for_meta}{A list of Character vectors to define columns names that are to be used for plotting purposes}
 
 \item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
+
+\item{name}{name of the results that you want to have}
 
 \item{...}{additional arguments that can be passed on to prcomp(), M3C::tsne() and umap::umap()}
 }

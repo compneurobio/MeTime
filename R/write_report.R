@@ -10,8 +10,8 @@
 #' @return Saves the report as html/pdf
 #' @export 
 
-setGeneric("get_report", function(object, title=NULL, file=NULL, table=F, device="html", interactive=F, author=NULL) standardGeneric("get_report"))
-setMethod("get_report", "metime_analyser", function(object, title=NULL, file=NULL, table=F,device="html", interactive=F, author=NULL){
+setGeneric("write_report", function(object, title=NULL, file=NULL, table=F, device="html", interactive=F, author=NULL) standardGeneric("write_report"))
+setMethod("write_report", "metime_analyser", function(object, title=NULL, file=NULL, table=F,device="html", interactive=F, author=NULL){
   results <- object@results
   # sanity checks ####
   get_header <- function(title, type="html"){

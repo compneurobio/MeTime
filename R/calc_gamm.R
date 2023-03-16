@@ -64,7 +64,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
   
   # model calculation ----
   
-  results=parallel::mclapply(1:10,#nrow(my_formula), 
+  results=parallel::mclapply(1:nrow(my_formula),#nrow(my_formula), 
                              mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
                              mc.preschedule = TRUE,
                              function(x) {

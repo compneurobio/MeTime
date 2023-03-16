@@ -82,7 +82,7 @@ for (i in which_data) {
               t <- paste(index_time_combinations[,y], collapse="vs")
               return(t)
       }) %>% unlist()
-
+    names(out_sum) <- combinations
     out <- get_make_results(object=object, data = out_sum, 
                               metadata = metadata, 
                               calc_type = rep("CI_metabotype", each=length(out_sum)), 

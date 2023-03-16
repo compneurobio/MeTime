@@ -36,7 +36,7 @@ setMethod("calc_distribution_samples", "metime_analyser",function(object, which_
     	row_data <- row_data[ ,c(cols, "subject", "time")]
     }
     #### results data frames to be built here
-    out <- get_make_results(object=object, data=list(row_data), 
+    out <- get_make_results(object=object, data=list(samples_distribution=row_data), 
     	metadata=NULL, calc_type="distribution_samples", 
     	calc_info=paste("Samples distributions dataframe of columns of interest in", which_data, sep=" "), 
     	name=name) %>%
@@ -74,7 +74,7 @@ setMethod("calc_distribution_metabs", "metime_analyser",function(object, which_d
     } else {
     	col_data <- col_data[ ,c(cols, "id")]
     }
-    out <- get_make_results(object=object, data=list(col_data), 
+    out <- get_make_results(object=object, data=list(metabs_distribution=col_data), 
     	metadata=NULL, calc_type="distribution_metabs", 
     	calc_info=paste("Metabolites distributions dataframe of columns of interest in", which_data, sep=" "), 
     	name=name) %>%
