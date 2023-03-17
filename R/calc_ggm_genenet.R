@@ -32,16 +32,19 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
           data$time <- rownames(data) %>% gsub(pattern="[a-z|A-Z][0-9]+_", replacement="")
           my_subjects <- data %>%     
               dplyr::select(all_of(c("subject","time"))) %>% 
-              dplyr::filter(get("time") %in% stratifications$time)%>% 
+              dplyr::filter(get("time") %in% times)%>% 
               dplyr::group_by(subject) %>% 
               dplyr::count(subject) %>% 
-              dplyr::filter(n == length(stratifications$time))
+              dplyr::filter(n == length(times))
                   
           data <- data %>% 
             dplyr::filter(time %in% times,
             subject %in% my_subjects[["subject"]])
           rm_col = intersect(names(data), c("adni_id","RID","rid","time","tp","subject", "id"))
-          vars <- data %>% select(-c(all_of(rm_col))) %>% names()     
+          #remove columns with singular value
+          cols_to_remove <- which(sapply(data, function(x) length(unique(x))) == 1)
+          data <- data[ ,-cols_to_remove]
+          vars <- data %>% select(-c(all_of(rm_col))) %>% names()
           # get full data
           data <- data %>% dplyr::arrange(time, subject) 
           n_subject = unique(data$subject) %>% length() %>% as.numeric()
@@ -63,8 +66,8 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
             } else if(threshold=="li") {
               data <- data %>% as.matrix() %>% .[,] %>% as.data.frame() 
               #removing cols with single value
-              cols_to_remove <- which(sapply(data, function(x) length(unique(x))) == 1)
-              data <- data[ ,-cols_to_remove]
+              #cols_to_remove <- which(sapply(data, function(x) length(unique(x))) == 1)
+              #data <- data[ ,-cols_to_remove]
               cordat <- cor(data)
               eigenvals <- eigen(cordat)$values
               li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
@@ -110,7 +113,8 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
           return(out)
 
         } else {
-          
+          cols_to_remove <- which(sapply(data, function(x) length(unique(x))) == 1)
+          data <- data[ ,-cols_to_remove]
           this_mat <- as.matrix(apply(data, 2, as.numeric))
           pcor_mat <- GeneNet::ggm.estimate.pcor(as.matrix(this_mat), method = "dynamic", verbose = F)
           # compute p-values of edges
@@ -133,7 +137,7 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
             # filter edges based on p-values - BH 
               ggm_data <-  ggm_edges %>% filter(abs(pcor)>=min(abs(pval_mat$pcor[pval_mat$p.adj.bh<=ggm_thresh])))
             } else if(threshold %in% "li") {
-              data <- this_mat %>% as.matrix() %>% .[,] %>% as.data.frame()  
+              data <- this_mat  
               cordat <- cor(data, use="pairwise.complete.obs")
               eigenvals <- eigen(cordat)$values
               li.thresh <- sum( as.numeric(eigenvals >= 1) + (eigenvals - floor(eigenvals)) )
