@@ -602,7 +602,17 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				} else if(length(cols_of_int)==0) {
 					plots <- list(no_meta=plot(object, results_index=length(object@results), 
 						interactive=.interactive, plot_type="dot"))
-					results$plots[[1]] <- plots 
+					if(length(results$plots)==0) {
+						results$plots[[1]] <- plots
+					} else {
+						results$plots[[length(results$plots)+1]] <- plots
+					}
+					if(is.null(results_index)) {
+						object@results[[length(object@results)]] <- results
+					} else {
+						object@results[[results_index]] <- results
+					}
+					return(object)
 				}
 			} else {
 				combinations <- combn(cols_of_int, 2)
