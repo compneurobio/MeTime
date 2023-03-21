@@ -68,6 +68,10 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' @export
 setMethod("plot", "metime_analyser", function(x, results_index, interactive, plot_type, ...) {
 		add <- list(...)
+		args <- lapply(add, function(x) if(!is.null(x)) return(rlang::sym(x)))
+		if(!is.null(args$strats)) {
+			args$strats <- NULL
+		}
 		results <- x@results[[results_index]]
 		get_text_for_plot <- function(data, colnames) {	
 						out <- c()
@@ -122,8 +126,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						})
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=x, y=ci)) + 
-								geom_point(aes(color=.data[[add$color]], 
-								shape=.data[[add$shape]])) + facet_wrap(add$strats) + theme_classic() +
+								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic() +
 								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape]))) + xlab("Subject order")
 						} else if(plot_type %in% "box") {
 							if(is.null(add$box_x)) {
@@ -141,9 +144,9 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							median_data <- median_data[!is.na(median_data[ ,add$box_x]), ]	
 							my_comparisons <- lapply(1:ncol(combinations), function(x) return(as.character(combinations[,x])))
 							plot <- ggpubr::ggboxplot(median_data, x=add$box_x, 
-								y="ci", color="black", fill=add$box_x, alpha=0.5, notch=F) +
+										y="ci", color="black", fill=add$box_x, alpha=0.5, notch=F) +
           						ggpubr::stat_compare_means(method="wilcox.test", comparisons=my_comparisons, 
-          						label.y=seq(from=3.5, to=11, by=0.5)) 
+          							label.y=seq(from=3.5, to=11, by=0.5)) 
           					plot <-	ggpubr::ggpar(plot, ylab="-log10(1-ci)") + labs(caption=info)
 						} else {
 							stop("This type of plot is not available for this calculation")
@@ -191,8 +194,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						})
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=PC1, y=PC2)) + 
-								geom_point(aes(color=.data[[add$color]], 
-								shape=.data[[add$shape]])) + facet_wrap(add$strats) + theme_classic() +
+								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic() +
 								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
 						} else {
 							stop("This type of plot is not available for this calculation")
@@ -220,8 +222,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						})
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=UMAP1, y=UMAP2)) + 
-								geom_point(aes(color=.data[[add$color]], 
-								shape=.data[[add$shape]])) + facet_wrap(add$strats) + theme_classic() +
+								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic() +
 								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
 						} else {
 							stop("This type of plot is not available for this calculation")
@@ -248,8 +249,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						})
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=X1, y=X2)) + 
-								geom_point(aes(color=.data[[add$color]], 
-								shape=.data[[add$shape]])) + facet_wrap(add$strats) + theme_classic()+
+								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic()+
 								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
 						} else {
 							stop("This type of plot is not available for this calculation")
@@ -573,6 +573,17 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				} else if(length(cols_of_int)==0) {
 					plots <- list(no_meta=plot(object, results_index=length(object@results), 
 						interactive=.interactive, plot_type="dot")) 
+					if(length(results$plots)==0) {
+						results$plots[[1]] <- plots
+					} else {
+						results$plots[[length(results$plots)+1]] <- plots
+					}
+					if(is.null(results_index)) {
+						object@results[[length(object@results)]] <- results
+					} else {
+						object@results[[results_index]] <- results
+					}
+					return(object)
 				}
 			} else {
 				combinations <- combn(cols_of_int, 2)
@@ -671,7 +682,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			cols_of_int_facet <- cols_of_int[grep("facet_", cols_of_int)]
 			cols_of_int <- cols_of_int[!grep("facet_", cols_of_int)]
 			if(length(cols_of_int) >= 1) {
-				if(length(cols_of_int_facet) > 1) {
+				if(length(cols_of_int_facet) >= 1) {
 					combinations <- expand.grid(cols_of_int, cols_of_int_facet) %>% t() %>% as.matrix()
 					plots <- lapply(1:ncol(combinations), function(comb) {
 							plots <- plot(object, results_index=length(object@results), 
@@ -685,12 +696,11 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 					plots <- lapply(cols_of_int, function(x) {
 						plots <-  plot(object, results_index=length(object@results), 
 								interactive=.interactive, plot_type="forest", 
-								group=x, strats=cols_of_int_facet)
+								group=x)
 						return(plots)
 					})
 					names(plots) <- cols_of_int
-				}
-				
+				}	
 			} else {
 				plots <-  plot(object, results_index=length(object@results), 
 					interactive=.interactive, plot_type="forest")
