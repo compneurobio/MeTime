@@ -507,7 +507,12 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
 			row_data <- lapply(names(stratifications), function(x) {
               		row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
               		return(row_data) 
-          		}) %>% do.call(what=rbind.data.frame)
+          		})
+			row_data_samples <- lapply(seq_along(row_data), function(k) {
+					return(rownames(row_data[[k]]))
+				})
+			common_samples <- Reduce(intersect, row_data_samples)
+			row_data <- row_data[[1]][rownames(row_data[[1]]) %in% common_samples, ]
         	data <- data[rownames(data) %in% rownames(row_data), ]		
 		}
 		return(list(data=data, row_data=row_data, col_data=col_data))
@@ -561,6 +566,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 		} else if(type %in% "dimensionality_reduction") {
 			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in%
 			c("PC1", "PC2", "UMAP1", "UMAP2", "X1", "X2", "time", "id", "subject", "name")]
+			cols_of_int <- na.omit(cols_of_int)
 			if(length(cols_of_int) < 2) {
 				if(length(cols_of_int)==1) {
 					combinations <- matrix(c(cols_of_int, cols_of_int), nrow=2, ncol=1)
@@ -589,6 +595,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			#object@results[[length(object@results)]] <- results
 		} else if(type %in% "CI_metabotype" | type %in% "CI_metabolite") {
 			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in% c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "subject", "time", "name")]
+			cols_of_int <- na.omit(cols_of_int)
 			if(length(cols_of_int) < 2) {
 				if(length(cols_of_int)==1) {
 					combinations <- matrix(c(cols_of_int, cols_of_int), nrow=2, ncol=1)
@@ -650,6 +657,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				c("x", "y", "xmin", "xmax", "pval", "tval", 
 					"beta", "trait", "met", "se", "level", 
 					"statistic","pvalue","FDR", "time", "type", "color")]
+			cols_of_int <- na.omit(cols_of_int)
 			cols_of_int_facet <- cols_of_int[grep("facet_", cols_of_int)]
 			cols_of_int <- cols_of_int[!grep("facet_", cols_of_int)]
 			if(length(cols_of_int) >= 1) {
@@ -711,6 +719,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 		} else if(type %in% "feature_selection") {
 			data <- results$plot_data[[1]]
 			cols_of_int <- colnames(data)[!colnames(data) %in% "id_x", "id_y", "id","y","id_met", "meanImp", "medianImp", "minImp", "maxImp", "normHits", "decision"]
+			cols_of_int <- na.omit(cols_of_int)
 			if(length(cols_of_int)==0) {
 				plots <- list(no_meta=plot(object, interactive=.interactive, results_index=length(object@results),
 					plot_type="manhattan"))
