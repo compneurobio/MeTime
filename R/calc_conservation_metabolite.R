@@ -100,13 +100,13 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
               t <- paste(index_time_combinations[,y], collapse="vs")
               return(t)
       }) %>% unlist()
-
-      out <- get_make_results(object=object, data = out_sum, 
+    names(out_sum) <- combinations
+    out <- get_make_results(object=object, data = out_sum, 
                                 metadata = metadata, 
                                 calc_type = rep("CI_metabolite", each=length(out_sum)), 
                                 calc_info = paste("metabolite_CI_", i, "_", combinations, sep = ""),
                                 name=name)
-      out <- add_function_info(object=out, function_name="calc_conservation_metabolite", 
+    out <- add_function_info(object=out, function_name="calc_conservation_metabolite", 
           params=list(which_data=which_data, verbose=verbose, cols_for_meta=cols_for_meta, 
               name=name[i], stratifications=stratifications))
   }

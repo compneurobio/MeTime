@@ -41,13 +41,18 @@ setMethod("calc_temporal_network", "metime_analyser", function(object, which_dat
             model_seqs[[count]] <- times[seq(from=lag+count, to=count, by=-1)]
             count <- count + 1
         }
-        if(!length(names)==length(model_seqs)) {
-            warning("Names are not of correct length and hence using new names")
-            names <- lapply(model_seqs, function(a) {
+        
+        names_data <- lapply(model_seqs, function(a) {
                     a <- paste(paste(a, collapse="-"), which_data, sep="_")
                     return(a)
                 })
+
+        if(!length(names)==length(model_seqs)) {
+            warning("Names are not of correct length and hence using new names")
+            names <- names_data
         }
+            
+        
         models <- list()
         out <- lapply(seq_along(model_seqs), function(x) {
                    network_data <- final_data[names(final_data) %in% model_seqs[[x]]]
@@ -92,8 +97,11 @@ setMethod("calc_temporal_network", "metime_analyser", function(object, which_dat
             })
         metadata <- get_metadata_for_columns(object=object, which_data=which_data, 
             columns=cols_for_meta)
+        names(out) <- names(data)
         for(i in seq_along(model_seqs)) {
-            object <- get_make_results(object=object, data=out[[i]], metadata=metadata, 
+            data <- list(out[[i]])
+            names(data) <- names_data[i]
+            object <- get_make_results(object=object, data=data, metadata=metadata, 
                 calc_type="temporal_network", calc_info=paste("temporal_network", model_seqs[[i]], "for", which_data,
                     "with", ifelse(is.null(stratifications)), "full data", stratifications, sep=" "), 
                 name=names[i])

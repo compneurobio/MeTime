@@ -9,8 +9,8 @@
 #' @param type character to define outfile type that is "csv", "xlsx" or "tsv"
 #' @return saves the data into a csv and returns nothing
 #' @export
-setGeneric("save_results", function(object, results_index, type) standardGeneric("save_results"))
-setMethod("save_results", "metime_analyser", function(object, results_index, type) {
+setGeneric("write_results", function(object, results_index, type) standardGeneric("write_results"))
+setMethod("write_results", "metime_analyser", function(object, results_index, type) {
 			stopifnot(type %in% c("csv", "xlsx", "tsv"))
 			results <- obejct@results[[results_index]]
 			if(all(names(plot_data) %in% c("node", "edge", "metadata"))) {

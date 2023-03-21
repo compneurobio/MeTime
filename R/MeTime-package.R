@@ -2,20 +2,30 @@
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom abind abind
 #' @importFrom data.table setDT
-#' @importFrom DT datatable
+#' @import DT 
 #' @importFrom dynamicTreeCut cutreeDynamic
 #' @importFrom lmerTest lmer
 #' @importFrom M3C tsne
 #' @importFrom multiway parafac
-#' @importFrom nnet class.ind
 #' @importFrom parallel mclapply
 #' @importFrom plotly ggplotly
 #' @importFrom reshape2 melt
-#' @importFrom rstatix t_test
-#' @importFrom rstatix wilcox_test
 #' @importFrom umap umap
-#' @importFrom xlsx write.xlsx
+#' @importFrom xlsx write.xlsx read.xlsx
+#' @import mgcv
+#' @importFrom rstatix wilcox_test t_test
+#' @import visNetwork
+#' @import glmnet
+#' @import Boruta
+#' @import WGCNA
+#' @import rmarkdown
+#' @import rmdformats
+#' @import htmltools
+#' @import rlang
+#' @import MatrixEQTL
+#' @import knitr
+#' @importFrom bsplus bs_modal
 ## usethis namespace: end
 NULL
+

@@ -83,7 +83,7 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
                   out$med_class_1[i] <- as.character(metadata[metadata$id %in% out$med_class_1[i], "class"])
                   out$med_class_2[i] <- as.character(metadata[metadata$id %in% out$med_class_2[i], "class"])
               }
-              out <- get_make_results(object=object, data=list(out), metadata=metadata, calc_type="colinearity", 
+              out <- get_make_results(object=object, data=list(colinearity=out), metadata=metadata, calc_type="colinearity", 
                   calc_info=paste("colinearity test of: ", which_data, sep=""), name=name)
               out <- out %>% add_function_info(function_name="calc_colinearity", 
                   params=list(which_data=which_data, cols_for_meta=cols_for_meta, show_all=show_all, stratifications=stratifications)) %>%
