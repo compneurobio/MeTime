@@ -7,7 +7,7 @@
 add_node_features(object, results_indices, which_calculation = 1)
 }
 \arguments{
-\item{object}{An S4 object of class metime_analyser}
+\item{object}{a S4 object of the class "metime_analyzer".}
 
 \item{results_indices}{indices as a list to define which results to use. Eg: list(network=1/"name of the results", guide=2)}
 

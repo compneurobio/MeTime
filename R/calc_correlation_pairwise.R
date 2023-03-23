@@ -62,9 +62,11 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
       dplyr::mutate(type="cor") %>% 
       dplyr::rename("dist"="cor", "cut_p"="p")
 
-    out <- get_results(data=list(pairwise_correlation=out), object=object, metadata=metadata, calc_type="pairwise_correlation", 
+    out <- get_make_results(object=object, data=list(pairwise_correlation=out), metadata=metadata, calc_type="pairwise_correlation", 
                       calc_info = paste(which_data, "_and_" , method, "_pairwise_correlation", sep=""), 
-                      name=name)
+                      name=name) %>%
+          add_function_info(function_name="calc_correlation_pairwise",
+                params=list(which_data=which_data, method=method, cols_for_meta=cols_for_meta))
     return(out)
 })
 

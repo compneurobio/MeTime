@@ -3,11 +3,9 @@
 #' @description A method to apply on s4 object of class metime_analyse in order to obtain information after dimensionality reduction on a dataset/s
 #' @examples
 #' #calculate PCA
-#' pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="PCA")
-#' #calculate UMAP
-#' pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="UMAP")
-#' #calculate tSNE
-#' pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="tSNE")
+#' pca <- calc_dimensionality_reduction_samples(object=metime_analyser_object, 
+#'  which_data="name/s of the dataset/s", type="PCA", cols_for_meta=c(), stratifications=NULL, name="name of the results")
+#'
 #' @param object An object of class metime_analyser
 #' @param which_data a character vector - Names of the dataset from which the samples will be extracted
 #' @param type type of the dimensionality reduction method to be applied. Accepted inputs are "UMAP", "tSNE", "PCA"

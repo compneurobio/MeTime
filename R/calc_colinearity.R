@@ -54,7 +54,6 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
       } else {
         metadata <- get_metadata_for_columns(object=object, 
             which_data=which_data, columns=cols_for_meta)
-        metadata <- list(metadata)
       }
       if(show_all) {
           class_1_name <- c()

@@ -1,13 +1,13 @@
-#' Function that adds a result to a metime anal
-#' @description Function to add information about the method applied to the dataset
-#' @param object S4 object of class metime_analyser
+#' Add a result element to a metime_analyser
+#' @description Add a result from a calc_ function to the metime_analyser. 
+#' @param object a S4 object of class "metime_analyser"
 #' @param x a data.frame or plot that should be added to the list of results
 #' @param functions_applied a character providing information on the calculation
 #' @param calc_info a character that provides information on the calculation
 #' @param calc_type a character that defines the type of calculation
-#' @param results_index character or numeric of length=1 to define the results to which you want to add x.
+#' @param results_index a haracter or numeric of length=1 to define the results to which you want to add x.
 #' Default is set to NULL and that implies that new results are generated 
-#' @return Saves the report as html/pdf
+#' @return S4 object of class "metime_analyser" with appended results
 #' @export 
 
 setGeneric("add_result", function(object, x, name=NULL, functions_applied=NULL, calc_info=NULL, calc_type=NULL, results_index=NULL) standardGeneric("add_result"))

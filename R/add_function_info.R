@@ -1,8 +1,8 @@
-#' Function to add information of function added to the data
-#' @description Function to add information about the method applied to the dataset
-#' @param object S4 object of class metime_analyser
-#' @param function_name name of the function used
-#' @param params other parameters used wrapped as a list
+#' Add information of function added to the data
+#' @description Add information on the method applied to the metime_analyzer object.
+#' @param object a S4 object of the class "metime_analyzer".
+#' @param function_name a character of the name of the function that was used.
+#' @param params list of parameters that were used in function.
 #' @return object of class metime_analyser with the information of method applied
 #' @export 
 setGeneric("add_function_info", function(object, function_name, params) standardGeneric("add_function_info"))

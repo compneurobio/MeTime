@@ -2,24 +2,24 @@
 % Please edit documentation in R/add_data.R
 \name{add_data}
 \alias{add_data}
-\title{Modification (mod) function that merges a data frame to a dataset within the S4 object of class metime_analyser}
+\title{Add a data.frame to analyzer object.}
 \usage{
 add_data(object, which_data, type, x, id)
 }
 \arguments{
-\item{object}{a S4 object of class metime_analyser.}
+\item{object}{a S4 object of the class "metime_analyzer".}
 
-\item{which_data}{a vector of character defining which data should be merged. Has to contain two or more values.}
+\item{which_data}{a character to define which dataset is to be used.}
 
-\item{type}{a character defining the data which should be appended. Can only be data, col_data, row_data. Default set to data}
+\item{type}{a character defining the data which should be appended. Can only be data, col_data, row_data. Default set to data.}
 
 \item{x}{a data.frame that is merged to the data.}
 
-\item{id}{a character defining the column to be used for matching. Default set to NULL (first column of x will be used as id column)}
+\item{id}{a character vector defining the column to be used for matching. Default set to NULL (first column of x will be used as id column)}
 }
 \value{
-a new S4 object of class metime_analyser with the  new merged dataset appended to it
+a S4 object of class "metime_analyser" with appended data.frame x
 }
 \description{
-a modification function that merges two sets of data including data, col_data and row_data.
+Add a data.frame x to existing data within an analyzer object. Data can be added to data, col_data or row_data. A full join of the data is used.
 }

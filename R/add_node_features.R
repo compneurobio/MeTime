@@ -1,6 +1,6 @@
 #' Function to add features to visnetwork plot from another plotter object
 #' @description Function to add node features to see the nodes in the network that affected differently
-#' @param object An S4 object of class metime_analyser
+#' @param object  a S4 object of the class "metime_analyzer".
 #' @param results_indices indices as a list to define which results to use. Eg: list(network=1/"name of the results", guide=2)
 #' @param which_calculation index for plot_data to be used. Set to 1 by default. 
 #' @return network plotter object with new node colors/features

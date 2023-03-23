@@ -2,20 +2,20 @@
 % Please edit documentation in R/add_function_info.R
 \name{add_function_info}
 \alias{add_function_info}
-\title{Function to add information of function added to the data}
+\title{Add information of function added to the data}
 \usage{
 add_function_info(object, function_name, params)
 }
 \arguments{
-\item{object}{S4 object of class metime_analyser}
+\item{object}{a S4 object of the class "metime_analyzer".}
 
-\item{function_name}{name of the function used}
+\item{function_name}{a character of the name of the function that was used.}
 
-\item{params}{other parameters used wrapped as a list}
+\item{params}{list of parameters that were used in function.}
 }
 \value{
 object of class metime_analyser with the information of method applied
 }
 \description{
-Function to add information about the method applied to the dataset
+Add information on the method applied to the metime_analyzer object.
 }

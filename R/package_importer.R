@@ -359,6 +359,22 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						} else {
 							stop("This type of plot is not available for this calculation")
 						}
+					} else if(results$information$calc_type[ind_data] %in% "clusters") {
+						data <- results$plot_data[[ind_data]]
+						if(plot_type %in% "bar") {
+							if(length(add)==0) {
+								plot <- ggplot(data, aes(x=modules, y=id)) + geom_bar(stat="identity", position="dodge")
+							} else {
+								data <- data %>% 
+									dplyr::group_by(modules, !!sym(add$fill)) %>%
+									dplyr::summarise(count=n_distinct(id))
+								plot <- ggplot(data, aes(x=modules, y=id, fill=!!sym(add$fill))) + geom_bar(stat="identity", position="dodge")
+							}
+							return(plot)
+						} else {
+							stop("This type of plot is not available for this calculation")
+						}
+						
 					}
 				})
 				names(all_plots) <- results$information$calc_info
@@ -515,6 +531,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 		
 		if(is.null(results_index)) {
 			results <- object@results[[length(object@results)]]
+			results_index <- length(object@results)
 		} else {
 			results <- object@results[[results_index]]
 		}
@@ -525,13 +542,13 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			cols_of_int <- cols_of_int[!cols_of_int %in% c("id", "label", "title")]
 			if(!"color" %in% cols_of_int) {
 				networks <- lapply(cols_of_int, function(a) {	
-					network <- plot(object, results_index=length(object@results), 
+					network <- plot(object, results_index=results_index, 
 						interactive=.interactive, plot_type="network", color=a)
 					return(network)
 				})
 				names(networks) <- cols_of_int
 			} else {
-				networks <- list(node_feature=plot(object, results_index=length(object@results), 
+				networks <- list(node_feature=plot(object, results_index=results_index, 
 						interactive=.interactive, plot_type="network"))
 			}
 			if(length(results$plots)==0) {
@@ -540,7 +557,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				results$plots[[length(results$plots)+1]] <- networks
 			}
 			#object@results[[length(object@results)]] <- results
-		} else if(type %in% "dimensionality_reduction") {
+		} else if(type %in% "PCA" | type %in% "UMAP" | type %in% "tSNE") {
 			cols_of_int <- colnames(results$plot_data[[1]])[!colnames(results$plot_data[[1]]) %in%
 			c("PC1", "PC2", "UMAP1", "UMAP2", "X1", "X2", "time", "id", "subject", "name")]
 			cols_of_int <- na.omit(cols_of_int)
@@ -548,18 +565,14 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				if(length(cols_of_int)==1) {
 					combinations <- matrix(c(cols_of_int, cols_of_int), nrow=2, ncol=1)
 				} else if(length(cols_of_int)==0) {
-					plots <- list(no_meta=plot(object, results_index=length(object@results), 
+					plots <- list(no_meta=plot(object, results_index=results_index, 
 						interactive=.interactive, plot_type="dot")) 
 					if(length(results$plots)==0) {
 						results$plots[[1]] <- plots
 					} else {
 						results$plots[[length(results$plots)+1]] <- plots
 					}
-					if(is.null(results_index)) {
-						object@results[[length(object@results)]] <- results
-					} else {
-						object@results[[results_index]] <- results
-					}
+					object@results[[results_index]] <- results
 					return(object)
 				}
 			} else {
@@ -567,7 +580,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			}
 			plots <- list()
 			plots <- lapply(1:ncol(combinations), function(col) {
-					dr_plots <- plot(object, results_index=length(object@results), 
+					dr_plots <- plot(object, results_index=results_index, 
 						interactive=.interactive,
 						plot_type="dot",
 						color=as.character(combinations[1, col]),
@@ -588,25 +601,21 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				if(length(cols_of_int)==1) {
 					combinations <- matrix(c(cols_of_int, cols_of_int), nrow=2, ncol=1)
 				} else if(length(cols_of_int)==0) {
-					plots <- list(no_meta=plot(object, results_index=length(object@results), 
+					plots <- list(no_meta=plot(object, results_index=results_index, 
 						interactive=.interactive, plot_type="dot"))
 					if(length(results$plots)==0) {
 						results$plots[[1]] <- plots
 					} else {
 						results$plots[[length(results$plots)+1]] <- plots
 					}
-					if(is.null(results_index)) {
-						object@results[[length(object@results)]] <- results
-					} else {
-						object@results[[results_index]] <- results
-					}
+					object@results[[results_index]] <- results
 					return(object)
 				}
 			} else {
 				combinations <- combn(cols_of_int, 2)
 			}
 			dotplots <- lapply(1:ncol(combinations), function(col) {
-					dot_plots <- plot(object, results_index=length(object@results), 
+					dot_plots <- plot(object, results_index=results_index, 
 						interactive=.interactive,
 						plot_type="dot",
 						color=as.character(combinations[1, col]),
@@ -623,7 +632,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				}, character(1))
 			cols_of_int <- cols_of_int[!cols_of_int %in% "No"]
 			boxplots <- lapply(cols_of_int, function(col) {
-						box_plots <- plot(object, results_index=length(object@results), 
+						box_plots <- plot(object, results_index=results_index, 
 							interactive=.interactive,
 							plot_type="box",
 							box_x=col)
@@ -639,7 +648,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			}
 			#object@results[[length(object@results)]] <- results
 		} else if(type %in% "pairwise_distance" | type %in% "pairwise_correlation" | type %in% "colinearity") {
-			plots <- plot(object, results_index=length(object@results), interactive=.interactive,
+			plots <- plot(object, results_index=results_index, interactive=.interactive,
 				plot_type="tile")
 			plots <- list(plots)
 			names(plots) <- results$information$calc_info
@@ -662,7 +671,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				if(length(cols_of_int_facet) >= 1) {
 					combinations <- expand.grid(cols_of_int, cols_of_int_facet) %>% t() %>% as.matrix()
 					plots <- lapply(1:ncol(combinations), function(comb) {
-							plots <- plot(object, results_index=length(object@results), 
+							plots <- plot(object, results_index=results_index, 
 								interactive=.interactive, plot_type="forest", 
 								group=combinations[1, comb],
 								strats=combinations[2, comb])
@@ -671,7 +680,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 					names(plots) <- apply(combinations, 2, paste, collapse="-")
 				} else {
 					plots <- lapply(cols_of_int, function(x) {
-						plots <-  plot(object, results_index=length(object@results), 
+						plots <-  plot(object, results_index=results_index, 
 								interactive=.interactive, plot_type="forest", 
 								group=x)
 						return(plots)
@@ -689,7 +698,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				results$plots[[length(results$plots)+1]] <- plots
 			}
 			#object@results[[length(object@results)]] <- results
-		} else if(type %in% "distribution") {
+		} else if(type %in% "distribution_samples" | type %in% "distribution_metabs") {
 			data <- results$plot_data[[1]]
 			plots <- lapply(colnames(data)[!colnames(data) %in% c("id", "time", "subject")], function(.col) {
 						vec <- data[,.col] 
@@ -703,7 +712,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 							}
 						}
 						plots <- plot(object, interactive=.interactive, 
-							results_index=length(object@results), col=.col, plot_type=var_type)
+							results_index=results_index, col=.col, plot_type=var_type)
 						return(plots)
 					})
 			names(plots) <- colnames(data)[!colnames(data) %in% c("id", "time", "subject")]
@@ -715,10 +724,10 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			#object@results[[length(object@results)]] <- results
 		} else if(type %in% "feature_selection") {
 			data <- results$plot_data[[1]]
-			cols_of_int <- colnames(data)[!colnames(data) %in% "id_x", "id_y", "id","y","id_met", "meanImp", "medianImp", "minImp", "maxImp", "normHits", "decision"]
+			cols_of_int <- colnames(data)[!colnames(data) %in% c("id_x", "id_y", "id","y","id_met", "meanImp", "medianImp", "minImp", "maxImp", "normHits", "decision")]
 			cols_of_int <- na.omit(cols_of_int)
 			if(length(cols_of_int)==0) {
-				plots <- list(no_meta=plot(object, interactive=.interactive, results_index=length(object@results),
+				plots <- list(no_meta=plot(object, interactive=.interactive, results_index=results_index,
 					plot_type="manhattan"))
 			} else {
 				if(grep("color_", cols_of_int) %>% length() != 0) {
@@ -726,7 +735,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 					cols_of_int_x <- cols_of_int[!grep("color_", cols_of_int)]
 					combinations <- expand.grid(cols_of_int_x, cols_of_int_color) %>% t() %>% as.matrix()
 					plots <- lapply(1:ncol(combinations), function(y) {
-							plots <- plot(object, interactive=.interactive, results_index=length(object@results),
+							plots <- plot(object, interactive=.interactive, results_index=results_index,
 									plot_type="manhattan", 
 									group=as.character(combinations[1, y]), 
 									color=as.character(combinations[2, y]))
@@ -735,7 +744,7 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 					names(plots) <- apply(combinations, 2, paste, collapse="-")
 				} else {
 					plots <- lapply(cols_of_int, function(x) {
-							plots <- plot(object, interactive=.interactive, results_index=length(object@results),
+							plots <- plot(object, interactive=.interactive, results_index=results_index,
 									plot_type="manhattan", group=x)
 							return(plots)
 						})
@@ -748,12 +757,25 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 				results$plots[[length(results$plots)+1]] <- plots
 			}
 			#object@results[[length(results$plots)+1]] <- plots
+		} else if(type %in% "clusters") {
+			cols_of_int <-  colnames(data)[!colnames(data) %in% c("id", "modules")]
+			if(length(cols_of_int)==0) {
+				plots <- list(no_meta=plot(object, interactive=.interactive, results_index=results_index, 
+					plot_type="clusters"))
+			} else {
+				plots <- lapply(cols_of_int, function(col) {
+						plots <- plot(object, interactive=.interactive, results_index=results_index,
+							plot_type="bar", fill=col)
+						return(plots)
+					})
+			}
+			if(results$plots %>% length() == 0) {
+				results$plots[[1]] <- plots
+			} else {
+				results$plots[[length(results$plots)+1]] <- plots
+			}
 		}
-		if(is.null(results_index)) {
-			object@results[[length(object@results)]] <- results
-		} else {
-			object@results[[results_index]] <- results
-		}
+		object@results[[results_index]] <- results
 		return(object)
 	})
 

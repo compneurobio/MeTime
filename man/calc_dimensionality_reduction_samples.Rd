@@ -37,9 +37,7 @@ A method to apply on s4 object of class metime_analyse in order to obtain inform
 }
 \examples{
 #calculate PCA
-pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="PCA")
-#calculate UMAP
-pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="UMAP")
-#calculate tSNE
-pca <- calc_dimensionality_reduction(object=metime_analyser_object, which_data="name/s of the dataset/s", type="tSNE")
+pca <- calc_dimensionality_reduction_samples(object=metime_analyser_object, 
+ which_data="name/s of the dataset/s", type="PCA", cols_for_meta=c(), stratifications=NULL, name="name of the results")
+
 }

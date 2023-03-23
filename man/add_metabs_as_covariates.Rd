@@ -2,21 +2,20 @@
 % Please edit documentation in R/add_metabs_as_covariates.R
 \name{add_metabs_as_covariates}
 \alias{add_metabs_as_covariates}
-\title{Function to add metabolites as covariates for network construction}
+\title{Add columns from data x to data y within a metime_analyzer.}
 \usage{
 add_metabs_as_covariates(object, which_data, which_metabs)
 }
 \arguments{
-\item{object}{A S4 object of class metime_analyser}
+\item{object}{a S4 object of the class "metime_analyzer".}
 
-\item{which_data}{Dataset to which the metab data is to be added(please note that this a single character)}
+\item{which_data}{a character defining the dataset to which the metab data is to be added.}
 
-\item{which_metabs}{list of names of metabs and name of the list represents the dataset from which
-the metabs are to be acquired. eg: which_metabs=list(nmr_data=c("metab1", "metab2"), lipid_data=c("metab3", "metab4"))}
+\item{which_metabs}{a named list of character vectors. Names of the list elements correspond to the name of dataset, the character vectors define columns to be used. eg: which_metabs=list(nmr_data=c("metab1", "metab2"), lipid_data=c("metab3", "metab4"))}
 }
 \value{
-S4 object with metabs from one dataset added for analysis to another dataset
+object of class metime_analyser with columns from one dataset added for analysis to another dataset
 }
 \description{
-Method applied on metime_analyser object to add other metabolite data to a certain dataset
+Merge a specified columns from datasets within the S4 object to one data.
 }

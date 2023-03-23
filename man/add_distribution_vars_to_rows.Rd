@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_distribution_vars_to_rows.R
 \name{add_distribution_vars_to_rows}
 \alias{add_distribution_vars_to_rows}
-\title{Function to add measurements taken at screening time for samples to be added to all timepoints in row data}
+\title{Add phenotypic measurements that are not added to the row_data of the dataset}
 \usage{
 add_distribution_vars_to_rows(
   object,
@@ -14,7 +14,7 @@ add_distribution_vars_to_rows(
 \arguments{
 \item{object}{An object of class metime_analyser}
 
-\item{screening_vars}{Logical to call add_screening_vars() before updating rows}
+\item{screening_vars}{A character vector to define the vars that are to be updated else set it to NULL(Default)}
 
 \item{distribution_vars}{A character naming the vars of interest}
 
@@ -24,11 +24,13 @@ add_distribution_vars_to_rows(
 object of class metime_analyser with phenotype data added to row data
 }
 \description{
-A method applied on the s4 object of class "metime_analyser" to add all those datapoints that were measured only during screening
-to all the respective samples at all timepoints in row_data lists
+A method applied on the s4 object of class "metime_analyser" to add all those datapoints that are present in phenotype dataframe but not in row_data
+comes with the feature of updating those data points measured only at screening to all datapoints and then adding it to row_data
 }
 \examples{
-# adding APOEGrp, PTGENDER, and diag group to all data points and prepping the object for viz_distribution_plotter()
-object <- add_distribution_vars_to_rows(object=data, screening_vars=c("APOEGrp", "DXGrp_longi", "PTGENDER"), 
-		distribution_vars=c("Age", "BMI", "ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp", "DXGrp_longi", "PTGENDER"), which_data="lipid_data")
+object <- add_distribution_vars_to_rows(object=data, screening_vars=c("var1", "var2"), 
+		distribution_vars=c("var1", "var2", "var3"), which_data="dataset1")
+}
+\seealso{
+\link{add_screening_vars}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_result.R
 \name{add_result}
 \alias{add_result}
-\title{Function that adds a result to a metime anal}
+\title{Add a result element to a metime_analyser}
 \usage{
 add_result(
   object,
@@ -15,7 +15,7 @@ add_result(
 )
 }
 \arguments{
-\item{object}{S4 object of class metime_analyser}
+\item{object}{a S4 object of class "metime_analyser"}
 
 \item{x}{a data.frame or plot that should be added to the list of results}
 
@@ -25,12 +25,12 @@ add_result(
 
 \item{calc_type}{a character that defines the type of calculation}
 
-\item{results_index}{character or numeric of length=1 to define the results to which you want to add x.
+\item{results_index}{a haracter or numeric of length=1 to define the results to which you want to add x.
 Default is set to NULL and that implies that new results are generated}
 }
 \value{
-Saves the report as html/pdf
+S4 object of class "metime_analyser" with appended results
 }
 \description{
-Function to add information about the method applied to the dataset
+Add a result from a calc_ function to the metime_analyser.
 }

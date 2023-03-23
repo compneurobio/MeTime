@@ -1,10 +1,9 @@
-#' Function to add metabolites as covariates for network construction
-#' @description Method applied on metime_analyser object to add other metabolite data to a certain dataset
-#' @param object A S4 object of class metime_analyser
-#' @param which_data Dataset to which the metab data is to be added(please note that this a single character)
-#' @param which_metabs list of names of metabs and name of the list represents the dataset from which 
-#' the metabs are to be acquired. eg: which_metabs=list(nmr_data=c("metab1", "metab2"), lipid_data=c("metab3", "metab4"))
-#' @return S4 object with metabs from one dataset added for analysis to another dataset
+#' Add columns from data x to data y within a metime_analyzer.
+#' @description Merge a specified columns from datasets within the S4 object to one data.
+#' @param object a S4 object of the class "metime_analyzer".
+#' @param which_data a character defining the dataset to which the metab data is to be added. 
+#' @param which_metabs a named list of character vectors. Names of the list elements correspond to the name of dataset, the character vectors define columns to be used. eg: which_metabs=list(nmr_data=c("metab1", "metab2"), lipid_data=c("metab3", "metab4"))
+#' @return object of class metime_analyser with columns from one dataset added for analysis to another dataset
 #' @export
 setGeneric("add_metabs_as_covariates", function(object, which_data, which_metabs) standardGeneric("add_metabs_as_covariates"))
 setMethod("add_metabs_as_covariates", "metime_analyser", function(object, which_data, which_metabs) {

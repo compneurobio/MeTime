@@ -4,7 +4,14 @@
 \alias{mod_trans_eigendata}
 \title{Function to add the clusters obtained from wgcna}
 \usage{
-mod_trans_eigendata(object, which_data, append, clusters, ...)
+mod_trans_eigendata(
+  object,
+  which_data,
+  append,
+  results_index,
+  cols_for_meta,
+  ...
+)
 }
 \arguments{
 \item{object}{An S4 object of class metime_analyser}
@@ -13,11 +20,11 @@ mod_trans_eigendata(object, which_data, append, clusters, ...)
 
 \item{append}{logical if set to true adds the new data to the object used else creates new object}
 
-\item{clusters}{logical if set to true will add already existing cluster info otherwise creates new}
-
-\item{...}{arguments for add_clusters_wgcna}
+\item{results_index}{results_index if clusters were previously calculated else set to NULL which is also default}
 
 \item{cols_for_meta}{A list of named character vector to extract col_data to add it for the eigendata}
+
+\item{...}{arguments for add_clusters_wgcna}
 }
 \value{
 metime_analyser object with new dataset with eigendata of the metabolites
