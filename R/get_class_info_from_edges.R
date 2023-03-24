@@ -1,11 +1,9 @@
-
-#' Function to get information on how many class edges are present
-#' @description Function to check how the different edges in a GGM are associated to their 
-#' respective classes(it could be super-pathway or sub-pathway)
-#' @param calc_networks list of calculated networks
-#' @param metadata metadata of the edges present 
-#' @param phenotypes character vector to define phenotypes that were used for correcting the data
-#' @return table with information on different type of edges present
+#' Get summary on class edges 
+#' @description Function to check how the different edges in a GGM are associated to their respective classes(it could be super-pathway or sub-pathway)
+#' @param calc_networks a list of calculated networks
+#' @param metadata a dataframe containing the metadata of the edges present.
+#' @param phenotypes a character vector to define phenotypes that were used for correcting the data
+#' @return A dataframe with information on different type of edges present
 #' @export
 get_class_info_from_edges <- function(calc_networks, metadata, phenotypes) {
 					out <- list()

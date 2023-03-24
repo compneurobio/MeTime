@@ -2,7 +2,7 @@
 % Please edit documentation in R/write_report.R
 \name{write_report}
 \alias{write_report}
-\title{Function that generates a report from an metime_analyser object}
+\title{Generates a report from an metime_analyser object}
 \usage{
 write_report(
   object,
@@ -15,7 +15,7 @@ write_report(
 )
 }
 \arguments{
-\item{object}{S4 object of class metime_analyser}
+\item{object}{a S4 object of class metime_analyser}
 
 \item{title}{a character string used as title of the report. By default is set to metime + system time.}
 
@@ -33,5 +33,5 @@ write_report(
 Saves the report as html/pdf
 }
 \description{
-Function to add information about the method applied to the dataset
+Write an HTML or PDF report that summarizes one or more "me_time_analyser" objects and display all results
 }

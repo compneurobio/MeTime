@@ -1,4 +1,4 @@
-#' Add a data.frame to analyzer object. 
+#' Add a data frame to analyzer object. 
 #' @description Add a data.frame x to existing data within an analyzer object. Data can be added to data, col_data or row_data. A full join of the data is used.
 #' @param object a S4 object of the class "metime_analyzer".
 #' @param which_data a character to define which dataset is to be used.

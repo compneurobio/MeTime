@@ -1,10 +1,9 @@
 #' Get metadata for rows(in most cases for samples)
-#' @description function to generate a metadata list for building the MeTime plotter object
-#' @param object S4 object of class MeTime Analyser
-#' @param which_data Names of dataset/s to be used
-#' @param columns A list of character vectors for the columns of interest. Length of the list should be
-#' same as length of which_data
-#' @return data.frame with metadata information for rows
+#' @description Generate a list of metadata for the S4 object of the class "metime_analyzer".
+#' @param object a S4 object of the class "metime_analyzer".
+#' @param which_data a character to define which dataset is to be used.
+#' @param columns A list of character vectors for the columns of interest. Length of the list should be same as length of which_data.
+#' @return A data frame with metadata information for rows.
 #' @export
 setGeneric("get_metadata_for_rows", function(object, which_data, columns) standardGeneric("get_metadata_for_rows"))
 setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_data, columns) {

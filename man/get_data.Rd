@@ -2,18 +2,18 @@
 % Please edit documentation in R/get_data.R
 \name{get_data}
 \alias{get_data}
-\title{Function to get particular dataset's data}
+\title{Get data from a S4 object of the class "metime_analyser"}
 \usage{
 get_data(object, which_data)
 }
 \arguments{
-\item{object}{An S4 object of class metime_analyser}
+\item{object}{a S4 object of the class "metime_analyser"}
 
-\item{which_data}{character/index to define the data of interest}
+\item{which_data}{a character of the dataset name of interest.}
 }
 \value{
-data.frame with data of interest
+A dataframe containing the data of the dataset of interest.
 }
 \description{
-function to get data from S4 object
+Get the data of a specified dataset from a S4 object of the class "metime_analyser"
 }

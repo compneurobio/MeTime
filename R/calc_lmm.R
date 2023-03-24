@@ -149,7 +149,7 @@ setMethod("calc_lmm", "metime_analyser", function(object,
       annotated_results<-annotated_results %>% 
       dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))
     }else if(i == "li"){
-      eigenvals <- cor(object@list_of_data[[which_data]][,my_met]) %>%
+      eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
         eigen()
       li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
       annotated_results<-annotated_results%>% 

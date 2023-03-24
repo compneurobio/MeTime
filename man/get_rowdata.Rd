@@ -2,18 +2,18 @@
 % Please edit documentation in R/get_rowdata.R
 \name{get_rowdata}
 \alias{get_rowdata}
-\title{Function to extract row data of a dataset}
+\title{Get row_data from a S4 object of the class "metime_analyser"}
 \usage{
 get_rowdata(object, which_data)
 }
 \arguments{
-\item{object}{An object of class S4}
+\item{object}{a S4 object of the class "metime_analyser"}
 
-\item{which_data}{Dataset of interest}
+\item{which_data}{a character of the dataset name of interest.}
 }
 \value{
-row data of the dataset of interest
+A dataframe containing the row data of the dataset of interest.
 }
 \description{
-Function to get rowdata
+Get the row information of a specified dataset from a S4 object of the class "metime_analyser"
 }

@@ -1,12 +1,8 @@
-
-#' Function to know the number of timepoints and the total number of samples available at that point
-#' @description A method applied onto s4 object of class "metime_analyser" so as to obtain the number of unique samples available
-#' at each timepoint. 
-#' @examples
-#' # newdata <- get_samples_and_timepoints(object=metime_analyser_object, which_data="Name of dataset of interest")
-#' @param object An object of class metime_analyser
-#' @param which_data Name of the dataset in context
-#' @return A data table with timepoints and number of samples at each timepoint
+#' Summarize number of time points and the total number of samples available at that point
+#' @description Obtain the number of unique samples available at each time point.
+#' @param objecta a S4 object of the class "metime_analyzer".
+#' @param which_data a character to define which dataset is to be used.
+#' @return A dataframe with time points and number of samples at each time point.
 #' @export
 setGeneric("get_samples_and_timepoints", function(object, which_data) standardGeneric("get_samples_and_timepoints"))
 

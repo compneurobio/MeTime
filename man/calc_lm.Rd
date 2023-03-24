@@ -2,7 +2,7 @@
 % Please edit documentation in R/calc_lm.R
 \name{calc_lm}
 \alias{calc_lm}
-\title{Calculation of crossectional linear models (per time point)}
+\title{Cossectional linear models (per time point)}
 \usage{
 calc_lm(
   object,
@@ -35,7 +35,7 @@ allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as
 a S4 object of the class metime_analyzer with analysis results appended to the result section.
 }
 \description{
-Fits multiple linear models (LM).
+Fit multiple linear models (lm) onto one dataset. Covariates can be added using the covariate column of the col_data (multiple covariates can be added, separated by '###') See examples for more information.
 }
 \details{
 Add details here

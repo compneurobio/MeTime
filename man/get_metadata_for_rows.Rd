@@ -7,16 +7,15 @@
 get_metadata_for_rows(object, which_data, columns)
 }
 \arguments{
-\item{object}{S4 object of class MeTime Analyser}
+\item{object}{a S4 object of the class "metime_analyzer".}
 
-\item{which_data}{Names of dataset/s to be used}
+\item{which_data}{a character to define which dataset is to be used.}
 
-\item{columns}{A list of character vectors for the columns of interest. Length of the list should be
-same as length of which_data}
+\item{columns}{A list of character vectors for the columns of interest. Length of the list should be same as length of which_data.}
 }
 \value{
-data.frame with metadata information for rows
+A data frame with metadata information for rows.
 }
 \description{
-function to generate a metadata list for building the MeTime plotter object
+Generate a list of metadata for the S4 object of the class "metime_analyzer".
 }

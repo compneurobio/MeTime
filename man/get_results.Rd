@@ -2,19 +2,19 @@
 % Please edit documentation in R/get_results.R
 \name{get_results}
 \alias{get_results}
-\title{Function to get results of a particular analysis}
+\title{Get results element by index}
 \usage{
-get_results(object, which_result)
+get_results(object, index)
 }
 \arguments{
-\item{object}{An S4 object of class metime_analyser}
+\item{object}{a S4 object of the class "metime_analyzer".}
 
-\item{which_result}{character/index to define the result of interest}
+\item{index}{a character or numeric value defining which result should be}
 }
 \value{
-list with results data list and information regarding
+A list with result elements that
 the functions applied and type of calculation
 }
 \description{
-function to get results from S4 object
+Get results from S4 object of class metime_analyser by a specified index. Print object in console to see all available indices.
 }

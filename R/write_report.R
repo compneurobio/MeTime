@@ -1,6 +1,6 @@
-#' Function that generates a report from an metime_analyser object
-#' @description Function to add information about the method applied to the dataset
-#' @param object S4 object of class metime_analyser
+#' Generates a report from an metime_analyser object
+#' @description Write an HTML or PDF report that summarizes one or more "me_time_analyser" objects and display all results
+#' @param object a S4 object of class metime_analyser
 #' @param title a character string used as title of the report. By default is set to metime + system time.
 #' @param file a character string used as file name of the output report and table. By default is set to metime + system time.
 #' @param table a logical indicating whether you want to save the plot data as an xlsx file. If TRUE an xlsx file with the file name specified by the title will be saved.
@@ -12,7 +12,8 @@
 
 setGeneric("write_report", function(object, title=NULL, file=NULL, table=F, device="html", interactive=F, author=NULL) standardGeneric("write_report"))
 setMethod("write_report", "metime_analyser", function(object, title=NULL, file=NULL, table=F,device="html", interactive=F, author=NULL){
-  results <- object@results
+  if(!is.list(object)) my_objects <- list(object1 = object)
+  else my_objects<-object
   # sanity checks ####
   get_header <- function(title, type="html"){
     # function that generates the heading of the rmarkdown document
@@ -38,12 +39,11 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
     }
     return(out)
   }
-  
-  get_analyzer_info <- function(object){
+  get_analyzer_info <- function(object_nr){
     # function that prints all information of the analyzer object in rmarkdown
     out <- paste0("# Analyzer info\n```{r,echo=F, warning=FALSE, message=FALSE}\n",
-                  'results <- object@results\n ',
-                  'print(object)',
+                  'results <- my_objects[[',object_nr,']]@results\n ',
+                  'print(my_objects[[',object_nr,']])',
                   "\n```\n", collapse="")
     return(out)
   }
@@ -129,7 +129,7 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
     else{
       get_db <- tools::Rd_db(package = get_package)
       if(length(grep(pattern=fun, names(get_db), value=T))>0){
-        my_fun_db <- get_db[[grep(pattern=fun, names(get_db), value=T)]]
+        my_fun_db <- get_db[[grep(pattern=paste0(fun,".Rd"), names(get_db), value=T)]]
         out <- capture.output(tools::Rd2HTML(my_fun_db))[-c(1:7)]
       }
       else out <- "function not found"
@@ -210,7 +210,6 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
   #### header ####
   out_header <- get_header(title=ifelse(is.null(title),paste0("metime",Sys.Date()),tools::file_path_sans_ext(file)),
                            type=device)
-  out_analyzer <- get_analyzer_info(object = object)
   # CSS block 
   out_css <- ifelse(device=="html", 
                     "```{css, echo=FALSE}
@@ -226,71 +225,82 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
   out_js <- ''
   
   #### body ####
-  out_body <- lapply(names(results), function(section_name){
-    # add section title
-    section_title = get_heading(text=section_name, tabset=T, level=1, type=device)
-    section_sub_title = get_p(#'\n',"General information",'\n',
-      #'\n',paste0("Calculation type:  ", results[[section_name]][["information"]]$calc_type)%>% gsub(pattern='"', replacement = "'", fixed=T),
-      '\n',paste0("Information:  ", results[[section_name]][["information"]]$calc_info)%>% gsub(pattern='"', replacement = "'", fixed=T),
-      '\n', '\n')
-    section_pipe = get_pipe(results[[section_name]][["functions_applied"]], prefix=section_name, type=device)
-    
-    # add tabs to section
-    section_tab = lapply(seq_along(results[[section_name]]$plots), function(tab_nr){
-      # plot all subitems
-      lapply(seq_along(results[[section_name]][["plots"]][[tab_nr]]), function(section_plots){
-        if(all(class(results[[section_name]][["plots"]][[tab_nr]][[section_plots]])=="list")){
-          lapply(seq_along(results[[section_name]][["plots"]][[tab_nr]][[section_plots]]), function(section_sub_plots){
-            if(is.data.frame(results[[section_name]][["plots"]][[tab_nr]][[section_plots]][[section_sub_plots]])){
-              c(get_heading(text=names(results[[section_name]][["plots"]][[tab_nr]])[section_plots], level=2, tabset=F, type=device), # add plot name
-                get_table(table_location = paste0('results[["',section_name,'"]][["plots"]][[',tab_nr,']][[',section_plots,']][[',section_sub_plots,']]'), type=device)
-              )
-            }else{
-              #add a plot to the report
-              c(get_heading(text=names(results[[section_name]][["plots"]][[tab_nr]])[section_plots], level=2, tabset=F, type=device), # add plot name
-                get_plot(plot_location = paste0('results[["',section_name,'"]][["plots"]][[',tab_nr,']][[',section_plots,']][[',section_sub_plots,']]'), type=device, interactive = interactive)
-              )
-            }
-          }) %>% unlist()
-        }else{
-          c(get_heading(names(results[[section_name]][["plots"]][[tab_nr]])[section_plots], level=2, tabset=F, type=device), # add plot name
-            get_plot(plot_location = paste0('results[["',section_name,'"]][["plots"]][[',tab_nr,']][[',section_plots,']]'), type=device)
-          )
-        }
-        # add all plots
+  ## setup data structure
+  out_body<-NULL
+  for(i in seq_along(my_objects)){
+    results <- my_objects[[i]]@results
+    this_analyzer <- get_analyzer_info(object_nr = i)
+    this_body <- lapply(names(results), function(section_name){
+      # add section title
+      section_title = get_heading(text=section_name, tabset=T, level=1, type=device)
+      section_sub_title = get_p(#'\n',"General information",'\n',
+        #'\n',paste0("Calculation type:  ", results[[section_name]][["information"]]$calc_type)%>% gsub(pattern='"', replacement = "'", fixed=T),
+        '\n',paste0("Information:  ", results[[section_name]][["information"]]$calc_info)%>% gsub(pattern='"', replacement = "'", fixed=T),
+        '\n', '\n')
+      section_pipe = get_pipe(results[[section_name]][["functions_applied"]], prefix=section_name, type=device)
+      
+      # add tabs to section
+      section_tab = lapply(seq_along(results[[section_name]]$plots), function(tab_nr){
+        # plot all subitems
+        lapply(seq_along(results[[section_name]][["plots"]][[tab_nr]]), function(section_plots){
+          if(all(class(results[[section_name]][["plots"]][[tab_nr]][[section_plots]])=="list")){
+            lapply(seq_along(results[[section_name]][["plots"]][[tab_nr]][[section_plots]]), function(section_sub_plots){
+              if(is.data.frame(results[[section_name]][["plots"]][[tab_nr]][[section_plots]][[section_sub_plots]])){
+                c(get_heading(text=names(results[[section_name]][["plots"]][[tab_nr]])[section_plots], level=2, tabset=F, type=device), # add plot name
+                  get_table(table_location = paste0('results[["',section_name,'"]][["plots"]][[',tab_nr,']][[',section_plots,']][[',section_sub_plots,']]'), type=device)
+                )
+              }else{
+                #add a plot to the report
+                c(get_heading(text=names(results[[section_name]][["plots"]][[tab_nr]])[section_plots], level=2, tabset=F, type=device), # add plot name
+                  get_plot(plot_location = paste0('results[["',section_name,'"]][["plots"]][[',tab_nr,']][[',section_plots,']][[',section_sub_plots,']]'), type=device, interactive = interactive)
+                )
+              }
+            }) %>% unlist()
+          }else{
+            c(get_heading(names(results[[section_name]][["plots"]][[tab_nr]])[section_plots], level=2, tabset=F, type=device), # add plot name
+              get_plot(plot_location = paste0('results[["',section_name,'"]][["plots"]][[',tab_nr,']][[',section_plots,']]'), type=device)
+            )
+          }
+          # add all plots
+        }) %>% unlist()
       }) %>% unlist()
+      
+      c(
+        section_title,
+        section_sub_title,
+        section_pipe,
+        #section_info,
+        section_tab
+      )
     }) %>% unlist()
-    
-    c(
-      section_title,
-      section_sub_title,
-      section_pipe,
-      #section_info,
-      section_tab
-    )
-  }) %>% unlist()
+    out_body <- c(out_body, this_analyzer,this_body)
+  }
   
   # Footer ####
   out_footer <- "# Session info\n```{r session_info,include=T, warning=FALSE, message=FALSE}\nprint(sessionInfo())\n```\n"
   
   # Write xlsx
   # save_plot_data 
+  
   if(table){
     table_list <- list()
     table_info <- data.frame()
-    for(section_name in names(results)){
-      table_list <- append(table_list,results[[section_name]][["plot_data"]])
-      table_info <- rbind(table_info, data.frame(calc_type=results[[section_name]]$information$calc_type,
-                                                 calc_info=results[[section_name]]$information$calc_info,
-                                                 stringsAsFactors = F
-      ))
-    }
-    table_info$sheet_name <- paste0("sheet_",1:nrow(table_info))
-    names(table_list) <- paste0("sheet_",1:length(table_list))
-    
-    xlsx::write.xlsx(x=table_info, file = paste0(out_file,".xlsx"),sheetName = "info")
-    for(x in names(table_list)){
-      xlsx::write.xlsx(x=table_list[[x]], file = paste0(out_file,".xlsx"),sheetName = x, append = T)
+    for(i in seq_along(my_objects)){
+      results <- my_objects[[i]]@results
+      for(section_name in names(results)){
+        table_list <- append(table_list,results[[section_name]][["plot_data"]])
+        table_info <- rbind(table_info, data.frame(calc_type=results[[section_name]]$information$calc_type,
+                                                   calc_info=results[[section_name]]$information$calc_info,
+                                                   stringsAsFactors = F
+        ))
+      }
+      table_info$sheet_name <- paste0("sheet_",1:nrow(table_info))
+      names(table_list) <- paste0("sheet_",1:length(table_list))
+      
+      xlsx::write.xlsx(x=table_info, file = paste0(out_file,".xlsx"),sheetName = "info")
+      for(x in names(table_list)){
+        xlsx::write.xlsx(x=table_list[[x]], file = paste0(out_file,".xlsx"),sheetName = x, append = T)
+      }
     }
   }
   # write report ####
@@ -299,7 +309,6 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
       out_header,
       out_css,
       out_js, 
-      out_analyzer,
       out_body,
       out_footer), # html code
     paste0(out_file,".rmd") #path for saving the file

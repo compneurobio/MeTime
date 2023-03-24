@@ -2,22 +2,18 @@
 % Please edit documentation in R/get_samples_and_timepoints.R
 \name{get_samples_and_timepoints}
 \alias{get_samples_and_timepoints}
-\title{Function to know the number of timepoints and the total number of samples available at that point}
+\title{Summarize number of time points and the total number of samples available at that point}
 \usage{
 get_samples_and_timepoints(object, which_data)
 }
 \arguments{
-\item{object}{An object of class metime_analyser}
+\item{which_data}{a character to define which dataset is to be used.}
 
-\item{which_data}{Name of the dataset in context}
+\item{objecta}{a S4 object of the class "metime_analyzer".}
 }
 \value{
-A data table with timepoints and number of samples at each timepoint
+A dataframe with time points and number of samples at each time point.
 }
 \description{
-A method applied onto s4 object of class "metime_analyser" so as to obtain the number of unique samples available
-at each timepoint.
-}
-\examples{
-# newdata <- get_samples_and_timepoints(object=metime_analyser_object, which_data="Name of dataset of interest")
+Obtain the number of unique samples available at each time point.
 }

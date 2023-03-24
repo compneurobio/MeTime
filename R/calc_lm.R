@@ -1,5 +1,5 @@
-#' Calculation of crossectional linear models (per time point)
-#' @description Fits multiple linear models (LM).
+#' Cossectional linear models (per time point)
+#' @description Fit multiple linear models (lm) onto one dataset. Covariates can be added using the covariate column of the col_data (multiple covariates can be added, separated by '###') See examples for more information.
 #' @param object an S4 object of class metime_analyser                      
 #' @param which_data  a character defining the name of the dataset to be used.
 #' @param verbose a logical on whether to print the calculation progress. Default set to FALSE.
@@ -79,16 +79,12 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                cov = my_runs$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character()
                                cov = setdiff(cov, c("time","subject")) # time cannot be a covariate
                                
+                               # get full data
                                this_data <- lm_data$data %>% 
                                  dplyr::filter(time==my_runs$time[x]) %>% 
-                                 dplyr::select(all_of(c(met, trait,cov))
-                                 )
-                               for(i in trait){
-                                 this_data <- this_data %>% 
-                                   dplyr::filter(!is.na(get(i)))
-                                 
-                                 this_data[,i] = as.numeric(this_data[,i])
-                               }
+                                 dplyr::select(all_of(c(met, trait,cov))) %>% 
+                                 dplyr::mutate_at(trait, as.numeric) %>% 
+                                 dplyr::filter(!is.na(trait), !is.na(met))
                                
                               met_data <- MatrixEQTL::SlicedData$new()
                               met_data$CreateFromMatrix(t(this_data %>% dplyr::select(all_of(met)))) # leave in features X metabolites

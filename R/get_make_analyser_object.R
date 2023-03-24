@@ -1,17 +1,14 @@
-#' Function to pack all the data into a single object of class "metime_analyser" 
-#'
-#' @description This function creates an object of class metime_analyser from a dataset.
-#' @param data data.frame containing data 
-#' @param col_data data.frame containing col_data: id column of col data has to match colnames of data
-#' @param row_data data.frame containing row_data: id column of row data has to match rownames of data
-#' @param annotations_index a list to be filled as follows = list(phenotype="Name or index of the file/list", medication="Name or index of the files/list")
-#' @param name character. Name you want to assign to the new dataset that is being added on
-#' @param results list set to empty but can add any existing results
+#' Pack all the data into a single object of class "metime_analyser" 
+#' @description Create an object of class "metime_analyser" from a dataset including data, row_data (id column corresponds to rownames(data)) and col_data (id colummn corresponds to colnames(data))
+#' @param data a data.frame containing data.
+#' @param col_data a data.frame containing col_data: id column of col data has to match colnames of data.
+#' @param row_data a data.frame containing row_data: id column of row data has to match rownames of data.
+#' @param annotations_index a named list to be filled as list(phenotype="Name or index of the file/list", medication="Name or index of the files/list").
+#' @param name a character to be assign to the new dataset. Default is set to "set_1".
+#' @param results a list of existing results. Default set to NULL.
 #' @return An object of class metime_analyser
 #' @export
-
-get_make_analyser_object <- function(data, col_data, row_data, annotations_index=list(), name=NULL, results=list()) {
-  if(is.null(name)) name <- "set1"
+get_make_analyser_object <- function(data, col_data, row_data, annotations_index=list(), name="set_1", results=list()) {
   if(!all(rownames(data) %in% row_data$id) & !all(colnames(data) %in% col_data$id)) stop("id of col or row data do not match dataframe")
   if(!all(c("id","subject","time") %in% names(row_data))) stop("id, subject or time column missing")
   

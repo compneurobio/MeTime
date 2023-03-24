@@ -2,22 +2,22 @@
 % Please edit documentation in R/mod_impute.R
 \name{mod_impute}
 \alias{mod_impute}
-\title{Function to impute missing values}
+\title{Imputation of missing values}
 \usage{
 mod_impute(object, which_data, method = "rf")
 }
 \arguments{
-\item{object}{a S4 object of class metime_analyser}
+\item{object}{a S4 object of class "metime_analyser".}
 
 \item{which_data}{a character defining which dataset should be imputed.}
 
 \item{method}{a character defining the method for imputation. See details for more information. Default set to 'rf'}
 }
 \value{
-object with mutated col_data and row_data
+S4 object of the class "metime_analyser" with mutated col_data and row_data.
 }
 \description{
-This function imputes missing values
+This function imputes missing values using one of the implemented imputation methods.
 }
 \details{
 TBD

@@ -2,20 +2,20 @@
 % Please edit documentation in R/get_common_samples_at_timepoints.R
 \name{get_common_samples_at_timepoints}
 \alias{get_common_samples_at_timepoints}
-\title{Function to get common samples at multiple timepoints chosen}
+\title{Get common samples at multiple timepoints chosen}
 \usage{
 get_common_samples_at_timepoints(object, which_data, timepoints)
 }
 \arguments{
-\item{object}{An S4 object of class metime_analyser}
+\item{which_data}{a character to define which dataset is to be used.}
 
-\item{which_data}{Dataset/s of interest}
+\item{timepoints}{a character vector to define time points}
 
-\item{timepoints}{A character vector to define timepoints}
+\item{objecta}{S4 object of the class "metime_analyzer".}
 }
 \value{
-character vector of common subjects at common timepoints
+A character vector of common subjects at common time points.
 }
 \description{
-Get a vector of common samples that can be used for stratification
+Get a vector of common samples that can be used for stratification.
 }
