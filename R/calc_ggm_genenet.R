@@ -43,7 +43,9 @@ setMethod("calc_ggm_genenet", "metime_analyser", function(object, which_data, th
           rm_col = intersect(names(data), c("adni_id","RID","rid","time","tp","subject", "id"))
           #remove columns with singular value
           cols_to_remove <- which(sapply(data, function(x) length(unique(x))) == 1)
-          data <- data[ ,-cols_to_remove]
+          if(length(cols_to_remove)>=1) {
+            data <- data[ ,-cols_to_remove]
+          }
           vars <- data %>% select(-c(all_of(rm_col))) %>% names()
           # get full data
           data <- data %>% dplyr::arrange(time, subject) 

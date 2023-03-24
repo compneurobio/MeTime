@@ -1,17 +1,22 @@
 #' Function to mutate columns in row_data or col_data
 #' @description This function allows you to mutate columns by changing class or ...
 #' @param object An S4 object of class metime_analyser
-#' @param which_data Dataset/result of interest. Has to be of length=1
+#' @param which_data character or numeric input to define Dataset/result of interest. Has to be of length=1
 #' @param type either "row" for row_data or "col" for col_data or "data" for data and "results" for results. 
 #' Set to "data" as default
 #' @param ... arguments to pass directly into dplyr::mutate() function.
-#' @returns object with mutated col_data and row_data
+#' @returns object with mutated data
 #' @export
 setGeneric("mod_mutate", function(object, which_data, type="data", ...) standardGeneric("mod_mutate"))
 setMethod("mod_mutate", "metime_analyser", function(object, which_data, type="data", ...) {
-		stopifnot(length(which_data)==1)
-		stopifnot(which_data %in% names(object@list_of_data))
-		stopifnot(type %in% c("data", "row_data", "col_data", "results"))
+		if(length(which_data)!=1) {
+			warning("length of which_data is not 1, exiting without making any changes")
+			return(object)
+		}
+		if(!type %in% c("data", "row_data", "col_data", "results")) {
+			warning("type is unknown. Please check the accepted values and exiting without making any changes")
+			return(object)
+		}
 		if(type %in% "data") {
 			data <- object %>% get_data(which_data=which_data)
 			data <- data %>% dplyr::mutate(...)

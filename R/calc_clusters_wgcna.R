@@ -11,7 +11,7 @@
 #' Parameters include: minClusterSize, pamDendroRespect ...
 #' @details Based on the method described in the WGCNA tutorials for step-by-step network construction and module detection. The idea is to find
 #' modules of metabolites at baseline. This method can be found in detail here \link[https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559){WGCNA: an R package for weighted correlation network analysis}
-#' @seealso \link[dynamicTreeCut]{cutreeDynamic} [get_metadata_for_columns] [mod_trans_eigendata]
+#' @seealso \link[dynamicTreeCut]{cutreeDynamic}, [get_metadata_for_columns], [mod_trans_eigendata]
 #' @return a S4 object of class "metime_analyser" with cluster information appended to col_data of which_data
 #' @export
 setGeneric("calc_clusters_wgcna", function(object, which_data, baseline, cols_for_meta, name, ...) standardGeneric("calc_clusters_wgcna"))

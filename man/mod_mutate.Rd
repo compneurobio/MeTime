@@ -9,7 +9,7 @@ mod_mutate(object, which_data, type = "data", ...)
 \arguments{
 \item{object}{An S4 object of class metime_analyser}
 
-\item{which_data}{Dataset/result of interest. Has to be of length=1}
+\item{which_data}{character or numeric input to define Dataset/result of interest. Has to be of length=1}
 
 \item{type}{either "row" for row_data or "col" for col_data or "data" for data and "results" for results.
 Set to "data" as default}
@@ -17,7 +17,7 @@ Set to "data" as default}
 \item{...}{arguments to pass directly into dplyr::mutate() function.}
 }
 \value{
-object with mutated col_data and row_data
+object with mutated data
 }
 \description{
 This function allows you to mutate columns by changing class or ...

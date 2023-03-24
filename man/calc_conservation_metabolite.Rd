@@ -35,8 +35,8 @@ Calculation function to analyze the metabolite conservation index
 }
 \details{
 The metabolite conservation index compares the metabolite profiles across all subjects at two time points. The metabolite conservation index quantifies the conservation (stability) of a single metabolite in comparison to all other measured metabolites. The processed data of the metime_analyzer are used to calculate the metabolite conservation index CI(x) for metabolite x as \deqn{CI(x)=1-(rank(x)-1)/(N-1)}, where \deqn{rank(x)=N-z and z=|{y∈⟦1,N⟧≠x∨ρ_p (M_x^bl,M_x^fu )≥ρ_p (M_x^bl,M_y^fu )}|}, with N being the number of subjects, M_i^bl being the aggregated metabolite profile i across all subjects at baseline, M_i^fu being the aggregated metabolite profile i of all subjects at follow up, and ρ_p \deqn{M_i^bl,M_j^fu}) being the Pearson correlation coefficient of metabolite i at baseline and metabolite j at follow up for \deqn{x,i,j∈⟦1,N⟧}. The resulting index ranges between 0 and 1, with 0 = no conservation and 1 = maximal conservation.
-This approach has been first described by \link\url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4145193/}]{Yousri et al. 2014, Long-term conservation of human metabolic phenotypes and link to heritability. \emph{Metabolomics}}
+This approach has been first described by \href{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4145193/}{Yousri et al. 2014, Long-term conservation of human metabolic phenotypes and link to heritability. \emph{Metabolomics}}
 }
 \seealso{
-\link{calc_conservation_metabotype}, \link{get_metadata_for_columns}
+\link{calc_conservation_metabotype}, \link{get_metadata_for_columns}, \link{get_stratified_data}
 }
