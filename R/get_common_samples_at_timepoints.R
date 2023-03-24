@@ -1,9 +1,9 @@
-#' Function to get common samples at multiple timepoints chosen
-#' @description Get a vector of common samples that can be used for stratification
-#' @param object An S4 object of class metime_analyser
-#' @param which_data Dataset/s of interest
-#' @param timepoints A character vector to define timepoints
-#' @returns character vector of common subjects at common timepoints
+#' Get common samples at multiple timepoints chosen
+#' @description Get a vector of common samples that can be used for stratification.
+#' @param objecta S4 object of the class "metime_analyzer".
+#' @param which_data a character to define which dataset is to be used.
+#' @param timepoints a character vector to define time points
+#' @returns A character vector of common subjects at common time points.
 #' @export
 setGeneric("get_common_samples_at_timepoints", function(object, which_data, timepoints) standardGeneric("get_common_samples_at_timepoints"))
 setMethod("get_common_samples_at_timepoints", "metime_analyser", function(object, which_data, timepoints) {

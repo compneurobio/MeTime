@@ -2,18 +2,18 @@
 % Please edit documentation in R/get_coldata.R
 \name{get_coldata}
 \alias{get_coldata}
-\title{Function to extract col data of a dataset}
+\title{Get col_data from a S4 object of the class "metime_analyser"}
 \usage{
 get_coldata(object, which_data)
 }
 \arguments{
-\item{object}{An object of class S4}
+\item{object}{a S4 object of the class "metime_analyser"}
 
-\item{which_data}{Dataset of interest}
+\item{which_data}{a character of the dataset name of interest.}
 }
 \value{
-col data of the dataset of interest
+A dataframe containing the col data of the dataset of interest.
 }
 \description{
-Function to get coldata
+Get the column information of a specified dataset from a S4 object of the class "metime_analyser"
 }

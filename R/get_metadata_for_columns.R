@@ -1,15 +1,11 @@
-
-
-
 #' Get metadata for columns(in most cases for metabolites)
 #' @description function to generate a metadata list for building the MeTime plotter object
-#' @param object S4 object of class MeTime Analyser
-#' @param which_data Names of dataset/s to be used
-#' @param columns A list of character vectors for the columns of interest. Length of the list should be
-#' same as length of which_data. List can be named or unnamed but the character vectors should be named.
+#' @param object a S4 object of the class "metime_analyzer".
+#' @param which_data a character to define which dataset is to be used.
+#' @param columns A named list of a vector of named characters containing the columns of interest. Length of the list should be same as length of which_data. List can be named or unnamed but the character vectors should be named.
 #' Moreover, they should have same names. Default is set to NULL which results in empty metadata dataframe.
 #' Ex: list(nmr_data=c(id="id", sub_pathway="Group"), lipid_data=c(id="id", sub_pathway="sub_pathway"))
-#' @return data.frame with metadata information
+#' @return a dataframe with metadata information.
 #' @export
 setGeneric("get_metadata_for_columns", function(object, which_data, columns=NULL) standardGeneric("get_metadata_for_columns"))
 setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_data, columns=NULL) {

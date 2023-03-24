@@ -4,16 +4,16 @@
 \alias{get_parameters_of_results}
 \title{Get parameters of the results}
 \usage{
-get_parameters_of_results(object, results_index)
+get_parameters_of_results(object, index)
 }
 \arguments{
-\item{object}{An S4 object of class metime_analyser}
+\item{object}{An S4 object of class metime_analyser.}
 
-\item{results_index}{name or index to get to the results of interest}
+\item{index}{a character or numeric value to be used as the result index.}
 }
 \value{
-a dataframes with functions(rownames) and parameters(colnames)
+a dataframe with functions(rownames) and parameters(colnames).
 }
 \description{
-Function to get parameters and functions applied to obtain results
+Get parameters and functions applied to obtain results.
 }

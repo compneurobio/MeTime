@@ -2,33 +2,33 @@
 % Please edit documentation in R/get_make_analyser_object.R
 \name{get_make_analyser_object}
 \alias{get_make_analyser_object}
-\title{Function to pack all the data into a single object of class "metime_analyser"}
+\title{Pack all the data into a single object of class "metime_analyser"}
 \usage{
 get_make_analyser_object(
   data,
   col_data,
   row_data,
   annotations_index = list(),
-  name = NULL,
+  name = "set_1",
   results = list()
 )
 }
 \arguments{
-\item{data}{data.frame containing data}
+\item{data}{a data.frame containing data.}
 
-\item{col_data}{data.frame containing col_data: id column of col data has to match colnames of data}
+\item{col_data}{a data.frame containing col_data: id column of col data has to match colnames of data.}
 
-\item{row_data}{data.frame containing row_data: id column of row data has to match rownames of data}
+\item{row_data}{a data.frame containing row_data: id column of row data has to match rownames of data.}
 
-\item{annotations_index}{a list to be filled as follows = list(phenotype="Name or index of the file/list", medication="Name or index of the files/list")}
+\item{annotations_index}{a named list to be filled as list(phenotype="Name or index of the file/list", medication="Name or index of the files/list").}
 
-\item{name}{character. Name you want to assign to the new dataset that is being added on}
+\item{name}{a character to be assign to the new dataset. Default is set to "set_1".}
 
-\item{results}{list set to empty but can add any existing results}
+\item{results}{a list of existing results. Default set to NULL.}
 }
 \value{
 An object of class metime_analyser
 }
 \description{
-This function creates an object of class metime_analyser from a dataset.
+Create an object of class "metime_analyser" from a dataset including data, row_data (id column corresponds to rownames(data)) and col_data (id colummn corresponds to colnames(data))
 }

@@ -1,14 +1,14 @@
 #' Get parameters of the results
-#' @description Function to get parameters and functions applied to obtain results
-#' @param object An S4 object of class metime_analyser
-#' @param results_index name or index to get to the results of interest
-#' @return a dataframes with functions(rownames) and parameters(colnames)
+#' @description Get parameters and functions applied to obtain results.
+#' @param object An S4 object of class metime_analyser.
+#' @param index a character or numeric value to be used as the result index.
+#' @return a dataframe with functions(rownames) and parameters(colnames).
 #' @export
-setGeneric("get_parameters_of_results", function(object, results_index) standardGeneric("get_parameters_of_results"))
-setMethod("get_parameters_of_results", "metime_analyser", function(object, results_index) {
-		if(class(results_index) %in% "character") stopifnot(results_index %in% names(object@results))
-		if(class(results_index) %in% c("numeric", "integer")) stopifnot(results_index < length(object@results))
-		parameters <- object@results[[results_index]][["functions_applied"]]
+setGeneric("get_parameters_of_results", function(object, index) standardGeneric("get_parameters_of_results"))
+setMethod("get_parameters_of_results", "metime_analyser", function(object, index) {
+		if(class(index) %in% "character") stopifnot(index %in% names(object@results))
+		if(class(index) %in% c("numeric", "integer")) stopifnot(index < length(object@results))
+		parameters <- object@results[[index]][["functions_applied"]]
 		functions <- names(parameters)
 		out <- lapply(seq_along(parameters), function(i) {
 				func <- parameters[[i]]

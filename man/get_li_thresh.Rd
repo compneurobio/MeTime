@@ -2,20 +2,23 @@
 % Please edit documentation in R/get_li_thresh.R
 \name{get_li_thresh}
 \alias{get_li_thresh}
-\title{Function to calculate multiple tests using method described by li}
+\title{Calculate significance threshold after correcting for independent tests.}
 \usage{
-get_li_thresh(object, which_data, verbose)
+get_li_thresh(object, which_data, verbose = F)
 }
 \arguments{
-\item{object}{an S4 object of class metime_analyser}
+\item{object}{a S4 object of the class "metime_analyzer".}
 
-\item{which_data}{dataset to be used for testing}
+\item{which_data}{a character to define which dataset is to be used.}
 
-\item{verbose}{Logical to print out the number of independent tests}
+\item{verbose}{a logical to print out the number of independent tests. Default is set to FALSE.}
 }
 \value{
-li threshold value
+a numeric value describing the Li threshold.
 }
 \description{
-li test to check for colinearlity and use it for feature selection
+Eigenvalue based calculation of independent test (removing colinearity) described by Li et al. (See details for more)
+}
+\details{
+A detailed description of the method can be found in \href{https://doi.org/10.1007\%2Fs00439-011-1118-2}{Li et al. 2012, Evaluating the effective numbers of independent tests and significant p-value thresholds in commercial genotyping arrays and public imputation reference datasets}
 }

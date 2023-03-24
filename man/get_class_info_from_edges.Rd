@@ -2,21 +2,20 @@
 % Please edit documentation in R/get_class_info_from_edges.R
 \name{get_class_info_from_edges}
 \alias{get_class_info_from_edges}
-\title{Function to get information on how many class edges are present}
+\title{Get summary on class edges}
 \usage{
 get_class_info_from_edges(calc_networks, metadata, phenotypes)
 }
 \arguments{
-\item{calc_networks}{list of calculated networks}
+\item{calc_networks}{a list of calculated networks}
 
-\item{metadata}{metadata of the edges present}
+\item{metadata}{a dataframe containing the metadata of the edges present.}
 
-\item{phenotypes}{character vector to define phenotypes that were used for correcting the data}
+\item{phenotypes}{a character vector to define phenotypes that were used for correcting the data}
 }
 \value{
-table with information on different type of edges present
+A dataframe with information on different type of edges present
 }
 \description{
-Function to check how the different edges in a GGM are associated to their
-respective classes(it could be super-pathway or sub-pathway)
+Function to check how the different edges in a GGM are associated to their respective classes(it could be super-pathway or sub-pathway)
 }

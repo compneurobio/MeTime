@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_data.R
 \name{add_data}
 \alias{add_data}
-\title{Add a data.frame to analyzer object.}
+\title{Add a data frame to analyzer object.}
 \usage{
 add_data(object, which_data, type, x, id)
 }
