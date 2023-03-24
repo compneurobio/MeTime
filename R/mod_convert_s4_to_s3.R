@@ -1,10 +1,11 @@
 
-#' Function to Convert S4 object of class metime_analyser to an S3 object with same architecture
-#' @description converter function to be applied onto metime_analyse object to convert into a standard list of S3 type.
+#' Function to Convert S4 object of class metime_analyser to an S3 object(list) with same architecture
+#' @description Converter function to be applied onto metime_analyse object to convert into a standard list of S3 type.
+#' For example list_of_data can now be accessed with '$' instead of '@'
 #' @examples # convert S4 object to a list
 #' s3_list <- mod_convert_s4_to_s3(object=metime_analyser_object)
 #' @param object An object of class metime_analyser
-#' @return An S3 object of the same data as metime_analyser in other words all slots are now converted into nested lists
+#' @return A list with the same data and structure as a metime_analyser 
 #' @export
 setGeneric("mod_convert_s4_to_s3", function(object) standardGeneric("mod_convert_s4_to_s3"))
 

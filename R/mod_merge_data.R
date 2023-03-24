@@ -18,6 +18,7 @@
 #' If you want full data set cols_list=NULL
 #' @param name a character vector to define the name of a new dataset.
 #' @return a new S4 object of class metime_analyser with the  new merged dataset appended to it
+#' @seealso [mod_merge_results]
 #' @export 
 setGeneric("mod_merge_data", function(object, which_data, filter_samples=NULL, cols_list=NULL, append=FALSE, name="merged_data") standardGeneric("mod_merge_data")) 
 setMethod("mod_merge_data", "metime_analyser", function(object, which_data, filter_samples=NULL, cols_list=NULL, append=FALSE, name="merged_data")	{

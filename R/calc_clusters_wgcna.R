@@ -10,15 +10,15 @@
 #' @param ... multiple parameters separated by commas passed to cutreeDynamic (R package: dynamicTreeCut). 
 #' Parameters include: minClusterSize, pamDendroRespect ...
 #' @details Based on the method described in the WGCNA tutorials for step-by-step network construction and module detection. The idea is to find
-#' modules of metabolites at baseline. This method can be found in detail here \link[https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559){WGCNA: an R package for weighted correlation network analysis}
-#' @seealso \link[dynamicTreeCut]{cutreeDynamic}, [get_metadata_for_columns], [mod_trans_eigendata]
+#' modules of metabolites at baseline. This method can be found in detail here [WGCNA: an R package for weighted correlation network analysis](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559)
+#' @seealso [dynamicTreeCut::cutreeDynamic], [get_metadata_for_columns], [mod_trans_eigendata]
 #' @return a S4 object of class "metime_analyser" with cluster information appended to col_data of which_data
 #' @export
 setGeneric("calc_clusters_wgcna", function(object, which_data, baseline, cols_for_meta, name, ...) standardGeneric("calc_clusters_wgcna"))
 setMethod("calc_clusters_wgcna", "metime_analyser", function(object, which_data, baseline, cols_for_meta, name, ...) {
         # Sanity checks
-        if(length(which_data)!=1 & !which_data %in% names(object@list_of_data)) warning("add_clusters_wgcna(): which_data not in metime_analyzer, or more than one which_data selected")
-        else if(length(grep(baseline, rownames(data)))<=0) warning("add_clusters_wgcna(): ")
+        if(length(which_data)!=1 & !which_data %in% names(object@list_of_data)) warning("calc_clusters_wgcna(): which_data not in metime_analyzer, or more than one which_data selected")
+        else if(length(grep(baseline, rownames(data)))<=0) warning("calc_clusters_wgcna(): baseline timepoint not found")
         else{
                 if(grep(name, names(object@results)) %>% length() >=1) {
                         warning("name of the results was previously used, using a different name")

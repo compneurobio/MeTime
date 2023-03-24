@@ -3,21 +3,22 @@
 #' Arguments will be passed directly into dplyr::rename() function
 #' @param object An S4 object of class metime_analyser
 #' @param which_data character or numeric input of length 1 to define the index of dataset or results
-#' @param type character input to define the type of data to be manipulated. Accepted inputs are "row_data", "col_data", "data"
+#' @param type character input of length 1 to define the type of data to be manipulated. Accepted inputs are "row_data", "col_data", "data"
 #' and "results". However renamed results will be returned to the user as a list of results and will not return the full analyser
 #' object
 #' @param ... arguments to pass to dplyr::rename to change the name of the functions. Example new_colname = "old_colname"
 #' @seealso [mod_filter] [mod_mutate]
+#' @return metime_analyser object with mutated names of dataframes that are parsed
 #' @export
 
 setGeneric("mod_rename", function(object, which_data, type="data", ...) standardGeneric("mod_rename"))
 setMethod("mod_rename", "metime_analyser", function(object, which_data, type="data", ...) {
 		if(length(which_data)!=1) {
-			warning("length of which_data is not 1, exiting without making any changes")
+			warning("mod_rename(): length of which_data is not 1, exiting without making any changes")
 			return(object)
 		}
 		if(!type %in% c("data", "row_data", "col_data", "results")) {
-			warning("type is unknown. Please check the accepted values and exiting without making any changes")
+			warning("mod_rename(): type is unknown. Please check the accepted values and exiting without making any changes")
 			return(object)
 		}
 		if(type %in% "data") {

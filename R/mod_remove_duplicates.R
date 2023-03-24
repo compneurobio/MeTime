@@ -1,6 +1,6 @@
 
 #' Function to remove duplicates
-#' @description Function to remove duplicates from the analyser object
+#' @description Modification(mod) function to remove duplicates from the datasets
 #' @param object An S4 object of class metime_analyser
 #' @return object after removing duplicated data
 #' @export

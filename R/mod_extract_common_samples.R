@@ -1,14 +1,14 @@
 
-#' Function to get only common samples from the dataframes in list_of_data 
-#' @description A method applied on object of class metime_analyse to extract common samples across datasets.
+#' Function to extract common samples across all datasets and store them only 
+#' @description Modification(mod) function applied on object of class metime_analyser to extract common samples across datasets.
 #' @examples # extracting common samples across all datasets
-#' new_list_of_data <- mod_extract_common_samples(object=metime_analyser_object)
+#' new_object_with_only_common_samples <- mod_extract_common_samples(object=metime_analyser_object)
 #' @param object An object of class metime_anaylser
-#' @return list_of_data with common samples across all time points
+#' @return metime_analyser object with only common samples across all datasets present in the object parsed
 #' @export
 setGeneric("mod_extract_common_samples", function(object) standardGeneric("mod_extract_common_samples") )
 
-setMethod("mod_extract_common_samples", "metime_analyser",function(object) {
+setMethod("mod_extract_common_samples", "metime_analyser", function(object) {
 		list_of_names <- lapply(object@list_of_data, function(x) {
 					return(rownames(x))
 			})

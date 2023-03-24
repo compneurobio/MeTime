@@ -1,12 +1,14 @@
 
-#' Function to combine plotter objects
-#' @description Function to combine plotter objects based on similar calc type
+#' Function to merge two sets of results
+#' @description Modification(mod) function to merge two sets of results based on calc_type
 #' @param object An S4 object of class metime_analyser
-#' @param results_index index of results to merge results of similar type
-#' @param sub_results Vector to define indices of plot_data to be merged. Set to 1 by default.
-#' @param groups character vector to define the groups that are involved
+#' @param results_index character of numeric vector to define the index of results to merge.
+#' if length of results_index is 1, then the plot_data list is merged into a single data.frame
+#' @param sub_results Vector to define indices of plot_data to be merged. Set to 1 by default. 
+#' @param groups character vector to define the two sets of different results that are being merged
 #' @param name character to name the new merged results
-#' @returns metime_analyser object with merged results   
+#' @returns metime_analyser object with merged results 
+#' @seealso [mod_merge_data]  
 #' @export
 mod_merge_results <- function(object, results_index, sub_results=1, groups, name) {
 		if(length(results_index)==1) {
@@ -26,8 +28,7 @@ mod_merge_results <- function(object, results_index, sub_results=1, groups, name
 				return(out)
 			} else {
 				if(is.null(sub_results)) {
-					stop("length of groups and results dataframes are not equal. 
-						Please fill in the right values for sub_results")
+					warning("length of groups and results dataframes are not equal")
 				} else {
 					stopifnot(length(sub_results)==length(groups))
 					new_data <- lapply(sub_results, function(b) {

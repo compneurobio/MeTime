@@ -1,21 +1,25 @@
 
 #' Modification function to filter columns in data, row_data or col_data
-#' @description Modification (mod) function to filter columns in data, row_data or col_data
+#' @description Modification (mod) function to filter columns in data, row_data or col_data. It is a wrapper function to dplyr::filter()
+#' made for metime_analyser objects.
 #' @param object A S4 object of class metime_analyser.
 #' @param which_data a vector of character defining which data/result is to be filtered. 
-#' @param type either "row" for row_data or "col" for col_data or "data" for data and "results" for results. 
-#' Set to "data" as default
+#' @param type character input of length 1 to define the type of data to be manipulated. Accepted inputs are "row_data", "col_data", "data"
+#' and "results". However renamed results will be returned to the user as a list of results and will not return the full analyser
+#' object
 #' @param ... arguments to pass directly into dplyr::filter() function.
-#' @returns object with mutated data, col_data or row_data
+#' @seealso [mod_mutate], [mod_rename]
+#' @returns object with mutated data, col_data or row_data. However, if type is "results" then plot_data with modifications expected
+#' will be returned
 #' @export
 setGeneric("mod_filter", function(object, which_data, ..., type="data") standardGeneric("mod_filter"))
 setMethod("mod_filter", "metime_analyser", function(object, which_data, ..., type="data") {
     if(length(which_data)!=1) {
-        warning("length of which_data is not 1, exiting without making any changes")
+        warning("mod_filter(): length of which_data is not 1, exiting without making any changes")
         return(object)
     }
     if(!type %in% c("data", "row_data", "col_data", "results")) {
-        warning("type is unknown. Please check the accepted values and exiting without making any changes")
+        warning("mod_filter(): type is unknown. Please check the accepted values and exiting without making any changes")
         return(object)
     }
 

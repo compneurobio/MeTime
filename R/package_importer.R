@@ -30,9 +30,6 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 
 
 
-# add a function to generate Rmarkdown directly from the analyser object - viz_analyser()
-# create another function which add the function applied on the analyser_object - ongoing
-# Try to improve the code of all functions and then Matthias will check it
 
 #' Setting a plotting method for the metime_analyser class
 #' @description Function to plot results of a certain calculation 
@@ -42,6 +39,7 @@ setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="li
 #' @param ... other parameters to pass color, fill, strat, viz(character vector with colnames for interactive)
 #' @param plot_type to define the type of plot. Accepted inputs are "dot", "tile", "box", "forrest", "manhattan"
 #' @return plots for a certain set of results
+#' @seealso [mod_generate_plots]
 #' @export
 setMethod("plot", "metime_analyser", function(x, results_index, interactive, plot_type, ...) {
 		add <- list(...)
@@ -95,8 +93,9 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   										} else {
   											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
   										}
+  										breaks <- round(breaks, digits=2)
   										return(cut(a, breaks = breaks, 
-  											labels = c(paste("Q1_(", breaks[1], " - ", ")",breaks[2], sep=""), 
+  											labels = c(paste("Q1_(", breaks[1], " - ", breaks[2], ")", sep=""), 
   												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
   												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
   												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
@@ -163,8 +162,9 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   										} else {
   											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
   										}
+  										breaks <- round(breaks, digits=2)
   										return(cut(a, breaks = breaks, 
-  											labels = c(paste("Q1_(", breaks[1], " - ", ")",breaks[2], sep=""), 
+  											labels = c(paste("Q1_(", breaks[1], " - ", breaks[2], ")", sep=""), 
   												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
   												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
   												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
@@ -190,8 +190,9 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   										} else {
   											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
   										}
+  										breaks <- round(breaks, digits=2)
   										return(cut(a, breaks = breaks, 
-  											labels = c(paste("Q1_(", breaks[1], " - ", ")",breaks[2], sep=""), 
+  											labels = c(paste("Q1_(", breaks[1], " - ", breaks[2], ")", sep=""), 
   												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
   												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
   												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
@@ -218,8 +219,9 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   										} else {
   											breaks <- c(min(a), quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), max(a))
   										}
+  										breaks <- round(breaks, digits=2)
   										return(cut(a, breaks = breaks, 
-  											labels = c(paste("Q1_(", breaks[1], " - ", ")",breaks[2], sep=""), 
+  											labels = c(paste("Q1_(", breaks[1], " - ", breaks[2], ")", sep=""), 
   												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
   												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
   												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
@@ -474,11 +476,14 @@ setMethod("show", "metime_analyser", function(object) {
 
 
 #' Function to stratify before calculation
-#' @description Stratification of a dataset in calculations. Used only in calc_ functions
+#' @description get function to perform stratification of a dataset in calculations. Used only in calc_ functions.
 #' @param object An S4 object of class metime_analyser
-#' @param which_data Dataset to be used
-#' @param stratifications list of variables and their values to stratified - list(name=value)
-#' @returns data with stratifications aforementioned
+#' @param which_data character vector to define Dataset/s to be used
+#' @param stratifications list of variables and their values to stratified - list(name=value). 
+#' example of stratification with time stratifications=list(time=c("timepoint1", "timepoint2", ...)) then only these timepoints
+#' will be considered in the analysis
+#' @returns data_list that contains col_data, row_data and data with stratifications aforementioned. Access them as shown:
+#' data=data_list[["data"]]; col_data=data_list[["col_data"]]; row_data=data_list[["row_data"]]
 #' @export
 setGeneric("get_stratified_data", function(object, which_data, stratifications) standardGeneric("get_stratified_data"))
 setMethod("get_stratified_data", "metime_analyser", function(object, which_data, stratifications) {
@@ -512,22 +517,23 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
 	})
 
 #' Function to update plots post calculations
-#' @description Function to update plots based on the calculation. 
-#' See a calc_* function to see the usage of this function
+#' @description Modification(mod) Function to generate all possible/available plots of a calculation. 
+#' This function is a wrapper function for plot()
 #' @param object An S4 object of class metime_analyser
 #' @param .interactive logical to make the plot interactive or not
 #' @param results_index character/numeric input to define the results that you want to plot or replot with our automation.
-#' Default will be set to NULL
+#' Default will be set to NULL. Length of results_index should be equal to 1.
 #' @param type character to define the type of calculation used for updating the plot
 #' cols_for_samples, cols_for_metabs, cols_for_meta etc will be used. So make sure you set those correctly
 #' for better results. 
-#' Allowed inputs are: c("ggm|network", "dimensionality_reduction", "CI_metabotype", "CI_metabolite", 
-#' "pairwise_distance", "pairwise_correlation", "colinearity", "distribution", "regression", "feature_selection")
+#' Allowed inputs are: c("ggm|network", "PCA", "UMAP", "tSNE", "CI_metabotype", "CI_metabolite", 
+#' "pairwise_distance", "pairwise_correlation", "colinearity", "distribution_metabs", "distribution_samples", "regression", "feature_selection")
 #' @returns object with plots of the newest calculation
+#' @seealso [MeTime::plot]
 #' @export
 
-setGeneric("update_plots", function(object, .interactive=FALSE, type, results_index=NULL) standardGeneric("update_plots"))
-setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE, type, results_index=NULL) {
+setGeneric("mod_generate_plots", function(object, .interactive=FALSE, type, results_index=NULL) standardGeneric("mod_generate_plots"))
+setMethod("mod_generate_plots", "metime_analyser", function(object, .interactive=FALSE, type, results_index=NULL) {
 		
 		if(is.null(results_index)) {
 			results <- object@results[[length(object@results)]]
@@ -774,17 +780,11 @@ setMethod("update_plots", "metime_analyser", function(object, .interactive=FALSE
 			} else {
 				results$plots[[length(results$plots)+1]] <- plots
 			}
+		} else {
+			warning("mod_generate_plots(): This type is not available. Exiting without making any changes")
+			return(object)
 		}
 		object@results[[results_index]] <- results
 		return(object)
 	})
 
-
-#### ADD quantiles for continuous variables - done	
-
-### GAMMs and LMMs to the code - done
-### Plots for GAMMS - code ready to test
-### add_data function into the package - done
-### Manhattan plot into the package - need to do 
-### testing the other networks - need to do
-### 

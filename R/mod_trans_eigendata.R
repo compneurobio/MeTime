@@ -1,17 +1,23 @@
 #' Function to add the clusters obtained from wgcna
-#' @description A function to add cluster assiginment to the col_data from WGCNA
+#' @description Modification(mod) function to get cluster assiginment and generate eigenmetabolite matrix from a dataset.
 #' @param object An S4 object of class metime_analyser
 #' @param which_data character to define which dataset is to be used
 #' @param append logical if set to true adds the new data to the object used else creates new object
-#' @param results_index results_index if clusters were previously calculated else set to NULL which is also default
-#' @param cols_for_meta A list of named character vector to extract col_data to add it for the eigendata
-#' @param ... arguments for add_clusters_wgcna
+#' @param results_index results_index if clusters were previously calculated else set to NULL(default)
+#' @param cols_for_meta A list of named character vector to extract col_data to add it for the eigendata. will be parsed to 
+#' get_metadata_for_columns
+#' @seealso [get_metadata_for_columns], [calc_clusters_wgcna]
+#' @param ... arguments for calc_clusters_wgcna. Make sure to set the correct baseline value if you are using the function directly
 #' @return metime_analyser object with new dataset with eigendata of the metabolites
 #' @export  
 setGeneric("mod_trans_eigendata", function(object, which_data, append, results_index, cols_for_meta, ...) standardGeneric("mod_trans_eigendata"))
 setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data, append, results_index, cols_for_meta, ...) {
-			if(!which_data %in% names(object@list_of_data)) {
-          warning("which_data is not found in the datasets of the object. Exiting without making changes")
+	  if(!length(which_data)==1) {
+        warning("mod_trans_eigendata(): This function calculates clusters for only one dataset at a time. Exiting without making any changes.")
+        return(object)
+      }
+      if(!which_data %in% names(object@list_of_data)) {
+          warning("mod_trans_eigendata(): which_data is not found in the datasets of the object. Exiting without making changes")
           return(object)
       }
       if(is.null(results_index)) {

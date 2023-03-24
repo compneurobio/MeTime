@@ -1,10 +1,13 @@
 #' Function to mutate columns in row_data or col_data
-#' @description This function allows you to mutate columns by changing class or ...
+#' @description Modification(mod) function to mutate data, row_data, col_data and results. It is a wrapper function to dplyr::mutate()
+#' made for metime_analyser objects.
 #' @param object An S4 object of class metime_analyser
 #' @param which_data character or numeric input to define Dataset/result of interest. Has to be of length=1
-#' @param type either "row" for row_data or "col" for col_data or "data" for data and "results" for results. 
-#' Set to "data" as default
+#' @param type character input of length 1 to define the type of data to be manipulated. Accepted inputs are "row_data", "col_data", "data"
+#' and "results". However renamed results will be returned to the user as a list of results and will not return the full analyser
+#' object
 #' @param ... arguments to pass directly into dplyr::mutate() function.
+#' @seealso [mod_filter], [mod_rename]
 #' @returns object with mutated data
 #' @export
 setGeneric("mod_mutate", function(object, which_data, type="data", ...) standardGeneric("mod_mutate"))
