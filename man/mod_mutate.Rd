@@ -11,8 +11,9 @@ mod_mutate(object, which_data, type = "data", ...)
 
 \item{which_data}{character or numeric input to define Dataset/result of interest. Has to be of length=1}
 
-\item{type}{either "row" for row_data or "col" for col_data or "data" for data and "results" for results.
-Set to "data" as default}
+\item{type}{character input of length 1 to define the type of data to be manipulated. Accepted inputs are "row_data", "col_data", "data"
+and "results". However renamed results will be returned to the user as a list of results and will not return the full analyser
+object}
 
 \item{...}{arguments to pass directly into dplyr::mutate() function.}
 }
@@ -20,5 +21,9 @@ Set to "data" as default}
 object with mutated data
 }
 \description{
-This function allows you to mutate columns by changing class or ...
+Modification(mod) function to mutate data, row_data, col_data and results. It is a wrapper function to dplyr::mutate()
+made for metime_analyser objects.
+}
+\seealso{
+\link{mod_filter}, \link{mod_rename}
 }

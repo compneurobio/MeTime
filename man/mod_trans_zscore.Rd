@@ -9,15 +9,18 @@ mod_trans_zscore(object, which_data)
 \arguments{
 \item{object}{An object of class metime_analyser}
 
-\item{which_data}{Name of the dataset to be used}
+\item{which_data}{character vector to define the dataset/s to be used}
 }
 \value{
-An object of class metime_analyser with processed data
+An object of class metime_analyser with scaled which_data
 }
 \description{
-Functions for scaling
+Modification(mod) Function for scaling datasets
 }
 \examples{
 # example to apply scaling
-object <- mod_zscore(object, which_data="name of the dataset")
+object <- mod_trans_zscore(object, which_data=c("dataset1", ...))
+}
+\seealso{
+\link[base:scale]{base::scale}, \link{mod_trans_log}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_extract_common_samples.R
 \name{mod_extract_common_samples}
 \alias{mod_extract_common_samples}
-\title{Function to get only common samples from the dataframes in list_of_data}
+\title{Function to extract common samples across all datasets and store them only}
 \usage{
 mod_extract_common_samples(object)
 }
@@ -10,12 +10,12 @@ mod_extract_common_samples(object)
 \item{object}{An object of class metime_anaylser}
 }
 \value{
-list_of_data with common samples across all time points
+metime_analyser object with only common samples across all datasets present in the object parsed
 }
 \description{
-A method applied on object of class metime_analyse to extract common samples across datasets.
+Modification(mod) function applied on object of class metime_analyser to extract common samples across datasets.
 }
 \examples{
 # extracting common samples across all datasets
-new_list_of_data <- mod_extract_common_samples(object=metime_analyser_object)
+new_object_with_only_common_samples <- mod_extract_common_samples(object=metime_analyser_object)
 }

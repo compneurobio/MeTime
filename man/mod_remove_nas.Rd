@@ -9,11 +9,11 @@ mod_remove_nas(object, which_data)
 \arguments{
 \item{object}{S4 object of class metime_analyser}
 
-\item{which_data}{dataset/s for which the method is to be applied}
+\item{which_data}{character vector to define the datasets to be used. Can also use a numeric vector with indices.}
 }
 \value{
-S4 object with NA's removed and data manipulated accordingly
+S4 object with NA's removed and col_data, row_data manipulated accordingly
 }
 \description{
-A method applied on S4 object to remove NA's and change data accordingly
+Modification(mod) function applied on S4 object to remove NA's and change col_data and row_data accordingly
 }

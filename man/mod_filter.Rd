@@ -13,12 +13,18 @@ mod_filter(object, which_data, ..., type = "data")
 
 \item{...}{arguments to pass directly into dplyr::filter() function.}
 
-\item{type}{either "row" for row_data or "col" for col_data or "data" for data and "results" for results.
-Set to "data" as default}
+\item{type}{character input of length 1 to define the type of data to be manipulated. Accepted inputs are "row_data", "col_data", "data"
+and "results". However renamed results will be returned to the user as a list of results and will not return the full analyser
+object}
 }
 \value{
-object with mutated data, col_data or row_data
+object with mutated data, col_data or row_data. However, if type is "results" then plot_data with modifications expected
+will be returned
 }
 \description{
-Modification (mod) function to filter columns in data, row_data or col_data
+Modification (mod) function to filter columns in data, row_data or col_data. It is a wrapper function to dplyr::filter()
+made for metime_analyser objects.
+}
+\seealso{
+\link{mod_mutate}, \link{mod_rename}
 }

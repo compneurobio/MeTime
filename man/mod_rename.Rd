@@ -11,11 +11,14 @@ mod_rename(object, which_data, type = "data", ...)
 
 \item{which_data}{character or numeric input of length 1 to define the index of dataset or results}
 
-\item{type}{character input to define the type of data to be manipulated. Accepted inputs are "row_data", "col_data", "data"
+\item{type}{character input of length 1 to define the type of data to be manipulated. Accepted inputs are "row_data", "col_data", "data"
 and "results". However renamed results will be returned to the user as a list of results and will not return the full analyser
 object}
 
 \item{...}{arguments to pass to dplyr::rename to change the name of the functions. Example new_colname = "old_colname"}
+}
+\value{
+metime_analyser object with mutated names of dataframes that are parsed
 }
 \description{
 Function to rename columns of data, row_data, col_data and plot_data of the analyser object.

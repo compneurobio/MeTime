@@ -42,3 +42,6 @@ a modification function that merges two sets of data or partial data including d
 If you want to use certain columns for the rest of the analysis properly for annotating plots then use mod_mutate
 function to rename the colnames and rownames (if applicable) to maintain consistency in the merged dataset
 }
+\seealso{
+\link{mod_merge_results}
+}

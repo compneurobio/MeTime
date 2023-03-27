@@ -30,8 +30,8 @@ calculate cluster assignment to specified col_data from Weighted Correlation Net
 }
 \details{
 Based on the method described in the WGCNA tutorials for step-by-step network construction and module detection. The idea is to find
-modules of metabolites at baseline. This method can be found in detail here \link\url{https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559}{WGCNA: an R package for weighted correlation network analysis}
+modules of metabolites at baseline. This method can be found in detail here \href{https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-559}{WGCNA: an R package for weighted correlation network analysis}
 }
 \seealso{
-\link[dynamicTreeCut]{cutreeDynamic}, \link{get_metadata_for_columns}, \link{mod_trans_eigendata}
+\link[dynamicTreeCut:cutreeDynamic]{dynamicTreeCut::cutreeDynamic}, \link{get_metadata_for_columns}, \link{mod_trans_eigendata}
 }

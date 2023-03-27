@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_convert_s4_to_s3.R
 \name{mod_convert_s4_to_s3}
 \alias{mod_convert_s4_to_s3}
-\title{Function to Convert S4 object of class metime_analyser to an S3 object with same architecture}
+\title{Function to Convert S4 object of class metime_analyser to an S3 object(list) with same architecture}
 \usage{
 mod_convert_s4_to_s3(object)
 }
@@ -10,10 +10,11 @@ mod_convert_s4_to_s3(object)
 \item{object}{An object of class metime_analyser}
 }
 \value{
-An S3 object of the same data as metime_analyser in other words all slots are now converted into nested lists
+A list with the same data and structure as a metime_analyser
 }
 \description{
-converter function to be applied onto metime_analyse object to convert into a standard list of S3 type.
+Converter function to be applied onto metime_analyse object to convert into a standard list of S3 type.
+For example list_of_data can now be accessed with '$' instead of '@'
 }
 \examples{
 # convert S4 object to a list

@@ -13,5 +13,5 @@ mod_remove_duplicates(object)
 object after removing duplicated data
 }
 \description{
-Function to remove duplicates from the analyser object
+Modification(mod) function to remove duplicates from the datasets
 }

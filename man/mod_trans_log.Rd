@@ -9,17 +9,20 @@ mod_trans_log(object, which_data, base)
 \arguments{
 \item{object}{An object of class metime_analyser}
 
-\item{which_data}{Name of the dataset to be used}
+\item{which_data}{Name/s of the dataset to be used}
 
-\item{base}{base of log to be used}
+\item{base}{base of logarithm to be used}
 }
 \value{
-An object of class metime_analyser with processed data
+An object of class metime_analyser with log-transformed dataset/s
 }
 \description{
-Function to log transform data
+Modification(mod) function to log transform dataset/s
 }
 \examples{
 # example to apply log transformation
 object <- mod_logtrans(object, which_data="name of the dataset", base=2)
+}
+\seealso{
+\link[base:Log]{base::log}, \link{mod_trans_zscore}
 }

@@ -2,18 +2,19 @@
 % Please edit documentation in R/mod_merge_results.R
 \name{mod_merge_results}
 \alias{mod_merge_results}
-\title{Function to combine plotter objects}
+\title{Function to merge two sets of results}
 \usage{
 mod_merge_results(object, results_index, sub_results = 1, groups, name)
 }
 \arguments{
 \item{object}{An S4 object of class metime_analyser}
 
-\item{results_index}{index of results to merge results of similar type}
+\item{results_index}{character of numeric vector to define the index of results to merge.
+if length of results_index is 1, then the plot_data list is merged into a single data.frame}
 
 \item{sub_results}{Vector to define indices of plot_data to be merged. Set to 1 by default.}
 
-\item{groups}{character vector to define the groups that are involved}
+\item{groups}{character vector to define the two sets of different results that are being merged}
 
 \item{name}{character to name the new merged results}
 }
@@ -21,5 +22,8 @@ mod_merge_results(object, results_index, sub_results = 1, groups, name)
 metime_analyser object with merged results
 }
 \description{
-Function to combine plotter objects based on similar calc type
+Modification(mod) function to merge two sets of results based on calc_type
+}
+\seealso{
+\link{mod_merge_data}
 }

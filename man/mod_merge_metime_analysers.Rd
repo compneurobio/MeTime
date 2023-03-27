@@ -10,11 +10,14 @@ mod_merge_metime_analysers(list_of_objects, annotations_index)
 \item{list_of_objects}{list of metime analyser objects that are to be merged. The objects must be named
 Ex: list_of_objects <- list(object1=object1, object2=object2, ...). If not named then they will be named by the function}
 
-\item{annotations_index}{new list with annotations_index. Can also set to be NULL.}
+\item{annotations_index}{new list with annotations_index. If set to NULL the first object's annotations are taken with modification.}
 }
 \value{
 A merged metime_analyser object
 }
 \description{
-function to merge multiple metime_analyser objects
+function to merge multiple metime_analyser objects. Will not be displayed in add_function_info()
+}
+\seealso{
+\link{add_function_info}
 }

@@ -20,15 +20,19 @@ mod_trans_eigendata(
 
 \item{append}{logical if set to true adds the new data to the object used else creates new object}
 
-\item{results_index}{results_index if clusters were previously calculated else set to NULL which is also default}
+\item{results_index}{results_index if clusters were previously calculated else set to NULL(default)}
 
-\item{cols_for_meta}{A list of named character vector to extract col_data to add it for the eigendata}
+\item{cols_for_meta}{A list of named character vector to extract col_data to add it for the eigendata. will be parsed to
+get_metadata_for_columns}
 
-\item{...}{arguments for add_clusters_wgcna}
+\item{...}{arguments for calc_clusters_wgcna. Make sure to set the correct baseline value if you are using the function directly}
 }
 \value{
 metime_analyser object with new dataset with eigendata of the metabolites
 }
 \description{
-A function to add cluster assiginment to the col_data from WGCNA
+Modification(mod) function to get cluster assiginment and generate eigenmetabolite matrix from a dataset.
+}
+\seealso{
+\link{get_metadata_for_columns}, \link{calc_clusters_wgcna}
 }

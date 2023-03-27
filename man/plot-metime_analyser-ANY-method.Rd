@@ -23,3 +23,6 @@ plots for a certain set of results
 \description{
 Function to plot results of a certain calculation
 }
+\seealso{
+\link{mod_generate_plots}
+}
