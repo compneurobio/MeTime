@@ -66,9 +66,12 @@ setMethod("calc_lmm", "metime_analyser", function(object,
   
   # model calculation ----
   ## add verbose processbar 
-  results=parallel::mclapply(1:nrow(my_formula), 
-                             mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
-                             mc.preschedule = TRUE,
+  ## changing from mclapply to parLapply
+  cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
+  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lmm_data", "random", "interaction"), envir=environment())
+  results=parallel::parLapply(cl=cl, 1:nrow(my_formula), 
+                             #mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
+                             #mc.preschedule = TRUE,
                              function(x) {
                                if(verbose) cat(x, " , ") # report iteration
                                # extract data 

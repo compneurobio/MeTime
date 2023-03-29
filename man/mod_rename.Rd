@@ -25,5 +25,5 @@ Function to rename columns of data, row_data, col_data and plot_data of the anal
 Arguments will be passed directly into dplyr::rename() function
 }
 \seealso{
-\link{mod_filter} \link{mod_mutate}
+\link{mod_filter}, \link{mod_mutate}, \link{mod_select}
 }

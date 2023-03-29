@@ -63,8 +63,10 @@ setMethod("calc_gamm", "metime_analyser", function(object,
     do.call(what=rbind.data.frame)
   
   # model calculation ----
-  
-  results=parallel::mclapply(1:100,#nrow(my_formula),
+  # changing mclapply to parLapply
+  cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
+  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lmm_data", "random", "interaction"), envir=environment())
+  results=parallel::parLapply(cl=cl, 1:nrow(my_formula),
                              mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
                              mc.preschedule = TRUE,
                              function(x) {

@@ -14,25 +14,37 @@
 #' @export
 #' 
 #' 
-setGeneric("calc_featureselection_boruta", function(object, which_x, which_y, verbose, output_loc, file_name, cols_for_meta_x=NULL, cols_for_meta_y=NULL) standardGeneric("calc_featureselection_boruta"))
-setMethod("calc_featureselection_boruta", "metime_analyser", function(object, which_x,which_y, verbose=F, output_loc=getwd(), file_name="boruta", cols_for_meta_x=NULL, cols_for_meta_y=NULL) {
+setGeneric("calc_featureselection_boruta", function(object, which_x, which_y, verbose=TRUE, output_loc, file_name, cols_for_meta_x=NULL, cols_for_meta_y=NULL) standardGeneric("calc_featureselection_boruta"))
+setMethod("calc_featureselection_boruta", "metime_analyser", function(object, which_x,which_y, verbose=TRUE, output_loc=getwd(), file_name="boruta", cols_for_meta_x=NULL, cols_for_meta_y=NULL) {
   
-  # validate arguments
-  stopifnot(length(which_x)==1, length(which_y)==1, 
-    all(c(which_x,which_y) %in% object@list_of_data), length(cols_for_meta_y)==1, length(cols_for_meta_x)==1)
-  
-  if(grep("color_", names(cols_for_meta_x[[1]])) %>% length() != names(cols_for_meta_x[[1]])) {
-    warning("The cols_for_meta_x are not named correctly. Exiting without performing the calculation")
+  # validate arguments and sanity checks
+  if(!all(length(which_x)==1, length(which_y)==1)) {
+    warning("Only two datasets can be used at a time. If you want to use multiple datasets then merge them before using this function. Currently, exiting without making any changes")
+    return(object)
+  } 
+  if(!all(c(which_x,which_y) %in% names(object@list_of_data))) {
+    warning("The datasets mentioned are not found in the metime_analyser object. Exiting without making any changes.")
     return(object)
   }
-
+  if(!is.null(cols_for_meta_x)) {
+    if(grep("color_", names(cols_for_meta_x[[1]])) %>% length() != names(cols_for_meta_x[[1]])) {
+      warning("The cols_for_meta_x are not named correctly. Exiting without performing the calculation")
+      return(object)
+    }
+  } else {
+    warning("cols_for_meta_x is empty. Continuing with generating results")
+  }
+  
+  # extracting data of interest and making sure they have the same samples
   x_data <- object@list_of_data[[which_x]]
   y_data <- object@list_of_data[[which_y]]
-  
   x_data <- x_data[intersect(rownames(x_data), rownames(y_data)),]
   y_data <- y_data[rownames(x_data),]
   
-  results <- parallel::mclapply(sample(colnames(y_data)), function(i) {
+  #Using parLappy because mclapply doesn't work for windows
+  cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
+  parallel::clusterExport(cl=cl, varlist=c("file_name", "output_loc", "x_data", "y_data"), envir=environment())
+  results <- parallel::parLapply(cl=cl, sample(colnames(y_data)), function(i) {
     if(verbose) cat(i, "; ")
     if(paste0(file_name, ".rds") %in% list.files(output_loc)) my_results=readRDS(file=paste0(output_loc, "/", file_name, ".rds"))
       else my_results = data.frame()
@@ -47,9 +59,9 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
                     y=meanImp,
                     id_met=rownames(.[]))
    
-    saveRDS(object=rbind(my_results, my_stats),file=paste0(output_loc, "/", file_name, ".rds"))
+    saveRDS(object=rbind.data.frame(my_results, my_stats),file=paste0(output_loc, "/", file_name, ".rds"))
     return(my_stats) 
-  }, max.cores=4) %>% do.call(what=rbind.data.frame)
+  }) %>% do.call(what=rbind.data.frame)
 
   final <- lapply(colnames(y_data), function(a) {
         if(a %in% my_results$id_y) {

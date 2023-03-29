@@ -8,7 +8,7 @@ calc_featureselection_boruta(
   object,
   which_x,
   which_y,
-  verbose,
+  verbose = TRUE,
   output_loc,
   file_name,
   cols_for_meta_x = NULL,

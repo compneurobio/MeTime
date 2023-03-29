@@ -7,7 +7,7 @@
 #' and "results". However renamed results will be returned to the user as a list of results and will not return the full analyser
 #' object
 #' @param ... arguments to pass to dplyr::rename to change the name of the functions. Example new_colname = "old_colname"
-#' @seealso [mod_filter] [mod_mutate]
+#' @seealso [mod_filter], [mod_mutate], [mod_select]
 #' @return metime_analyser object with mutated names of dataframes that are parsed
 #' @export
 
