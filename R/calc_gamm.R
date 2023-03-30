@@ -61,14 +61,16 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                       cov = paste0(ifelse(is.na(cov), "", cov),
                                    object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
     do.call(what=rbind.data.frame)
-  require(magrittr)
+
   # model calculation ----
   # changing mclapply to parLapply
   cl <- parallel::makeCluster(spec = parallel::detectCores(all.tests = FALSE, logical = TRUE)-1, type="PSOCK")
   parallel::clusterExport(cl=cl, 
                           varlist=c("my_formula", "gamm_data", "random", "interaction", "verbose"), # changed lmm_data to gamm_data
                           envir = environment())
-  
+  doSNOW::registerDoSNOW(cl)
+  pb <- tcltk::tkProgressBar(title="Running calc_gamm(): ", max=nrow(my_formula))
+  on.exit(close(pb))
   results=parallel::parLapply(cl=cl, 
                               1:nrow(my_formula),
                              #mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
@@ -138,7 +140,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
     }
     return(out_this_model)
   })
-  
+
   on.exit(parallel::stopCluster(cl))
 
   annotated_results <- plyr::rbind.fill(results)
@@ -151,6 +153,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                   y=met, 
                   color= "none",
                   type=ifelse(!is.na(level), paste0(trait, ".", level), trait))
+  #rownames(annotated_results) <- annotated_results$y 
   
   for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
     if(i=="none"){
@@ -177,6 +180,10 @@ setMethod("calc_gamm", "metime_analyser", function(object,
   }
   # split into single results files ----
   out_results <- lapply(unique(annotated_results$type), function(y) annotated_results[which(annotated_results$type==y),])
+  out_results <- lapply(seq_along(out_results), function(ind) {
+          rownames(out_results[[ind]]) <- out_results[[ind]]$met
+          return(out_results[[ind]]) 
+    })
   names(out_results) <- unique(annotated_results$type)
   
   if(is.null(cols_for_meta)) {

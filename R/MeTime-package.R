@@ -8,7 +8,7 @@
 #' @importFrom lmerTest lmer
 #' @importFrom M3C tsne
 #' @importFrom multiway parafac
-#' @importFrom parallel mclapply
+#' @importFrom parallel mclapply parLapply makeCluster clusterExport stopCluster
 #' @importFrom plotly ggplotly
 #' @importFrom reshape2 melt
 #' @importFrom umap umap
@@ -25,7 +25,7 @@
 #' @import rlang
 #' @import MatrixEQTL
 #' @import knitr
-#' @importFrom bsplus bs_modal
+#' @importFrom doSNOW registerDoSNOW
 ## usethis namespace: end
 NULL
 

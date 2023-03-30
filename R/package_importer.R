@@ -86,7 +86,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						results$information$calc_type[ind_data] %in% "CI_metabotype") {
 						df <- results$plot_data[[ind_data]]
 						exclude_cols <- c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "subject", "time")
-						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
+						#df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
 						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
   										if(is.na(min(a)) | is.na(max(a))) {
   											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
@@ -155,7 +155,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 					} else if(results$information$calc_type[ind_data] %in% "PCA") {
 						df <- results$plot_data[[ind_data]]
 						exclude_cols <- c("PC1", "PC2", "time", "id", "subject", "name")
-						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
+						#df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
 						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
   										if(is.na(min(a)) | is.na(max(a))) {
   											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
@@ -183,7 +183,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 					} else if(results$information$calc_type[ind_data] %in% "UMAP") {
 						df <- results$plot_data[[ind_data]]
 						exclude_cols <- c("UMAP1", "UMAP2", "time", "id", "subject", "name")
-						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
+						#df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
 						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
   										if(is.na(min(a)) | is.na(max(a))) {
   											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
@@ -212,7 +212,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 					} else if(results$information$calc_type[ind_data] %in% "tSNE") {
 						df <- results$plot_data[[ind_data]]
 						exclude_cols <- c( "X1", "X2", "time", "id", "subject", "name")
-						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
+						#df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
 						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
   										if(is.na(min(a)) | is.na(max(a))) {
   											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
