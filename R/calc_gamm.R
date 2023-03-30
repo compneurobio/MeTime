@@ -61,16 +61,21 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                       cov = paste0(ifelse(is.na(cov), "", cov),
                                    object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
     do.call(what=rbind.data.frame)
-  
+  require(magrittr)
   # model calculation ----
   # changing mclapply to parLapply
-  cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
-  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lmm_data", "random", "interaction"), envir=environment())
-  results=parallel::parLapply(cl=cl, 1:nrow(my_formula),
-                             mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
-                             mc.preschedule = TRUE,
+  cl <- parallel::makeCluster(spec = parallel::detectCores(all.tests = FALSE, logical = TRUE)-1, type="PSOCK")
+  parallel::clusterExport(cl=cl, 
+                          varlist=c("my_formula", "gamm_data", "random", "interaction", "verbose"), # changed lmm_data to gamm_data
+                          envir = environment())
+  
+  results=parallel::parLapply(cl=cl, 
+                              1:nrow(my_formula),
+                             #mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
+                             #mc.preschedule = TRUE,
                              function(x) {
     if(verbose) cat(x, " , ") # report iteration
+                               require(magrittr)
     # extract data 
     this_data <-  gamm_data$data %>% 
       dplyr::select(any_of(setdiff(names(gamm_data$data), c("subject","time")))) %>% 
@@ -133,6 +138,9 @@ setMethod("calc_gamm", "metime_analyser", function(object,
     }
     return(out_this_model)
   })
+  
+  on.exit(parallel::stopCluster(cl))
+
   annotated_results <- plyr::rbind.fill(results)
   
   ## modify results to for pipeline
