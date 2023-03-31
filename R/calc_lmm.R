@@ -134,7 +134,7 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                                return(out_this_model)
                              })
   annotated_results <- plyr::rbind.fill(results)
-  
+  on.exit(parallel::stopCluster(cl))
   ## modify results to for pipeline
   annotated_results <- annotated_results %>% 
     dplyr::mutate(x=beta, 
@@ -171,6 +171,10 @@ setMethod("calc_lmm", "metime_analyser", function(object,
   #rownames(annotated_results) <- annotated_results$y
   # split into single results files 
   out_results <- lapply(unique(annotated_results$type), function(y) annotated_results[which(annotated_results$type==y),])
+  out_results <- lapply(seq_along(out_results), function(ind) {
+          rownames(out_results[[ind]]) <- out_results[[ind]]$met
+          return(out_results[[ind]]) 
+    })
   names(out_results) <- unique(annotated_results$type)
   
   if(is.null(cols_for_meta)) {

@@ -267,9 +267,9 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 									plot <- ggplot(results$plot_data[[ind_data]], 
 										aes(x=x, y=.data[[add$group]], 
 											xmin=xmin, xmax=xmax, 
-										color="color")) +
+										color=color)) +
         								geom_point(position = position_jitter(w = 0, h = 0.1)) +
-        								geom_pointrange(width=.2, position=position_jitter(w = 0, h = 0.1)) +
+        								geom_pointrange(position=position_jitter(w = 0, h = 0.1)) +
         								scale_color_manual(values = c(none = "#EAE4E3", nominal = "#FCF6A4", 
                                 					li = "#ffa500", fdr = "#82DEF5", 
                                 					bonferroni = "#EE6868")) +
@@ -669,10 +669,11 @@ setMethod("mod_generate_plots", "metime_analyser", function(object, .interactive
 			cols_of_int <- colnames(data)[!colnames(data) %in% 
 				c("x", "y", "xmin", "xmax", "pval", "tval", 
 					"beta", "trait", "met", "se", "level", 
-					"statistic","pvalue","FDR", "time", "type", "color")]
+					"statistic","pvalue","FDR", "time", "type", "color", "class")]
 			cols_of_int <- na.omit(cols_of_int)
+			cols_of_int <- cols_of_int[-grep("s(", cols_of_int, fixed=TRUE)]
 			cols_of_int_facet <- cols_of_int[grep("facet_", cols_of_int)]
-			cols_of_int <- cols_of_int[!grep("facet_", cols_of_int)]
+			cols_of_int <- cols_of_int[-grep("facet_", cols_of_int)]
 			if(length(cols_of_int) >= 1) {
 				if(length(cols_of_int_facet) >= 1) {
 					combinations <- expand.grid(cols_of_int, cols_of_int_facet) %>% t() %>% as.matrix()
