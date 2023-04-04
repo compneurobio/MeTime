@@ -8,13 +8,11 @@
 #' @param alpha parameter for regression coefficient. Set to 1 for lasso regression
 #' @param nfolds nfolds parameter for glmnet style of regression. Default is set to 3
 #' @param cols_for_meta a list of character vectors of column names to be used for visualization of the networks.
-#' @param cores Number of cores to be used for the process. For more information see max.cores in parallel::mclapply()
-#' Default set to 4
 #' @param names character vector with the same length as that of possible models 
 #' @returns S4 object with updated temporal network results
 #' @export
-setGeneric("calc_temporal_network", function(object, which_data, lag, stratifications, alpha=1, nfolds=3, cols_for_meta, cores=4, names) standardGeneric("calc_temporal_network"))
-setMethod("calc_temporal_network", "metime_analyser", function(object, which_data, lag, stratifications, alpha=1, nfolds=3, cols_for_meta, cores=4, names) {
+setGeneric("calc_temporal_network", function(object, which_data, lag, stratifications, alpha=1, nfolds=3, cols_for_meta, names) standardGeneric("calc_temporal_network"))
+setMethod("calc_temporal_network", "metime_analyser", function(object, which_data, lag, stratifications, alpha=1, nfolds=3, cols_for_meta, names) {
         
         if(is.null(stratifications)) {
           times <- object@list_of_row_data[[which_data[1]]]$time %>% unique()
@@ -77,7 +75,12 @@ setMethod("calc_temporal_network", "metime_analyser", function(object, which_dat
                    xmat <- network_data[ ,!(colnames(network_data) %in% colnames(ymat))]
                    ymat <- as.matrix(na.omit(ymat))
                    xmat <- as.matrix(na.omit(xmat))
-                   results <- parallel::mclapply(colnames(ymat), function(y) {
+                   cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
+                   parallel::clusterExport(cl=cl, varlist=c("xmat", "ymat", "alpha", "nfolds"), envir=environment())
+                   opb <- pbapply::pboptions(title="Running calc_temporal_network(): ", type="timer")
+                   on.exit(pbapply::pboptions(opb))
+                   on.exit(parallel::stopCluster(cl))
+                   results <- pbapply::pblapply(cl=cl, colnames(ymat), function(y) {
                             result <- glmnet::cv.glmnet(x=xmat, y=ymat[,y], alpha=alpha, nfolds=nfolds)
                             coeffs <- coef(result)[,1]
                             coeffs <- coeffs[!(coeffs==0)]
@@ -86,7 +89,7 @@ setMethod("calc_temporal_network", "metime_analyser", function(object, which_dat
                             to <- rep(y, each=length(coeffs))
                             result <- as.data.frame(cbind(source, target, coeffs))
                             return(result)
-                    }, max.cores=cores) %>% do.call(what=rbind.data.frame)
+                    }) %>% do.call(what=rbind.data.frame)
                    results$label <- paste(unlist(lapply(strsplit(as.character(results$from), split="_time:"), function(x) return(x[2]))),
                                         unlist(lapply(strsplit(as.character(results$to), split="_time:"), function(x) return(x[2]))),
                                         results$coeffs, 

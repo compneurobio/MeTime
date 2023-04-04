@@ -44,7 +44,10 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
   #Using parLappy because mclapply doesn't work for windows
   cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
   parallel::clusterExport(cl=cl, varlist=c("file_name", "output_loc", "x_data", "y_data"), envir=environment())
-  results <- parallel::parLapply(cl=cl, sample(colnames(y_data)), function(i) {
+  opb <- pbapply::pboptions(title="Running calc_featureselection_boruta(): ", type="timer")
+  on.exit(pbapply::pboptions(opb))
+  on.exit(parallel::stopCluster(cl))
+  results <- pbapply::pblapply(cl=cl, sample(colnames(y_data)), function(i) {
     if(verbose) cat(i, "; ")
     if(paste0(file_name, ".rds") %in% list.files(output_loc)) my_results=readRDS(file=paste0(output_loc, "/", file_name, ".rds"))
       else my_results = data.frame()

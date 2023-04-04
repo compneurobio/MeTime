@@ -10,8 +10,7 @@ calc_ggm_multibipartite_lasso(
   alpha = 1,
   nfolds = 3,
   stratifications,
-  cols_for_meta,
-  cores = 4
+  cols_for_meta
 )
 }
 \arguments{
@@ -26,8 +25,6 @@ calc_ggm_multibipartite_lasso(
 \item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
 
 \item{cols_for_meta}{a list of character vectors of column names to be used for visualization of the networks.}
-
-\item{cores}{number of cores to be used in parallel::mclapply(). Default set to 4.}
 
 \item{name}{character to define the name of the results}
 

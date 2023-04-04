@@ -68,10 +68,9 @@ setMethod("calc_gamm", "metime_analyser", function(object,
   parallel::clusterExport(cl=cl, 
                           varlist=c("my_formula", "gamm_data", "random", "interaction", "verbose"), # changed lmm_data to gamm_data
                           envir = environment())
-  doSNOW::registerDoSNOW(cl)
-  pb <- tcltk::tkProgressBar(title="Running calc_gamm(): ", max=nrow(my_formula))
-  on.exit(close(pb))
-  results=parallel::parLapply(cl=cl, 
+  opb <- pbapply::pboptions(title="Running calc_gamm(): ", type="timer")
+  on.exit(pbapply::pboptions(opb))
+  results=pbapply::pblapply(cl=cl, 
                               1:nrow(my_formula),
                              #mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
                              #mc.preschedule = TRUE,

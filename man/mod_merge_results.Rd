@@ -12,9 +12,16 @@ mod_merge_results(object, results_index, sub_results = 1, groups, name)
 \item{results_index}{character of numeric vector to define the index of results to merge.
 if length of results_index is 1, then the plot_data list is merged into a single data.frame}
 
-\item{sub_results}{Vector to define indices of plot_data to be merged. Set to 1 by default.}
+\item{sub_results}{List of character/numeric vectors to define indices of plot_data to be merged.
+This is not needed when trying to merge plot_data of same results but need it for merging different
+results. The length of sub_results should be equal to length of results_index and also should be in
+the same order.}
 
-\item{groups}{character vector to define the two sets of different results that are being merged}
+\item{groups}{character vector to name the results you want to merge and should be
+of length plot_data in the case of merging results of same calculation.
+Else groups should be of length equal to unlist(sub_results) and the groups should follow the order with
+precedence to results_index.
+Eg: results_index=1:2, sub_results=list(c(3,4), c(5,6)), then groups <- c("name_1_3", "name_1_4", "name_2_5", "name_2_6")}
 
 \item{name}{character to name the new merged results}
 }

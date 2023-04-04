@@ -4,13 +4,24 @@
 #' @param object An S4 object of class metime_analyser
 #' @param results_index character of numeric vector to define the index of results to merge.
 #' if length of results_index is 1, then the plot_data list is merged into a single data.frame
-#' @param sub_results Vector to define indices of plot_data to be merged. Set to 1 by default. 
-#' @param groups character vector to define the two sets of different results that are being merged
+#' @param sub_results List of character/numeric vectors to define indices of plot_data to be merged. 
+#' This is not needed when trying to merge plot_data of same results but need it for merging different
+#' results. The length of sub_results should be equal to length of results_index and also should be in
+#' the same order. 
+#' @param groups character vector to name the results you want to merge and should be
+#' of length plot_data in the case of merging results of same calculation. 
+#' Else groups should be of length equal to unlist(sub_results) and the groups should follow the order with
+#' precedence to results_index.
+#' Eg: results_index=1:2, sub_results=list(c(3,4), c(5,6)), then groups <- c("name_1_3", "name_1_4", "name_2_5", "name_2_6")
 #' @param name character to name the new merged results
 #' @returns metime_analyser object with merged results 
 #' @seealso [mod_merge_data]  
 #' @export
 mod_merge_results <- function(object, results_index, sub_results=1, groups, name) {
+		if(length(results_index)==0) {
+			warning("results_index needs to be of length >=1. Exiting without making any changes.")
+			return(object)
+		}
 		if(length(results_index)==1) {
 			results <- object@results[[results_index]]
 			if(length(results$plot_data) == length(groups)) {
@@ -27,11 +38,11 @@ mod_merge_results <- function(object, results_index, sub_results=1, groups, name
 					params=list(results_index=results_index, groups=groups))
 				return(out)
 			} else {
-				if(is.null(sub_results)) {
-					warning("length of groups and results dataframes are not equal")
+				if(length(unlist(sub_results))!=length(groups)) {
+					warning("length of groups and results dataframes are not equal. Exiting without making any changes.")
+					return(object)
 				} else {
-					stopifnot(length(sub_results)==length(groups))
-					new_data <- lapply(sub_results, function(b) {
+					new_data <- lapply(unname(unlist(sub_results)), function(b) {
 							results$plot_data[[b]]$groups <- rep(groups[b], 
 									each=length(results$plot_data[[b]][,1]))
 							return(results$plot_data[[b]])	
@@ -46,17 +57,26 @@ mod_merge_results <- function(object, results_index, sub_results=1, groups, name
 				} 
 			}
 		} else {
-			stopifnot(length(results_index)==length(groups))
-			results_1 <- object@results[[results_index[1]]]
-			results_2 <- object@results[[results_index[2]]]
-			results_1_df <- results_1$plot_data[[1]] %>% as.data.frame()
-			results_2_df <- results_2$plot_data[[1]] %>% as.data.frame()
-			results_1_df$groups <- rep(groups[1], each=length(results_1_df[,1]))
-			results_2_df$groups <- rep(groups[2], each=length(results_2_df[,1]))
-			final_results <- rbind.data.frame(results_1_df, results_2_df)
-			out <- get_make_results(object=object, data=list(new_data), metadata=NULL, 
-						calc_info= paste(results_1$information$calc_info, results_2$information$calc_info, sep=" || "),
-						calc_type= paste(results_1$information$calc_type),
+			if(length(results_index)!=length(sub_results)) {
+				warning("Length of sub_results list and results_index is not the same. Are you trying to merge two different results or same results? Exiting without making any changes.")
+				return(object)
+			}
+			if(length(unlist(sub_results))!=length(groups)) {
+				warning("Length of groups don't match the length of results you want to merge. Exiting without making any changes.")
+				return(object)
+			}
+			results_list <- lapply(results_index, function(ind) {
+					object@results[[ind]]$plot_data
+				})
+			results_combined <- lapply(seq_along(results_list), function(ind) {
+					results_list[[ind]][sub_results[[ind]]]
+				}) %>% unlist(recursive=FALSE)
+			results_combined <- lapply(seq_along(results_combined), function(ind) {
+					results_combined[[ind]]$groups <- groups[ind]
+				}) %>% do.call(what=rbind.data.frame)
+			out <- get_make_results(object=object, data=list(results_combined), metadata=NULL, 
+						calc_info= "Merged results of different kinds. See functions_applied for better information.",
+						calc_type= paste(object@results[[results_index[1]]]$information$calc_type),
 						name=name)
 			out <- add_function_info(object=out, function_name="mod_merge_results", 
 						params=list(results_index=results_index, groups=groups, sub_results=sub_results))

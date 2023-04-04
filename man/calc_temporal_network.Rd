@@ -12,7 +12,6 @@ calc_temporal_network(
   alpha = 1,
   nfolds = 3,
   cols_for_meta,
-  cores = 4,
   names
 )
 }
@@ -30,9 +29,6 @@ calc_temporal_network(
 \item{nfolds}{nfolds parameter for glmnet style of regression. Default is set to 3}
 
 \item{cols_for_meta}{a list of character vectors of column names to be used for visualization of the networks.}
-
-\item{cores}{Number of cores to be used for the process. For more information see max.cores in parallel::mclapply()
-Default set to 4}
 
 \item{names}{character vector with the same length as that of possible models}
 }

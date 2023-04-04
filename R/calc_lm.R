@@ -70,7 +70,10 @@ setMethod("calc_lm", "metime_analyser", function(object,
   # Changing mclapply to parLapply 
   cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
   parallel::clusterExport(cl=cl, varlist=c("my_runs", "my_formula", "lm_data", "threshold"), envir=environment())
-  results=parallel::parLapply(cl=cl, 1:nrow(my_runs), 
+  opb <- pbapply::pboptions(title="Running calc_lm(): ", type="timer")
+  on.exit(pbapply::pboptions(opb))
+  on.exit(parallel::stopCluster(cl))
+  results=pbapply::pblapply(cl=cl, 1:nrow(my_runs), 
                              #mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
                              #mc.preschedule = TRUE,
                              function(x) {

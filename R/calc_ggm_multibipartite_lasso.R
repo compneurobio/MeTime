@@ -9,12 +9,11 @@
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @param cols_for_meta a list of character vectors of column names to be used for visualization of the networks.
 #' @param name character to define the name of the results
-#' @param cores number of cores to be used in parallel::mclapply(). Default set to 4. 
 #' @param ... additional arguments for cv.glmnet function
 #' @returns Analyser object with updated results of this calculation 
 #' @export
-setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cores=4) standardGeneric("calc_ggm_multibipartite_lasso"))
-setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cores=4) {
+setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta) standardGeneric("calc_ggm_multibipartite_lasso"))
+setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta) {
         if(length(which_data)==1) warning("Only one dataset(platform) is being used")
 
         data_lists <- lapply(which_data, function(a) {
@@ -44,8 +43,8 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
 
         get_betas_for_multibipartite_lasso <- function(list_of_mats, # list of matrices that are divided based on platform or timepoints
            alpha, # alpha parameter for glmnet
-           nfolds # nfolds parameter for glmnet
-           ) {
+           nfolds, # nfolds parameter for glmnet
+           ... ) { # Additional arguments for glmnet::cv.glmnet
           #creating a list to store the data from glmnet
           #code exactly similar to the usual MLP 
           out <- list() # list to store the regression information for each metabolte
@@ -54,19 +53,29 @@ setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, w
                 if(x!=y) {
                   x_mat <- as.matrix(list_of_mats[[x]])
                   y_mat <- as.matrix(list_of_mats[[y]])
-                  fit_lists <- parallel::mclapply(seq_along(y_mat), function(z) {
+                  cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
+                  parallel::clusterExport(cl=cl, varlist=ls(environment()), envir=environment())
+                  opb <- pbapply::pboptions(title="Running calc_ggm_multibipartite_lasso(): ", type="timer")
+                  on.exit(pbapply::pboptions(opb))
+                  on.exit(parallel::stopCluster(cl))
+                  fit_lists <- pbapply::pblapply(cl=cl, seq_along(y_mat), function(z) {
                         fit_list <- glmnet::cv.glmnet(x=x_mat, y=y_mat[,z], alpha=alpha, nfolds=nfolds, ...)
                         return(fit_list)
-                    }, max.cores=cores)
+                    })
                   names(fit_lists) <- colnames(y_mat)
                 } else {
                   mat <- as.matrix(list_of_mats[[x]])
-                  fit_lists <- parallel::mclapply(seq_along(mat), function(z) {
+                  cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
+                  parallel::clusterExport(cl=cl, varlist=ls(environment()), envir=environment())
+                  opb <- pbapply::pboptions(title="Running calc_ggm_multibipartite_lasso(): ", type="timer")
+                  on.exit(pbapply::pboptions(opb))
+                  on.exit(parallel::stopCluster(cl))
+                  fit_lists <- pbapply::pblapply(seq_along(mat), function(z) {
                         y <- as.matrix(mat[,z])
                         x <- as.matrix(mat[,-z])
                         fit_list <- glmnet::cv.glmnet(x=x, y=y, alpha=alpha, nfolds=nfolds, ...)
                         return(fit_list)
-                    }, max.cores=cores)
+                    }, cl=cl)
                   names(fit_lists) <- colnames(mat)
                 }
                 return(fit_lists)

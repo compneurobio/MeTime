@@ -25,7 +25,7 @@
 #' @import rlang
 #' @import MatrixEQTL
 #' @import knitr
-#' @importFrom doSNOW registerDoSNOW
+#' @importFrom pbapply pblapply pboptions
 ## usethis namespace: end
 NULL
 
