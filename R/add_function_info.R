@@ -12,7 +12,7 @@ setMethod("add_function_info", "metime_analyser", function(object, function_name
 			if(length(results)==0 | length(results)==1) {
 				if(length(results)==0) results[[1]] <- list()
 				if(length(results)==1) {
-					if(length(grep("calc_|mod_merge_results", names(results[[1]]$functions_applied)))==0) {
+					if(length(grep("calc_|mod_merge_results|add_result|meta_", names(results[[1]]$functions_applied)))==0) {
 						if(length(results[[1]]$functions_applied) >=1) {
 							names <- names(results[[1]]$functions_applied)
 							results[[1]]$functions_applied[[length(results[[1]]$functions_applied)+1]] <- params
@@ -28,7 +28,7 @@ setMethod("add_function_info", "metime_analyser", function(object, function_name
 					}
 				}
 			} else {
-				if(length(grep("calc_|mod_merge_results", names(results[[length(results)]]$functions_applied)))==0) {
+				if(length(grep("calc_|mod_merge_results|add_result|meta_", names(results[[length(results)]]$functions_applied)))==0) {
 					if(length(results[[length(results)]]$functions_applied) >=1) {
 						names <- names(results[[length(results)]]$functions_applied)
 						results[[length(results)]]$functions_applied[[length(results[[length(results)]]$functions_applied)+1]] <- params

@@ -17,6 +17,11 @@ setMethod("get_common_samples_at_timepoints", "metime_analyser", function(object
 			row_data <- object@list_of_row_data[[which_data[1]]]
 			row_data <- row_data[rownames(row_data) %in% rownames(data), ]
 		}
-		row_data <- row_data[row_data$time %in% timepoints, ]
+		row_data_list <- lapply(timepoints, function(tp) {
+				row_data[row_data$time %in% tp, ] %>% return()
+			})
+		list_of_samples <- lapply(seq_along(row_data_list), function(ind) row_data_list[[ind]]$subject %>% return())
+		common_samples <- Reduce(intersect, list_of_samples) 
+		row_data <- row_data %>% filter(subject %in% common_samples)
 		row_data$subject %>% unique() %>% return()
 	})

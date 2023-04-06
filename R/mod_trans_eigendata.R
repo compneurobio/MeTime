@@ -10,8 +10,8 @@
 #' @param ... arguments for calc_clusters_wgcna. Make sure to set the correct baseline value if you are using the function directly
 #' @return metime_analyser object with new dataset with eigendata of the metabolites
 #' @export  
-setGeneric("mod_trans_eigendata", function(object, which_data, append, results_index, cols_for_meta, ...) standardGeneric("mod_trans_eigendata"))
-setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data, append, results_index, cols_for_meta, ...) {
+setGeneric("mod_trans_eigendata", function(object, which_data, append, results_index=NULL, cols_for_meta=NULL, ...) standardGeneric("mod_trans_eigendata"))
+setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data, append, results_index=NULL, cols_for_meta=NULL, ...) {
 	  if(!length(which_data)==1) {
         warning("mod_trans_eigendata(): This function calculates clusters for only one dataset at a time. Exiting without making any changes.")
         return(object)
@@ -24,11 +24,11 @@ setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data,
           object <- calc_clusters_wgcna(object=object, which_data=which_data, ...)
           results_index <- length(object@results)
       }
-			cluster_info <- object@results[[results_index]][ ,c("id", "modules")]
+	  cluster_info <- object@results[[results_index]]$plot_data[[1]][ ,c("id", "modules")]
       colnames(cluster_info)[2] <- "cluster"
-			data_list <- split(cluster_info, f = cluster_info$cluster)
-			newdata <- object@list_of_data[[which_data]]
-        	data_to_append <- lapply(names(data_list), function(x) {
+	  data_list <- split(cluster_info, f = cluster_info$cluster)
+	  newdata <- object@list_of_data[[which_data]]
+      data_to_append <- lapply(names(data_list), function(x) {
                   modules <- data_list[[x]]
                   dummy <- newdata[ ,modules[,1]]
                   if(!x %in% "0") {
@@ -40,26 +40,27 @@ setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data,
           	}) %>% do.call(what=cbind.data.frame)
 
 
-        	col_info <- lapply(names(data_list), function(x) {
+       col_info <- lapply(names(data_list), function(x) {
                   modules <- data_list[[x]]
                   if(x %in% "0") {
                       col_info <- data.frame(id=modules[,1], modules=paste("###", modules[,1], sep=""))
                   } else {
                   	  id <- paste("eigenmetabolite_cluster_", x, sep="")
-                  	  modules <- paste("###", modules[,1], sep="")
+                  	  modules <- paste(c("###", modules[,1]), collapse="###")
                   	  col_info <- data.frame(id=id, modules=modules)
                   }
                   return(col_info)
           	}) %>% do.call(what=rbind.data.frame)           
             if(is.null(cols_for_meta)) {
-                col_data <- object@list_of_col_data[[which_data]]$id %>% as.data.frame()
+                col_data <- data.frame(id=object@list_of_col_data[[which_data]]$id)
             } else {
                 col_data <- get_metadata_for_columns(object=object, which_data=which_data, 
                      columns=cols_for_meta)
             }
           	col_data_true <- col_data[col_data$id %in% colnames(data_to_append), ]
+            if(class(col_data_true) %in% "character") col_data_true <- data.frame(id=col_data_true)
           	col_data_true <- col_data_true[order(col_data_true$id), ]
-
+            if(class(col_data_true) %in% "character") col_data_true <- data.frame(id=col_data_true)
           	cluster_data_true <- colnames(data_to_append)[grep("eigen*", colnames(data_to_append))]
           	cluster_data_true <- data.frame(id=cluster_data_true)
           	rownames(cluster_data_true) <- cluster_data_true$id
@@ -71,7 +72,7 @@ setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data,
             colnames(col_data_true)[length(colnames(col_data_true))] <- "modules"
           
           	if(append) {
-          		out <- add_dataset(object, data=final_data_true, col_data=col_data_true, 
+          		out <- add_dataset(object, data=data_to_append, col_data=col_data_true, 
                     row_data=object@list_of_row_data[[which_data]], name=paste(which_data, "with_eigenmetabs", sep="_"))
           	} else {
           		out <- get_make_analyser_object(data=data_to_append, col_data=col_data_true, 
@@ -79,6 +80,6 @@ setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data,
           				annotations_index=list(), name=paste(which_data, "with_eigenmetabs", sep="_"), results=list())
           	}
             out <- add_function_info(object=out, function_name="mod_trans_eigendata", 
-                params=list(which_data=which_data, append=append, clusters=clusters, ...))
+                params=list(which_data=which_data, append=append, results_index=results_index, cols_for_meta=cols_for_meta, ...))
           	return(out)
 	})

@@ -24,6 +24,10 @@ mod_merge_results <- function(object, results_index, sub_results=1, groups, name
 		}
 		if(length(results_index)==1) {
 			results <- object@results[[results_index]]
+			if(!is.null(results$plot_data$network)) {
+				warning("Cannot merge results of type networks like this. Exiting without making any changes.")
+				return(object)
+			}
 			if(length(results$plot_data) == length(groups)) {
 				new_data <- lapply(seq_along(results$plot_data), function(b) {
 						results$plot_data[[b]]$groups <- rep(groups[b], 
@@ -68,15 +72,31 @@ mod_merge_results <- function(object, results_index, sub_results=1, groups, name
 			results_list <- lapply(results_index, function(ind) {
 					object@results[[ind]]$plot_data
 				})
-			results_combined <- lapply(seq_along(results_list), function(ind) {
-					results_list[[ind]][sub_results[[ind]]]
-				}) %>% unlist(recursive=FALSE)
+			calc_types <- lapply(results_index, function(x) {
+					object@results[[x]]$information$calc_type
+				}) %>% unlist(recursive=FALSE) %>% unique()
+			if(length(calc_types)!=1) {
+				warning("Please check the type of calculations you are merging. Exiting without making any changes.")
+				return(object)
+			}
+			if(!(grep("ggm|network", calc_types) %>% length()==1)) {
+				results_combined <- lapply(seq_along(results_list), function(ind) {
+						results_list[[ind]][sub_results[[ind]]]
+					}) %>% unlist(recursive=FALSE)
+			} else {
+				results_combined <- lapply(seq_along(results_list), function(ind) {
+						results_list[[ind]]$network$edge
+					})
+				calc_types <- paste("merged_", calc_types, sep="")
+			}
 			results_combined <- lapply(seq_along(results_combined), function(ind) {
-					results_combined[[ind]]$groups <- groups[ind]
-				}) %>% do.call(what=rbind.data.frame)
+						results_combined[[ind]]$groups <- rep(groups[ind], each=length(results_combined[[ind]][,1]))
+						return(results_combined[[ind]])
+				}) %>% do.call(what=plyr::rbind.fill)
+			
 			out <- get_make_results(object=object, data=list(results_combined), metadata=NULL, 
 						calc_info= "Merged results of different kinds. See functions_applied for better information.",
-						calc_type= paste(object@results[[results_index[1]]]$information$calc_type),
+						calc_type= calc_types,
 						name=name)
 			out <- add_function_info(object=out, function_name="mod_merge_results", 
 						params=list(results_index=results_index, groups=groups, sub_results=sub_results))

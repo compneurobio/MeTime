@@ -4,7 +4,14 @@
 \alias{calc_clusters_wgcna}
 \title{Calculate cluster assignment from WGCNA}
 \usage{
-calc_clusters_wgcna(object, which_data, baseline, cols_for_meta, name, ...)
+calc_clusters_wgcna(
+  object,
+  which_data,
+  baseline = "t0",
+  cols_for_meta = NULL,
+  name = "WGCNA_clusters_1",
+  ...
+)
 }
 \arguments{
 \item{object}{a S4 object of the class metime_analyzer.}

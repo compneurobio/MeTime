@@ -11,10 +11,11 @@
 #' @export
 setGeneric("get_make_results", function(object, data, metadata, calc_type, calc_info, name) standardGeneric("get_make_results"))
 setMethod("get_make_results", "metime_analyser", function(object, data, metadata, calc_type, calc_info, name) {
-			stopifnot(length(calc_type)==length(calc_info))
-			stopifnot(length(calc_type)==length(data))
-			stopifnot(length(calc_info)==length(data))
-			if(length(grep("ggm|network", calc_type))==1) {
+			if(all(length(calc_type)!=length(calc_info), length(calc_type)!=length(data), length(calc_info)!=length(data))) {
+				warning("Length of calc_type, calc_info and plot_data is not equal. Exiting without making any changes")
+				return(object)
+			}
+			if(length(grep("ggm|network", calc_type))==1 & length(grep("merged", calc_type))!=1) {
 				#Getting data
 				data <- data[[1]]
 				#Getting node list along with metadata
@@ -46,13 +47,24 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
    			 		edges$title <- paste(edges$node1, "-", edges$node2, " : ", edges$values, sep="")
    			 		edges$arrows <- rep("from", each=length(edges$dashes))
    			 	}
-   			 	if(length(grep("calc_|mod_merge_results|add_result", names(object@results[[length(object@results)]]$functions_applied)))==1) {
+   			 	if(length(grep("calc_|mod_merge_results|add_result|meta_", names(object@results[[length(object@results)]]$functions_applied)))==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
 						plot_data=list(network=list(node=nodes, edge=edges)),
 						information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {
 					object@results[[length(object@results)]]$plot_data$network$node <- nodes
 					object@results[[length(object@results)]]$plot_data$network$edge <- edges
+					object@results[[length(object@results)]]$information$calc_type <- calc_type
+					object@results[[length(object@results)]]$information$calc_info <- calc_info
+					object@results[[length(object@results)]]$plots <- list()
+				}
+			} else if(length(grep("merged", calc_type)==1)) {
+				if(length(grep("calc_|mod_merge_results|add_result|meta_", names(object@results[[length(object@results)]]$functions_applied)))==1) {
+					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
+						plot_data=list(merged_network=data),
+						information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
+				} else {
+					object@results[[length(object@results)]]$plot_data[["merged_network"]] <- data
 					object@results[[length(object@results)]]$information$calc_type <- calc_type
 					object@results[[length(object@results)]]$information$calc_info <- calc_info
 					object@results[[length(object@results)]]$plots <- list()
@@ -78,7 +90,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 						return(cbind.data.frame(data[[x]], dummy_metadata))
 					})
 				}
-				if(length(grep("calc_|mod_merge_results|add_result", names(object@results[[length(object@results)]]$functions_applied)))==1) {
+				if(length(grep("calc_|mod_merge_results|add_result|meta_", names(object@results[[length(object@results)]]$functions_applied)))==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), plot_data=plot_data,
 							information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {

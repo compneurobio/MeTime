@@ -8,8 +8,8 @@ mod_trans_eigendata(
   object,
   which_data,
   append,
-  results_index,
-  cols_for_meta,
+  results_index = NULL,
+  cols_for_meta = NULL,
   ...
 )
 }

@@ -14,11 +14,11 @@
 #' @seealso [dynamicTreeCut::cutreeDynamic], [get_metadata_for_columns], [mod_trans_eigendata]
 #' @return a S4 object of class "metime_analyser" with cluster information appended to col_data of which_data
 #' @export
-setGeneric("calc_clusters_wgcna", function(object, which_data, baseline, cols_for_meta, name, ...) standardGeneric("calc_clusters_wgcna"))
-setMethod("calc_clusters_wgcna", "metime_analyser", function(object, which_data, baseline, cols_for_meta, name, ...) {
+setGeneric("calc_clusters_wgcna", function(object, which_data, baseline="t0", cols_for_meta=NULL, name="WGCNA_clusters_1", ...) standardGeneric("calc_clusters_wgcna"))
+setMethod("calc_clusters_wgcna", "metime_analyser", function(object, which_data, baseline="t0", cols_for_meta=NULL, name="WGCNA_clusters_1", ...) {
         # Sanity checks
         if(length(which_data)!=1 & !which_data %in% names(object@list_of_data)) warning("calc_clusters_wgcna(): which_data not in metime_analyzer, or more than one which_data selected")
-        else if(length(grep(baseline, rownames(data)))<=0) warning("calc_clusters_wgcna(): baseline timepoint not found")
+        else if(length(grep(baseline, rownames(object@list_of_data[[which_data]])))<=0) warning("calc_clusters_wgcna(): baseline timepoint not found")
         else{
                 if(grep(name, names(object@results)) %>% length() >=1) {
                         warning("name of the results was previously used, using a different name")
@@ -34,7 +34,7 @@ setMethod("calc_clusters_wgcna", "metime_analyser", function(object, which_data,
                 # Choose a set of soft-thresholding powers
                 powers = c(c(1:10), seq(from = 12, to=20, by=2))
                 # Call the network topology analysis function
-                sft = WGCNA::pickSoftThreshold(data, powerVector = powers, verbose = ifelse(verbose, 5,1)) # verbose 0 = silent, verbose 5 = print info
+                sft = WGCNA::pickSoftThreshold(data, powerVector = powers) # verbose 0 = silent, verbose 5 = print info
                 res <- sft$fitIndices[,1][which(-sign(sft$fitIndices[,3])*sft$fitIndices[,2] > 0.88)] 
                 softPower <- res[1]
                 adjacency <- WGCNA::adjacency(data, power=softPower)
@@ -58,7 +58,7 @@ setMethod("calc_clusters_wgcna", "metime_analyser", function(object, which_data,
                         calc_info=paste("WGCNA clusters info of", which_data, sep=""), name=name)
                 object <- add_function_info(object=object, 
                                             function_name="calc_clusters_wgcna", 
-                                            params=list(which_data=which_data, baseline=baseline, ...,))
+                                            params=list(which_data=which_data, baseline=baseline, ...))
         }
         return(object)
-	})
+})

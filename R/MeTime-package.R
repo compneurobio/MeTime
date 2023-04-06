@@ -14,7 +14,7 @@
 #' @importFrom umap umap
 #' @importFrom xlsx write.xlsx read.xlsx
 #' @import mgcv
-#' @importFrom rstatix wilcox_test t_test
+#' @importFrom rstatix wilcox_test t_test kruskal_test anova_test
 #' @import visNetwork
 #' @import glmnet
 #' @import Boruta
