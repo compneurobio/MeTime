@@ -42,7 +42,7 @@ The metime_analyser class has 5 slots:
 3. list_of_col_data: Consists of a list of col-data information(metabolites) for the respective data matrices
 4. annotations: This is a list to define how the phenotype data and medication data are named. Can also include other datasets, however, only phenotype and medication data are important as they are different from the other datasets which are actually analysed.
 
-```{r example}
+```{r, eval=FALSE}
 annotations=list(phenotype="name_of_the_dataset/file", 
                       medication="name_of_the_dataset/file")
 ```
@@ -68,7 +68,7 @@ As mentioned earlier the first step in using this package is to create an S4 obj
 
 #### 1.2.1. Loading all the data at once from a folder with all files
 
-```{r example}
+```{r, eval=FALSE}
 
 path <- "/path/to/directory"
 object <- get_files_and_names(path, annotations_index=annotations)
@@ -77,9 +77,8 @@ object <- get_files_and_names(path, annotations_index=annotations)
     
 #### 1.2.2 Using data-frames to make your own object 
 
-```{r example}
+```{r, eval=FALSE}
 
-# Making a metime_analyser object with dataframes from scratch
 object <- get_make_analyser_object(data=data.frame,
                                   col_data=data.frame,
                                   row_data=data.frame,
@@ -90,19 +89,19 @@ object <- get_make_analyser_object(data=data.frame,
 
 #### 1.2.3. Appending a new dataset to a previously created object 
 
-```{r example}
-# Appending an additional dataset to a metime_analyser object
+```{r, eval=FALSE}
+
 object <- get_append_analyser_object(object, data, col_data, row_data, name)
 
 ```
 
 #### 1.2.4. merge two or more analyser objects
 
-```{r example}
-# Merging two or more objects to create a single object
+```{r, eval=FALSE}
+
 object <- mod_merge_metime_analysers(object1, object2, ...,
                                       annotations_index=annotations)
-
+                                      
 ```
 
 ### 1.3. Different types of analyses available in this package
@@ -145,7 +144,7 @@ As mentioned in the previous section, pipeline functions take in object as a pri
 To explain this concept better consider this analogy: Imagine you are trying to understand the mechanistic changes of a disease using longitudinal data. Each individual analysis answers a specific question and can be considered as a unique sub-puzzle. These multiple sub-puzzles collectively give us the full picture of the mechanistic changes thereby completing the puzzle you set out to solve for. These sub-puzzles are inturn made up of puzzle pieces that are the pipeline functions and these puzzle pieces are modular in nature such that they can be removed, changed in position etc based on what the user prefers. See the image below to get visual picture of this analogy. 
 
 ---- Image still need to be done ------
-
+  
 ### 2.3. Plotting with MeTime
 
 Visualizing results the right way is extremely important to better grasp the biological insights. To this end, we have developed two functions that will enable users to quickly generate relevant plots specific to a method. One function is a pipeline function that can be used in the pipeline in order to let the user store the plots in the metime_analyser object and the other is a standalone S4 method of plot() for metime_analyser class. The former function is a wrapper of the latter function and the latter function is a wrapper of ggplot/visNetwork based on the plot type and the additional arguments in plot() function are for adding aesthetics to the plot. Below is a pictorial representation of the two methods and how they are different. 
