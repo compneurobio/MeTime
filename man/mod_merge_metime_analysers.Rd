@@ -4,11 +4,11 @@
 \alias{mod_merge_metime_analysers}
 \title{Function to merge one or more metime_analyser objects}
 \usage{
-mod_merge_metime_analysers(list_of_objects, annotations_index)
+mod_merge_metime_analysers(..., annotations_index)
 }
 \arguments{
-\item{list_of_objects}{list of metime analyser objects that are to be merged. The objects must be named
-Ex: list_of_objects <- list(object1=object1, object2=object2, ...). If not named then they will be named by the function}
+\item{...}{metime analyser objects that are to be merged. The objects can be named by parsing it as an argument
+If not named then they will be named by the function}
 
 \item{annotations_index}{new list with annotations_index. If set to NULL the first object's annotations are taken with modification.}
 }
