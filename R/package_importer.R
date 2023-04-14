@@ -109,7 +109,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 								stop("Define x-axis for boxplot. Use box_x=variable as an argument in the plot function")
 							} 
 							median_data <- df
-							#median_data <- median_data[median_data$ci != 1, ]
+							median_data <- median_data[median_data$ci != 1, ]
 							median_data$ci <- -log10(1-median_data$ci)
 							combinations <- combn(unique(median_data[ ,add$box_x]), 2)
 							if(length(which(is.na(df[ ,add$box_x])))>=1) {

@@ -33,5 +33,5 @@ A function to compare results from regression analysis (LM, LMM, GAMM)
 Multiple options are available to compare betas and betas + se from regression analysis. \n sign: comparison of beta signs. \n het (heterogeneity): Significance of heterogeneity across two models as described by \href{\url{https://doi.org/10.1111/j.1745-9125.1998.tb01268.x}}{Paternoster, 1998} and \href{\url{https://doi.org/10.1371/journal.pgen.1002215}}{Mittelstrass, 2011} . \n cor (correlation): Similarity of betas based on Pearson correlation
 }
 \seealso{
-\link{meta_parametric_test}, \link{meta_nonparametric_test}
+\link{meta_parametric_test}, \link{meta_nonparametric_test}, \link{meta_network}
 }

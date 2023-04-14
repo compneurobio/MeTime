@@ -7,13 +7,13 @@
 #' @param update_table a logical whether the results should be added to the plotting section. If true tables will be printed in the report. 
 #' @details Multiple options are available to compare betas and betas + se from regression analysis. \n sign: comparison of beta signs. \n het (heterogeneity): Significance of heterogeneity across two models as described by \href{<https://doi.org/10.1111/j.1745-9125.1998.tb01268.x>}{Paternoster, 1998} and \href{<https://doi.org/10.1371/journal.pgen.1002215>}{Mittelstrass, 2011} . \n cor (correlation): Similarity of betas based on Pearson correlation
 #' @return a S4 object of class metime_analyser object with function output appended to results
-#' @seealso [meta_parametric_test], [meta_nonparametric_test]
+#' @seealso [meta_parametric_test], [meta_nonparametric_test], [meta_network]
 #' @export  
 setGeneric("meta_regression", function(object,  method=c("sign","cor","het"), result_index=NULL, name= "meta_regression_1", update_table = T) standardGeneric("meta_regression"))
 setMethod("meta_regression", "metime_analyser", function(object, method=c("sign","cor","het"), result_index=NULL, name= "meta_regression_1", update_table = T){
-  if(!all(method %in% c("sign", "cor","heterogeneity"))){
-    warning('method has to be one of "sign" (sign of beta), "cor" (correlation), and "het" (heterogeneity)')
-    out <- list()
+  if(!all(method %in% c("sign", "cor","het"))) {
+    warning('method has to be one of "sign" (sign of beta), "cor" (correlation), and "het" (heterogeneity). Exiting without making any changes')
+    return(object)
   }else{
     # save file to be modified
     out <- list()
