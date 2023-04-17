@@ -91,7 +91,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
     # extract formula information
     formula_met <- my_formula$met[x]
     formula_trait <- my_formula$trait[x]
-    formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character()
+    formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""]
     smoothing_cov <- sapply(formula_cov,function(y) ifelse(length(unique(this_data[[y]]))>3, paste0("s(",y,")"), y)) 
     
     formula_random <-  ifelse(!is.null(random), paste0("s(",random, ", bs='re')"), NA)

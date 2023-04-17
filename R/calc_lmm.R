@@ -90,7 +90,7 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                                # extract formula information
                                formula_met <- my_formula$met[x]
                                formula_trait <- my_formula$trait[x]
-                               formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character()
+                               formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""]
                                formula_random <-  ifelse(!is.null(random), paste0("(1|",random,")"), NA)
                                formula_interaction <- ifelse(!is.null(interaction),interaction, NA)
                                
