@@ -3,22 +3,20 @@
 The goal of MeTime(Metabolomics Time) is to unburden scientists from developing code to perform statistical analysis on longitudinal metabolomics data. This package enables users to perform different kinds of analysis by building pipelines. Users can browse different vignettes to see the different kinds of analysis that MeTime provides along with example data and analysis. 
 
 To make this package user-friendly and easy to implement we have used a puzzle analogy to build this package. For example, you are trying to understand the mechanistic changes of a disease using longitudinal data. Each individual analysis answers a specific question and can be considered as a unique sub-puzzle. These multiple sub-puzzles collectively give us the full picture of the mechanistic changes thereby completing the puzzle you set out to solve for. These sub-puzzles are inturn made up of puzzle pieces that are the pipeline functions and these puzzle pieces are modular in nature such that they can be removed, changed in position etc based on what the user prefers. See the image below to get visual picture of this analogy.
-This developmental approach of this package can be seen in the image below. To understand the modular pieces shown in the image, please refer to section [Building pipelines]
+This developmental approach of this package can be seen in the image below. To understand the modular pieces shown in the image, please refer to section [2. Building pipelines]
 
-```{r puzzle}
-knitr::include_graphics("vignettes/images/puzzle.png")
-```
+<img width="463" alt="puzzle" src="https://user-images.githubusercontent.com/64539275/232745515-a4bfc9fe-d353-402a-92b5-7433b0aed2a4.PNG">
 
 There are different methods to analyse longitudinal metabolomics data such that each method has its own unique significance and answers a specific question. These methods are listed below. To better understand the application of each of these methods and to see examples on how to perform such an analysis, please refer to their own specific vignettes.
- 1.  Distributions  
- 2.  Feature selection
- 3.  Imputation
- 4.  Dimensionality reduction
- 5.  Eigendata calculation
- 6.  Conservation index analysis
- 7.  Regressions
- 8.  Data-driven networks
- 9.  meta-analyses
+<br> 1.  Distributions  
+<br> 2.  Feature selection
+<br> 3.  Imputation
+<br> 4.  Dimensionality reduction
+<br> 5.  Eigendata calculation
+<br> 6.  Conservation index analysis
+<br> 7.  Regressions
+<br> 8.  Data-driven networks
+<br> 9.  meta-analyses
 
 
 This document is divided into four main sections: 
@@ -32,29 +30,25 @@ This document is divided into four main sections:
 ### 1.1. metime_analyser class
 
 This package builds upon the S4 class of metime_analyser which serves as a central object that stores the data, results and the information of functions applied onto this object in a pipeline. The reasons to create such an object is as follows:
-s1. There are often multiple datasets that a user wants to analyse and there is no class in R that can store all the data at once. The closest relative of metime_analyser is summarizedExperiment(SE), which however stores information of only a single dataset that is cross-sectional in nature
- 2. As the metime_analyser object will contatin multiple datasets at once. It is easier to parse this into other functions and modify/analyse all the datasets at once thereby removing the need of duplicating the same analysis for different datasets.
- 3. Moreover, users can now perform analyses which clubs two or more datasets at once.
- 4. To be able to reproduce the results and maintain transparency, information regarding the functions applied onto a metime_analyser object are also stored. See the structure of results below to understand this better. 
+<br> 1. There are often multiple datasets that a user wants to analyse and there is no class in R that can store all the data at once. The closest relative of metime_analyser is summarizedExperiment(SE), which however stores information of only a single dataset that is cross-sectional in nature
+<br> 2. As the metime_analyser object will contatin multiple datasets at once. It is easier to parse this into other functions and modify/analyse all the datasets at once thereby removing the need of duplicating the same analysis for different datasets.
+<br> 3. Moreover, users can now perform analyses which clubs two or more datasets at once.
+<br> 4. To be able to reproduce the results and maintain transparency, information regarding the functions applied onto a metime_analyser object are also stored. See the structure of results below to understand this better. 
 
 The metime_analyser class has 5 slots:
- 1. list_of_data: Consists of a list of data matrices of metabolite concentrations
- 2. list_of_row_data: Consists of a list of row-data information(samples) for the respective data matrices
- 3. list_of_col_data: Consists of a list of col-data information(metabolites) for the respective data matrices
- 4. annotations: This is a list to define how the phenotype data and medication data are named. Can also include other datasets, however, only phenotype and medication data are important as they are different from the other datasets which are actually analysed.
- 5. results: List where the results of the analyses are stored. This list contains upto 4 elements namely:
-    1. functions_applied: A named list with names being the functions that were applied onto the object until a particular calculation(analysis) is performed and the values of each list item is a named character vector with parameters as names of the character vector and values are their respective values. If an argument's value is anything other than a character vector then that value is converted into a class of character type. 
-    2. plot_data: A list of dataframes which are the results of an analysis.
-    3. plots: A list where the plots generated by mod_generate_plots() are stored. For more information see [Building pipelines] section
-    4. information: A list with two elements calc_type and calc_info. calc_type is a character vector that defines the type of analysis and calc_info is a more detailed desciption of the calculation performed. calc_type and calc_info are generated automatically after a calculation and is used as key for plotting the results or for performing meta analysis. 
+<br> 1. list_of_data: Consists of a list of data matrices of metabolite concentrations
+<br> 2. list_of_row_data: Consists of a list of row-data information(samples) for the respective data matrices
+<br> 3. list_of_col_data: Consists of a list of col-data information(metabolites) for the respective data matrices
+<br> 4. annotations: This is a list to define how the phenotype data and medication data are named. Can also include other datasets, however, only phenotype and medication data are important as they are different from the other datasets which are actually analysed.
+<br> 5. results: List where the results of the analyses are stored. This list contains upto 4 elements namely:
+<br> emsp 1. functions_applied: A named list with names being the functions that were applied onto the object until a particular calculation(analysis) is performed and the values of each list item is a named character vector with parameters as names of the character vector and values are their respective values. If an argument's value is anything other than a character vector then that value is converted into a class of character type. 
+ <br> emsp   2. plot_data: A list of dataframes which are the results of an analysis.
+ <br> emsp   3. plots: A list where the plots generated by mod_generate_plots() are stored. For more information see [Building pipelines] section
+ <br> emsp   4. information: A list with two elements calc_type and calc_info. calc_type is a character vector that defines the type of analysis and calc_info is a more detailed desciption of the calculation performed. calc_type and calc_info are generated automatically after a calculation and is used as key for plotting the results or for performing meta analysis. 
 
+<img width="435" alt="metime_analyser" src="https://user-images.githubusercontent.com/64539275/232745616-7149a04a-a051-4fea-9079-5f5fb2106089.png">
 
-```{r structures}
-# structure of analyser object
-knitr::include_graphics("vignettes/images/metime_analyser.png")
-# structure of results
-knitr::include_graphics("vignettes/images/metime_analyser_results.png")
-```
+<img width="376" alt="metime_analyser_results" src="https://user-images.githubusercontent.com/64539275/232745659-0c9fcea9-145f-4829-881a-f279d035d79f.png">
 
 ### 1.2. Data preparation
 
@@ -139,9 +133,7 @@ Pipeline functions take in object as a primary argument and returns the object w
 
 Visualizing results the right way is extremely important to better grasp the biological insights. To this end, we have developed two functions that will enable users to quickly generate relevant plots specific to a method. One function is a pipeline function that can be used in the pipeline in order to let the user store the plots in the metime_analyser object and the other is a standalone S4 method of plot() for metime_analyser class. The former function is a wrapper of the latter function and the latter function is a wrapper of ggplot/visNetwork based on the plot type and the additional arguments in plot() function are for adding aesthetics to the plot. Below is a pictorial representation of the two methods and how they are different. 
 
-```{r plotting}
-knitr::include_graphics("vignettes/images/plotting.png")
-```
+![plotting](https://user-images.githubusercontent.com/64539275/232745864-d2d87a11-2648-497e-a2c7-80efadf30d2e.png)
 
 ## 3. For developers
 
