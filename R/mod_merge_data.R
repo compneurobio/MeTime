@@ -16,25 +16,25 @@
 #' then those columns will be subsetted else the order of which_data will be followed irrespective of the names
 #' example: which_data = c("dataset1", "dataset2"); cols_list = list(dataset1=c(...), dataset2=c(...)) or list(c(...))
 #' If you want full data set cols_list=NULL
-#' @param name a character vector to define the name of a new dataset.
+#' @param name a character to define the name of a new dataset.
 #' @return a new S4 object of class metime_analyser with the  new merged dataset appended to it
 #' @seealso [mod_merge_results]
 #' @export 
 setGeneric("mod_merge_data", function(object, which_data, filter_samples=NULL, cols_list=NULL, append=FALSE, name="merged_data") standardGeneric("mod_merge_data")) 
-setMethod("mod_merge_data", "metime_analyser", function(object, which_data, filter_samples=NULL, cols_list=NULL, append=FALSE, name="merged_data")	{
-  if(!length(which_data)>=2) {
-    warning("At least two datasets are needed for merging. Exiting without making changes")
-    return(object)
-  }
-  if(name %in% names(object@list_of_data)) {
-    warning("Name has to be unique. Setting generic name for the time being")
-    name <- "merged_data_1"
-    if(name %in% names(object@list_of_data)) {
-      index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
-      index <- c(0:9)[grep(index, 0:9)+1]
-      name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
+setMethod("mod_merge_data", "metime_analyser", function(object, which_data, filter_samples=NULL, cols_list=NULL, append=FALSE, name="merged_data_1")	{
+  out <- object
+  # checking imputs
+  if(!length(which_data)>=2) warning("mod_merge_data(): Two or more names of datasets (characters) are needed for merging. Exiting without making changes")
+  else if(!all(which_data %in% names(object@list_of_data))) warning(paste0("mod_merge_data(): could not find",paste0(setdiff(which_data,names(object@list_of_data)), collapse=", "),"in the metime_analyzer. Exiting without making changes"))
+  else{
+    # run merging
+    ## Rename results if the name is already existant
+    if(name %in% names(object@list_of_data)){
+      index <- suppressWarnings(as.numeric(gsub("[a-z|A-Z]+_[a-z|A-Z]+_","",name)))
+      name <- ifelse(is.na(index), paste0(name,"_1"), paste0(gsub("_[1-9]","",name),"_",index+1))
     }
   }
+
 
   if(!is.null(names(cols_list)) & !is.null(cols_list)) {
     if(!which_data[1] %in% names(cols_list)) {
