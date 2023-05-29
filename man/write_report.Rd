@@ -8,7 +8,7 @@ write_report(
   object,
   title = NULL,
   file = NULL,
-  table = F,
+  write_results = F,
   device = "html",
   interactive = F,
   author = NULL
@@ -21,7 +21,7 @@ write_report(
 
 \item{file}{a character string used as file name of the output report and table. By default is set to metime + system time.}
 
-\item{table}{a logical indicating whether you want to save the plot data as an xlsx file. If TRUE an xlsx file with the file name specified by the title will be saved.}
+\item{write_results}{a logical indicating whether you want to save the plot data as an xlsx file. If TRUE an xlsx file with the file name specified by the title will be saved.}
 
 \item{device}{a character string specifying the format of the report. By default is set to html. Other options include pdf.}
 

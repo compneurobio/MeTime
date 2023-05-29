@@ -32,7 +32,7 @@ If you want full data set cols_list=NULL}
 \item{append}{logical. TRUE adds this new dataset to the object. FALSE creates a new object with
 just the data and the latest results section. Default is set to FALSE}
 
-\item{name}{a character vector to define the name of a new dataset.}
+\item{name}{a character to define the name of a new dataset.}
 }
 \value{
 a new S4 object of class metime_analyser with the  new merged dataset appended to it

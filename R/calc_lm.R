@@ -87,19 +87,19 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                # get full data
                                this_data <- lm_data$data %>% 
                                  dplyr::filter(time==my_runs$time[x]) %>% 
-                                 dplyr::select(all_of(c(met, trait,cov))) %>% 
-                                 dplyr::mutate_at(trait, as.numeric) %>% 
-                                 dplyr::filter(!is.na(trait), !is.na(met))
+                                 dplyr::select(any_of(met), any_of(trait),any_of(cov)) #%>% 
+                                 #dplyr::mutate(across(trait, as.numeric)) %>% 
+                                 #dplyr::filter(!is.na(trait), !is.na(met))
                                
                               met_data <- MatrixEQTL::SlicedData$new()
-                              met_data$CreateFromMatrix(t(this_data %>% dplyr::select(all_of(met)))) # leave in features X metabolites
+                              met_data$CreateFromMatrix(t(this_data %>% dplyr::select(any_of(met)))) # leave in features X metabolites
                                  
                               t_data <- MatrixEQTL::SlicedData$new()
-                              t_data$CreateFromMatrix(t(this_data %>%  dplyr::select(all_of(trait))
+                              t_data$CreateFromMatrix(t(this_data %>%  dplyr::select(any_of(trait))
                                                            ))
                                  cov_data <- MatrixEQTL::SlicedData$new()
                                  cov_data$CreateFromMatrix(t(this_data %>% 
-                                                               dplyr::select(all_of(cov))
+                                                               dplyr::select(any_of(cov))
                                                              ))
                                  
                                  this_model = try(
@@ -124,7 +124,6 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                    out$time = as.character(my_runs$time[x])
                                    out$type = out$time
                                  }
-                                 rownames(out) <- out$y
                                  out <- out %>% dplyr::mutate(
                                    color= "none")
   

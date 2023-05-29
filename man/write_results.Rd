@@ -2,26 +2,18 @@
 % Please edit documentation in R/write_results.R
 \name{write_results}
 \alias{write_results}
-\title{Function to extract results into different types of files}
+\title{Function to save plot_data from an analyser_objec into an xlsx file}
 \usage{
-write_results(object, results_index, type)
+write_results(object, file = NULL)
 }
 \arguments{
 \item{object}{An object of class metime_analyser}
 
-\item{results_index}{character or numeric to define the results of interest}
-
-\item{type}{character to define outfile type that is "csv", "xlsx" or "tsv"}
+\item{file}{a character defining the path where to save the xlsx file}
 }
 \value{
-saves the data into a csv and returns nothing
+saves all plot data in an xlsx sheet
 }
 \description{
-extracts results from analyser object and saves it
-}
-\examples{
-see examples here and maintain the order
-If type is xlsx one out file is enough and the network data will be stored in different sheets
-Network : save_results(object, results_index, out=c("edge", "node", "meta"), type="csv")
-Others : save_results(object, results_index, out=c("outfile1", ...), type="tsv")
+Saves plot_data from an analyser_objec into an xlsx file
 }

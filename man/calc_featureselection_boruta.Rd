@@ -9,33 +9,48 @@ calc_featureselection_boruta(
   which_x,
   which_y,
   verbose = TRUE,
-  output_loc,
-  file_name,
+  name = "boruta_1",
   cols_for_meta_x = NULL,
-  cols_for_meta_y = NULL
+  cols_for_meta_y = NULL,
+  maxRuns = 100,
+  num_cores = NULL,
+  save_per_run = F,
+  run_index = NULL
 )
 }
 \arguments{
-\item{object}{An object of class metime_analyser}
+\item{object}{a S4 object of the class "metime_analyzer".}
 
-\item{which_x}{Name of the dataset to be used for training}
+\item{which_x}{a character defining the name of the dataset containing the predictors.}
 
-\item{which_y}{Name of the dataset to be used for testing}
+\item{which_y}{a character defining the name of the dataset containing the response. Can be factor for classification or numeric vector for regression.}
 
-\item{verbose}{Information provided on steps being processed}
+\item{verbose}{a logical whether the progress should be printed. Default set to TRUE.}
 
-\item{output_loc}{path to the parent directory where in the out file wíll be stored}
-
-\item{file_name}{name of the out file}
-
-\item{cols_for_meta_x}{A list of a Character vector to define columns for meta info of which_x
+\item{cols_for_meta_x}{A named list of a character vector to define columns for meta info of which_x
 Names of the character vector in this case should always start with "color_".}
 
-\item{cols_for_meta_y}{A list of a Character vector to define columns for meta info of which_y}
+\item{cols_for_meta_y}{a named list of a character vector to define columns for meta info of which_y}
+
+\item{save_per_run}{(Experimental) a logical on whether results should be saved in the same directory/tmp as single csv.}
+
+\item{run_index}{(Experimental) a vector of runs corresponding the row number of a}
 }
 \value{
 List of conservation index results
 }
 \description{
-An S4 method to be applied on the metime_analyser object so as to calculate dependent variables
+Calculate feature importance of predictors onto a response vector using the Boruta algorithm.
+}
+\details{
+The Boruta algorithm is a feature selection method that compares the importance of each variable to that of randomly generated shadow variables. It uses an iterative two step approach:
+\enumerate{
+\item the algorithm creates shadow variables that are random permutations of the original variables.
+\item Secondly, it fits a machine learning model to the original and shadow variables, and calculates the importance of each variable based on the difference between the model performance with and without the variable.
+}
+
+Variables significantly more important than their shadow counterparts are considered important and selected for the final model. This process is repeated until all variables have been evaluated. The Boruta algorithm is particularly useful for datasets with many variables and noisy data, and can help improve the accuracy and interpretability of predictive models.
+}
+\seealso{
+\link[Boruta:Boruta]{Boruta::Boruta}
 }
