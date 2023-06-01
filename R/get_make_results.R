@@ -47,7 +47,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
    			 		edges$title <- paste(edges$node1, "-", edges$node2, " : ", edges$values, sep="")
    			 		edges$arrows <- rep("from", each=length(edges$dashes))
    			 	}
-   			 	if(length(grep("calc_|mod_merge_results|add_result|meta_", names(object@results[[length(object@results)]]$functions_applied)))==1) {
+   			 	if(length(grep("calc_|mod_merge_results|add_result|meta_", object@results[[length(object@results)]]$functions_applied))==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
 						plot_data=list(network=list(node=nodes, edge=edges)),
 						information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
@@ -59,7 +59,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 					object@results[[length(object@results)]]$plots <- list()
 				}
 			} else if(length(grep("merged", calc_type)==1)) {
-				if(length(grep("calc_|mod_merge_results|add_result|meta_", names(object@results[[length(object@results)]]$functions_applied)))==1) {
+				if(length(grep("calc_|mod_merge_results|add_result|meta_", object@results[[length(object@results)]]$functions_applied))==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
 						plot_data=list(merged_network=data),
 						information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
@@ -90,7 +90,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 						return(cbind.data.frame(data[[x]], dummy_metadata))
 					})
 				}
-				if(length(grep("calc_|mod_merge_results|add_result|meta_", names(object@results[[length(object@results)]]$functions_applied)))==1) {
+				if(length(grep("calc_|mod_merge_results|add_result|meta_", object@results[[length(object@results)]]$functions_applied))==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=list(), plot_data=plot_data,
 							information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {

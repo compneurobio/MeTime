@@ -1,5 +1,6 @@
 
 
+
 #' Validity function to check if the object is valid or not
 #' @description Function to check the validity of metime_analyser 
 #' @param object An S4 object of class metime_analyser

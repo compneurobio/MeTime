@@ -26,6 +26,8 @@
 #' @import MatrixEQTL
 #' @import knitr
 #' @importFrom pbapply pblapply pboptions
+#' @importFrom bsplus bsmodal
+#' @importFrom htmltools HTML
 ## usethis namespace: end
 NULL
 

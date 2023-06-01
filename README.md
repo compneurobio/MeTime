@@ -23,7 +23,6 @@ This document is divided into four main sections:
 <br> [1. metime_analyser class and data preparation]
 <br> [2. Building pipelines]
 <br> [3. For Developers]
-<br> [4. Example data]
 
 ## 1. metime_analyser class and data preparation
 
@@ -115,16 +114,6 @@ Moreover, each function comes with a prefix that assists the user in understandi
 knitr::include_graphics("vignettes/images/functions.png")
 ```
 
-Convert this section into an image with puzzle and non-puzzle pieces 
-- get_* functions: 
-- add_* functions: 
-- mod_* functions:
-- write_* functions:
-- rm_* functions:
-- calc_* functions:
-- meta_* functions:
-- check_* functions:
-
 ### 2.2. Pipelines and analysis
 
 Pipeline functions take in object as a primary argument and returns the object with modifications based on the function. This, hence, enables users to to work with a pipe operator, either the |> operator in base R or the %>% operator from the [magrittr](https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html) package. The pipe operator eliminates the need for repeated assignments or temporary variables to provide smooth connections between pipeline steps to create pipelines that are straightforward to use, highly modular, and reproducible. To see examples refer to vignettes of methods listed above.
@@ -137,6 +126,92 @@ Visualizing results the right way is extremely important to better grasp the bio
 
 ## 3. For developers
 
-This section will provide information of 
+As mentioned previously all MeTime functions can be classified into pipeline functions and non-pipeline functions. Here we describe the skeleton functions for each of these and the essence behind the naming. Moreover all pipeline functions are S4 methods in nature
 
-## 4. Example data
+### 3.1. add_*/mod_* functions
+
+add functions are meant to add elements into the data, this could range from columns in a matrix to adding plots to the results section
+mod functions on the other hand are meant to modify the existing elements in the data not that mod_mutate does add new columns to the data but we see it more as a modification performed on existing data and thus classified it as a mod function. 
+
+```{r, eval=F}
+
+setGeneric("[add|mod]_new_name", function(object, ...) standardGeneric("[add|mod]_new_name"))
+
+setMethod("[add|mod]_new_name", "metime_analyser", function(object, ...) {
+            # conditions to check if the arguments if an argument fails return the object as is
+            # An example is given here
+            if(!all(which_data %in% names(object@list_of_data))) {
+                warning("dataset not found in the object. Exiting without making any changes")
+                return(object)
+            }
+
+            # Add Logic to add elements to the object
+
+            # finally update the functions_applied section of the results
+            out <- object
+            out <- add_function_info(object=out, function_name="[add|mod]_new_name", params=list(...))
+            return(out)
+    })
+
+```
+
+In the above example object is an instance of class metime_analyser. 
+
+### 3.2. calc_*/meta_* function
+
+calc functions are meant to perform methods that were discussed above. Similarly, meta functions are meant to perform meta-analysis on these calculations. Note that meta functions can only be applied onto the objects that contains the similar type of results. 
+
+```{r, eval=F}
+
+setGeneric("calc_new_name", function(object, which_data, cols_for_meta=NULL, name="calc_new_name_1", stratifications=NULL, ...) standardGeneric("calc_new_name"))
+
+setMethod("calc_new_name", "metime_analyser", function(object, which_data, cols_for_meta=NULL, name="calc_new_name_1", stratifications=NULL, ...) {
+            # conditions to check if the arguments if an argument fails return the object as is
+            # An example is given here, of course there might be many more based on arguments.
+            if(!all(which_data %in% names(object@list_of_data))) {
+                warning("dataset not found in the object. Exiting without making any changes")
+                return(object)
+            }
+
+            # Updating the name of the result here. Make sure to check the regex based on the name of the function
+            if(grep(name, names(object@results)) %>% length() >=1) {
+                warning("name of the results was previously used, using a different name")
+                index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
+                index <- c(0:9)[grep(index, 0:9)+1]
+                name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
+            }
+
+            # Performing stratification analysis before proceeding with calculation
+            data_list <- get_stratified_data(object=object, which_data=which_data, stratifications=stratifications)
+            data <- data_list[["data"]]
+            row_data <- data_list[["row_data"]]
+
+            # get metadata based on cols_for_meta. These columns will later be used as color or shape aesthetics while plotting the results. Depending on the calculation choose metadata for metabolites or metadata for samples using get_metadata_for_columns() and get_metadata_for_rows() respectively. An example with metabolites is shown here
+            metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta)
+
+            # Add Logic for calculation on data and row_data generated above here
+
+            # Update results and function information here
+            out <- get_make_results(object=object, data = result_here # this is a list, 
+                                metadata = metadata, 
+                                calc_type = rep("name_of_calc", each=length(result_here)), 
+                                calc_info = "More detailed information as a string here",
+                                name=name) %>%
+                    add_function_info(object=out, function_name="calc_new_name", 
+                            params=list(which_data=which_data, ..., cols_for_meta=cols_for_meta, 
+                            name=name, stratifications=stratifications))
+            return(out)
+    })
+
+
+
+```
+
+In order to perform a calculation specific to a single dataset but want to do it for multiple datasets at once then wrap the code chunk from stratification to add_function_info() part using a loop. Also, make sure that the column names mentioned in stratifications list is consistent across the row_data of the datasets. To see such an example look at calc_conservation_* functions.
+
+```{r, eval=F}
+
+setGeneric("meta_new_name", function(object, results_index=NULL, name="meta_new_name_1", ...) standardGeneric("meta_new_name"))
+setMethod("meta_new_name")
+
+```

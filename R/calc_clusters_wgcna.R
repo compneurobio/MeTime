@@ -58,7 +58,7 @@ setMethod("calc_clusters_wgcna", "metime_analyser", function(object, which_data,
                         calc_info=paste("WGCNA clusters info of", which_data, sep=""), name=name)
                 object <- add_function_info(object=object, 
                                             function_name="calc_clusters_wgcna", 
-                                            params=list(which_data=which_data, baseline=baseline, ...))
+                                            params=list(which_data=which_data, baseline=baseline, name=name, ...))
         }
         return(object)
 })

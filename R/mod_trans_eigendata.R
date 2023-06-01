@@ -10,8 +10,8 @@
 #' @param ... arguments for calc_clusters_wgcna. Make sure to set the correct baseline value if you are using the function directly
 #' @return metime_analyser object with new dataset with eigendata of the metabolites
 #' @export  
-setGeneric("mod_trans_eigendata", function(object, which_data, append, results_index=NULL, cols_for_meta=NULL, ...) standardGeneric("mod_trans_eigendata"))
-setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data, append, results_index=NULL, cols_for_meta=NULL, ...) {
+setGeneric("mod_trans_eigendata", function(object, which_data, append, results_index=NULL, cols_for_meta=NULL, name="WGCNA_clusters_1", ...) standardGeneric("mod_trans_eigendata"))
+setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data, append, results_index=NULL, cols_for_meta=NULL, name="WGCNA_clusters_1", ...) {
 	  if(!length(which_data)==1) {
         warning("mod_trans_eigendata(): This function calculates clusters for only one dataset at a time. Exiting without making any changes.")
         return(object)
@@ -21,7 +21,7 @@ setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data,
           return(object)
       }
       if(is.null(results_index)) {
-          object <- calc_clusters_wgcna(object=object, which_data=which_data, ...)
+          object <- calc_clusters_wgcna(object=object, which_data=which_data, cols_for_meta=cols_for_meta, baseline="t0", name=name, ...)
           results_index <- length(object@results)
       }
 	  cluster_info <- object@results[[results_index]]$plot_data[[1]][ ,c("id", "modules")]
@@ -80,6 +80,6 @@ setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data,
           				annotations_index=list(), name=paste(which_data, "with_eigenmetabs", sep="_"), results=list())
           	}
             out <- add_function_info(object=out, function_name="mod_trans_eigendata", 
-                params=list(which_data=which_data, append=append, results_index=results_index, cols_for_meta=cols_for_meta, ...))
+                params=list(which_data=which_data, append=append, results_index=results_index, cols_for_meta=cols_for_meta, name=name, ...))
           	return(out)
 	})

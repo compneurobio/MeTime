@@ -39,7 +39,7 @@ setMethod("meta_regression", "metime_analyser", function(object, method=c("sign"
     my_combn <- combn(names(my_data), 2) %>% t() %>% as.data.frame() %>% setNames(c("result1","result2")) # get combinations
     
     # Compare by sign ----
-    if("sign" %in% method){
+    if("sign" %in% method){  
       ## calculate result
       this_out <- lapply(1:nrow(my_combn), function(x){
         this_result <- lapply(seq_along(my_data[[1]]), function(ind) {
@@ -137,3 +137,8 @@ setMethod("meta_regression", "metime_analyser", function(object, method=c("sign"
     return(out_object)
 })
         
+
+
+### NMR preprocessing - 
+####ä Sample quality
+## do until here and then see outliers using PCA, tSNE

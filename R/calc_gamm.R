@@ -26,7 +26,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                                                    name="regression_gamm_1") {
   # sanity checks ----
   ## check that covariates (cov) and type are set in the col_data
-  if(!all(c("cov","type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lmm() needs the columns cov and type to specify the model")
+  if(!all(c("cov","type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_gamm() needs the columns cov and type to specify the model")
   
   if(grep(name, names(object@results)) %>% length() >= 1) {
     warning("name of the results was previously used, using a different name")
@@ -41,26 +41,26 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                                  object=object, stratifications=stratifications)
 
   
-  ## find list of metabolites
-  my_met <- object@list_of_col_data[[which_data]] %>% 
-    dplyr::filter(type=="met") %>% 
-    dplyr::pull(id)
-  
-  ## find list of traits
-  my_trait <- object@list_of_col_data[[which_data]] %>% 
-    dplyr::filter(type=="trait") %>% 
-    dplyr::pull(id)
-  
-  ## make list of formulas
-  my_formula <- lapply(unique(my_trait),function(x)
-      test <- object@list_of_col_data[[which_data]] %>% 
-        dplyr::select(cov, type, id) %>% 
-        dplyr::filter(id %in% my_met) %>% 
-        dplyr::rename("met"="id") %>% 
-        dplyr::mutate(trait=x,
-                      cov = paste0(ifelse(is.na(cov), "", cov),
-                                   object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
-    do.call(what=rbind.data.frame)
+    ## find list of metabolites
+    my_met <- object@list_of_col_data[[which_data]] %>% 
+      dplyr::filter(type=="met") %>% 
+      dplyr::pull(id)
+    
+    ## find list of traits
+    my_trait <- object@list_of_col_data[[which_data]] %>% 
+      dplyr::filter(type=="trait") %>% 
+      dplyr::pull(id)
+    
+    ## make list of formulas
+    my_formula <- lapply(unique(my_trait),function(x)
+        test <- object@list_of_col_data[[which_data]] %>% 
+          dplyr::select(cov, type, id) %>% 
+          dplyr::filter(id %in% my_met) %>% 
+          dplyr::rename("met"="id") %>% 
+          dplyr::mutate(trait=x,
+                        cov = paste0(ifelse(is.na(cov), "", cov),
+                                     object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
+      do.call(what=rbind.data.frame)
 
   # model calculation ----
   # changing mclapply to parLapply
