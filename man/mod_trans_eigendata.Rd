@@ -10,6 +10,7 @@ mod_trans_eigendata(
   append,
   results_index = NULL,
   cols_for_meta = NULL,
+  name = "WGCNA_clusters_1",
   ...
 )
 }
