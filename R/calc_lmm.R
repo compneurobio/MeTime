@@ -11,10 +11,11 @@
 #' @param threshold a character of length 1 to define the type of threshold for significant interactions. 
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 #' @param interaction a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.
+#' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
 #' @details Add details here
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
-setGeneric("calc_lmm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, random="subject", threshold=c("none","nominal","li","fdr","bonferroni"),interaction = NULL,verbose=T,name="regression_lmm_1") standardGeneric("calc_lmm"))
+setGeneric("calc_lmm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, random="subject", threshold=c("none","nominal","li","fdr","bonferroni"),interaction = NULL,verbose=T,name="regression_lmm_1", num_cores=NULL) standardGeneric("calc_lmm"))
 setMethod("calc_lmm", "metime_analyser", function(object,
                                                    which_data,
                                                    stratifications = NULL,
@@ -23,7 +24,8 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                                                    threshold=c("none","nominal","li","fdr","bonferroni"),
                                                    interaction=NULL,
                                                    verbose=T,
-                                                   name="regression_lmm_1") {
+                                                   name="regression_lmm_1",
+                                                   num_cores=NULL) {
   # sanity checks ----
   ## check that covariates (cov) and type are set in the col_data
   if(!all(c("cov","type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lmm() needs the columns cov and type to specify the model")
@@ -67,7 +69,11 @@ setMethod("calc_lmm", "metime_analyser", function(object,
   # model calculation ----
   ## add verbose processbar 
   ## changing from mclapply to parLapply
-  cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
+  if(is.null(num_cores)) {
+    cl <- parallel::makeCluster(spec = parallel::detectCores(all.tests = FALSE, logical = TRUE)-1, type="PSOCK")
+  } else {
+    cl <- parallel::makeCluster(spec = num_cores, type="PSOCK")
+  }
   parallel::clusterExport(cl=cl, varlist=c("my_formula", "lmm_data", "random", "interaction"), envir=environment())
   opb <- pbapply::pboptions(title="Running calc_lmm(): ", type="timer")
   on.exit(pbapply::pboptions(opb))

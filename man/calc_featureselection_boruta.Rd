@@ -32,6 +32,8 @@ Names of the character vector in this case should always start with "color_".}
 
 \item{cols_for_meta_y}{a named list of a character vector to define columns for meta info of which_y}
 
+\item{num_cores}{numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.}
+
 \item{save_per_run}{(Experimental) a logical on whether results should be saved in the same directory/tmp as single csv.}
 
 \item{run_index}{(Experimental) a vector of runs corresponding the row number of a}

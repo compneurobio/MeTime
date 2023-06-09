@@ -9,6 +9,7 @@
 #' @param cols_for_meta_y a named list of a character vector to define columns for meta info of which_y
 #' @param save_per_run (Experimental) a logical on whether results should be saved in the same directory/tmp as single csv.
 #' @param run_index (Experimental) a vector of runs corresponding the row number of a 
+#' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
 #' @details 
 #' The Boruta algorithm is a feature selection method that compares the importance of each variable to that of randomly generated shadow variables. It uses an iterative two step approach:
 #' 1. the algorithm creates shadow variables that are random permutations of the original variables. 

@@ -13,7 +13,8 @@ calc_lmm(
   threshold = c("none", "nominal", "li", "fdr", "bonferroni"),
   interaction = NULL,
   verbose = T,
-  name = "regression_lmm_1"
+  name = "regression_lmm_1",
+  num_cores = NULL
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as
 \item{verbose}{a logical on whether to print the calculation progress. Default set to FALSE.}
 
 \item{name}{a character vector to define the index within the results. Should be equal to length of which_data. Default set to regression_gamm_1.}
+
+\item{num_cores}{numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.}
 }
 \value{
 a S4 object of the class metime_analyzer with analysis results appended to the result section.

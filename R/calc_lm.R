@@ -9,17 +9,19 @@
 #' @param threshold a character vector to define the type of threshold for significant interactions. Default set to all availabe thresholds: c("none","nominal","li","fdr","bonferroni").
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
+#' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
 #' @details Add details here
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
-setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold=c("none","nominal","li","fdr","bonferroni"), verbose=T,name="regression_lm_1") standardGeneric("calc_lm"))
+setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold=c("none","nominal","li","fdr","bonferroni"), verbose=T,name="regression_lm_1", num_cores=NULL) standardGeneric("calc_lm"))
 setMethod("calc_lm", "metime_analyser", function(object,
                                                   which_data,
                                                   stratifications = NULL,
                                                   cols_for_meta=NULL,
                                                   threshold=c("none","nominal","li","fdr","bonferroni"),
                                                   verbose=T,
-                                                  name="regression_lm_1") {
+                                                  name="regression_lm_1",
+                                                  num_cores=NULL) {
   #sanity checks
   if(!all(c("cov", "type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lm() requires columns with covariates (named 'cov') and type")
 
@@ -68,7 +70,11 @@ setMethod("calc_lm", "metime_analyser", function(object,
                    ) %>% 
     do.call(what=rbind.data.frame)
   # Changing mclapply to parLapply 
-  cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
+  if(is.null(num_cores)) {
+    cl <- parallel::makeCluster(spec = parallel::detectCores(all.tests = FALSE, logical = TRUE)-1, type="PSOCK")
+  } else {
+    cl <- parallel::makeCluster(spec = num_cores, type="PSOCK")
+  }
   parallel::clusterExport(cl=cl, varlist=c("my_runs", "my_formula", "lm_data", "threshold"), envir=environment())
   opb <- pbapply::pboptions(title="Running calc_lm(): ", type="timer")
   on.exit(pbapply::pboptions(opb))
