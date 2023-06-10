@@ -34,7 +34,10 @@ Imports:
     umap,
     visNetwork,
     WGCNA,
-    xlsx
+    xlsx,
+    missForest,
+    pbapply,
+    bsplus
 Depends: 
     tidyverse
 Suggests: 
