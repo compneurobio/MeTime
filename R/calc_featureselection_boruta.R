@@ -102,7 +102,9 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
     
     all_runs <- 1:ncol(object@list_of_data[[which_y]])
     if(!is.null(run_index)) all_runs <-as.numeric(run_index)
-                       
+    
+    opb <- pbapply::pboptions(title="Running feature selection: ", type="timer")
+    on.exit(pbapply::pboptions(opb))                   
     out_boruta <- pbapply::pblapply(all_runs,
                                     cl=cl,
                                     function(x){
