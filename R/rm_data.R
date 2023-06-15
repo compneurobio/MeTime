@@ -16,7 +16,18 @@ setMethod("rm_data", "metime_analyser", function(object, which_data, type="datas
 			object@list_of_col_data[[which_data]] <- NULL
 			object@list_of_row_data[[which_data]] <- NULL
 		} else if(type %in% "results") {
-			object@results[[which_data]] <- NULL
+			if(which_data > length(object@results)) {
+				warning("index of results chosen is greater than the length of results. Exiting without making any changes")
+				return(object)
+			}
+			object@results[[which_data]]$information <- NULL
+			object@results[[which_data]]$functions_applied <- object@results[[which_data]]$functions_applied[-length(object@results[[which_data]]$functions_applied)]
+			object@results[[which_data]]$plot_data <- NULL
+			object@results[[which_data]]$plots <- NULL
+			if(!which_data==length(object@results)) {
+				object@results[[which_data+1]]$functions_applied <- c(object@list_of_data[[which_data]]$functions_applied, object@results[[which_data+1]]$functions_applied)
+				object@results[[which_data]] <- NULL			
+			}
 		} else {
 			warning("Please check the input for type. Exiting without making any changes")
 		}

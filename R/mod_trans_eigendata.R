@@ -71,12 +71,20 @@ setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data,
           	col_data_true <- cbind.data.frame(col_data_true, col_info$modules)
             colnames(col_data_true)[length(colnames(col_data_true))] <- "modules"
           
+
+            name <- paste(which_data, "with_eigenmetabs_1", sep="_")
+            while(name %in% names(object@list_of_data)) {
+                index <- strsplit(name, split="_") %>% lapply(function(x) return(x[length(x)])) %>% unlist() %>% as.numeric()
+                index <- index + 1
+                name <- paste(which_data, "with_eigenmetabs", index, sep="_")
+            }
+
           	if(append) {
           		out <- add_dataset(object, data=data_to_append, col_data=col_data_true, 
-                    row_data=object@list_of_row_data[[which_data]], name=paste(which_data, "with_eigenmetabs", sep="_"))
+                    row_data=object@list_of_row_data[[which_data]], name=name)
           	} else {
           		out <- get_make_analyser_object(data=data_to_append, col_data=col_data_true, 
-          				row_data=object@list_of_row_data[[which_data]], 
+          				row_data=object@list_of_row_data[[whichd_ata]], 
           				annotations_index=list(), name=paste(which_data, "with_eigenmetabs", sep="_"), results=list())
           	}
             out <- add_function_info(object=out, function_name="mod_trans_eigendata", 

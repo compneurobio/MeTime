@@ -25,9 +25,10 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
   # check variable if analysis should be run
   run=T
   
-  # check if results should be saved per run
-  if(save_per_run && !"tmp" %in% list.files(dirname(rstudioapi::getActiveDocumentContext()$path))){
-    dir.create(paste0(dirname(rstudioapi::getActiveDocumentContext()$path),"/tmp"))
+  # check if results should be saved per run - this doesn't work on server because the path cannot be extracted like this
+  # This is the new approach
+  if(save_per_run && !"tmp" %in% list.dirs(getwd(), recursive=F, full.names=F)) {
+    dir.create(file.path(getwd(), "tmp"), showWarnings=F)
   }
   
   # sanity checks
@@ -80,7 +81,8 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
       na.omit()
     this_x <- object@list_of_col_data[[which_x]]$id
     this_y <- object@list_of_col_data[[which_y]]$id
-    file_path = dirname(rstudioapi::getActiveDocumentContext()$path)
+    file_path = getwd()
+    out_path = file.path(getwd(), "tmp")
     
     # Set up parallel processing
     if(Sys.info()["sysname"] == "Windows"){
@@ -90,7 +92,7 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
       doParallel::registerDoParallel(cl)
       ## export data needed in analysis
       parallel::clusterExport(cl=cl, 
-                              varlist=c("this_data","this_x","this_y","save_per_run","file_path"),
+                              varlist=c("this_data","this_x","this_y","save_per_run","file_path", "out_path"),
                               envir = environment())
     }
     else{
@@ -101,7 +103,7 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
     
     
     all_runs <- 1:ncol(object@list_of_data[[which_y]])
-    if(!is.null(run_index)) all_runs <-as.numeric(run_index)
+    if(!is.null(run_index)) all_runs <- as.numeric(run_index)
     
     opb <- pbapply::pboptions(title="Running feature selection: ", type="timer")
     on.exit(pbapply::pboptions(opb))                   
@@ -110,10 +112,10 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
                                     function(x){
                                       require(tidyverse)
                                       # if files are already existant
-                                      if(save_per_run & paste0(this_y[x],".rds") %in% list.files(paste0(file_path,"/tmp/"))){
-                                        my_stats <- readRDS(file=paste0(file_path,"/tmp/",this_y[x],".rds"))
+                                      if(save_per_run & paste0(this_y[x],".rds") %in% list.files(out_path)) {
+                                        my_stats <- readRDS(file=file.path(out_path, paste0(this_y[x],".rds")))
                                       }
-                                      else if(save_per_run & !paste0(this_y[x],".rds") %in% list.files(paste0(file_path,"/tmp/"))){
+                                      else if(save_per_run & !paste0(this_y[x],".rds") %in% list.files(out_path)) {
                                         my_model <- Boruta::Boruta(x = this_data[,this_x],
                                                                    y = this_data[,this_y[x]],
                                                                    doTrace=0,
@@ -125,7 +127,7 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
                                           dplyr::mutate(id=this_y[x],
                                                         y=meanImp,
                                                         id_met=rownames(.[]))
-                                        saveRDS(my_stats, file=paste0(file_path,"/tmp/",this_y[x],".rds"))
+                                        saveRDS(my_stats, file=file.path(out_path, paste0(this_y[x],".rds")))
                                       }else{
                                         my_model <- Boruta::Boruta(x = this_data[,this_x],
                                                                    y = this_data[,this_y[x]],
@@ -141,6 +143,7 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
                                       }
                                       my_stats
                                     })
+    saveRDS(out_results, file=file.path(out_path, paste0("All_results_list.rds")))
     out_results <- out_boruta %>% 
       plyr::rbind.fill() %>% 
       dplyr::mutate(med=id_met,met=id,
