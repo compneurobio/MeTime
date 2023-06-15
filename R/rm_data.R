@@ -11,6 +11,9 @@ setMethod("rm_data", "metime_analyser", function(object, which_data, type="datas
 			warning("which_data is not specified. Exiting without making any changes")
 			return(object)
 		}
+		if(class(which_data) %in% "character") {
+				which_data <- which(names(object@results) %in% which_data)
+		}
 		if(type %in% "dataset") {
 			object@list_of_data[[which_data]] <- NULL
 			object@list_of_col_data[[which_data]] <- NULL
