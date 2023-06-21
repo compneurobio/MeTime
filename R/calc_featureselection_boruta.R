@@ -159,15 +159,16 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
                             calc_info = "feature_selection",
                             name = name) %>%
       add_function_info(function_name = "calc_featureselection_boruta", 
-                        params = list(which_data = which_data, 
-                                      which_x=which_x,
+                        params = list(which_x=which_x,
                                       which_y=which_y, 
                                       verbose=verbose, 
                                       name=name, 
                                       cols_for_meta_x=cols_for_meta_x, 
                                       cols_for_meta_y=cols_for_meta_y, 
                                       num_cores=num_cores,
-                                      save_per_run=save_per_run))
+                                      save_per_run=save_per_run,
+                                      maxRuns=maxRuns,
+                                      run_index=run_index))
   }
   
   
