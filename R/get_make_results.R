@@ -48,7 +48,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
    			 		edges$arrows <- rep("from", each=length(edges$dashes))
    			 	}
    			 	if(length(grep("calc_|mod_merge_results|add_result|meta_", object@results[[length(object@results)]]$functions_applied))==1) {
-					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
+					object@results[[length(object@results)+1]] <- list(functions_applied=c(), 
 						plot_data=list(network=list(node=nodes, edge=edges)),
 						information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {
@@ -60,7 +60,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 				}
 			} else if(length(grep("merged", calc_type)==1)) {
 				if(length(grep("calc_|mod_merge_results|add_result|meta_", object@results[[length(object@results)]]$functions_applied))==1) {
-					object@results[[length(object@results)+1]] <- list(functions_applied=list(), 
+					object@results[[length(object@results)+1]] <- list(functions_applied=c(), 
 						plot_data=list(merged_network=data),
 						information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {
@@ -91,7 +91,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 					})
 				}
 				if(length(grep("calc_|mod_merge_results|add_result|meta_", object@results[[length(object@results)]]$functions_applied))==1) {
-					object@results[[length(object@results)+1]] <- list(functions_applied=list(), plot_data=plot_data,
+					object@results[[length(object@results)+1]] <- list(functions_applied=c(), plot_data=plot_data,
 							information=list(calc_type=calc_type, calc_info=calc_info), plots=list())
 				} else {
 					object@results[[length(object@results)]]$plot_data <- plot_data
