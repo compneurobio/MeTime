@@ -73,6 +73,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 				if(is.null(metadata)) {
 					plot_data <- data
 				} else {
+					names <- names(plot_data)
 					plot_data <- lapply(seq_along(data), function(x) {
 						if(length(metadata)==0) {
 							return(data[[x]])
@@ -89,6 +90,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 						dummy_metadata$id <- NULL
 						return(cbind.data.frame(data[[x]], dummy_metadata))
 					})
+					names(plot_data) <- names
 				}
 				if(length(grep("calc_|mod_merge_results|add_result|meta_", object@results[[length(object@results)]]$functions_applied))==1) {
 					object@results[[length(object@results)+1]] <- list(functions_applied=c(), plot_data=plot_data,

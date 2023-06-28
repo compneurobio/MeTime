@@ -143,13 +143,13 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
                                       }
                                       my_stats
                                     })
-    saveRDS(out_results, file=file.path(out_path, paste0("All_results_list.rds")))
     out_results <- out_boruta %>% 
       plyr::rbind.fill() %>% 
       dplyr::mutate(med=id_met,met=id,
                     selected=ifelse(meanImp >= (mean(abs(meanImp),na.rm=T) + 4*sd(abs(meanImp),na.rm=T)),T,F),
                     thresh=(mean(abs(meanImp),na.rm=T) + 4*sd(abs(meanImp),na.rm=T))) %>% 
       dplyr::select(met,med,meanImp, selected,thresh)
+    saveRDS(out_results, file=file.path(out_path, paste0("All_results_list.rds")))
     out_list=list()
     out_list[[paste0(name)]]<-out_results
     out <- get_make_results(object = object, 

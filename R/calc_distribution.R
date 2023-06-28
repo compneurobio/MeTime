@@ -53,7 +53,8 @@ setMethod("calc_distribution_samples", "metime_analyser",function(object, which_
 #' @description A method to be applied onto s4 object so as to obtain distributions of various phenotypic variables
 #' @param object An object of class metime_analyser
 #' @param which_data A Character vector to define the dataset of interest
-#' @param cols character vector to define the columns whose distributions are wanted from col_data#' @param which_data Name of the dataset from which the samples will be extracted
+#' @param cols character vector to define the columns whose distributions are wanted from col_data
+#' @param which_data Name of the dataset from which the samples will be extracted
 #' @param name Character to name the results 
 #' @return S4 object with updated plot_data and plots 
 #' with plots being either 1) density plot

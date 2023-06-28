@@ -7,25 +7,34 @@
 #' If you want automated facet wrapping option then set your new_columns as "facet_your_name"
 #' @param name a character vector to define the index within the results. Should be equal to length of which_data. Default set to regression_gamm_1.
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
-#' @param random a character vector defining which variables should be treated as random effects. Default set to "subject".
+##' @param random a character vector defining which variables should be treated as random effects. Default set to "subject".
 #' @param threshold a character of length 1 to define the type of threshold for significant interactions. 
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
-#' @param interaction a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.
+##' @param interaction a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.
 #' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
+#' @param k numeric input for setting the basis complexity for smoothing in gam. See more on [mgcv::bam]. Default is set to NULL which is equivalent to half of unique timepoints
 #' @details The calculation function fits multiple generalized additive mixed models (GAMMs) on a longitudinal dataset. Here, one model fits one metabolite vs one trait. The degree of smoothness of a model term is estimated as part of the fitting. 
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
-setGeneric("calc_gamm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, random="subject", threshold=c("none","nominal","li","fdr","bonferroni"), interaction = NULL,verbose=T,name="regression_gamm_1", num_cores=NULL) standardGeneric("calc_gamm"))
+setGeneric("calc_gamm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, 
+  #random="subject", 
+  threshold=c("none","nominal","li","fdr","bonferroni"), 
+  #interaction = NULL,
+  verbose=T,
+  name="regression_gamm_1", 
+  num_cores=NULL,
+  k=NULL) standardGeneric("calc_gamm"))
 setMethod("calc_gamm", "metime_analyser", function(object,
                                                    which_data,
                                                    stratifications = NULL,
                                                    cols_for_meta=NULL,
-                                                   random="subject",
+                                                   #random="subject",
                                                    threshold=c("none","nominal","li","fdr","bonferroni"),
-                                                   interaction=NULL,
+                                                   #interaction=NULL,
                                                    verbose=T,
                                                    name="regression_gamm_1",
-                                                   num_cores=NULL) {
+                                                   num_cores=NULL,
+                                                   k=NULL) {
   # sanity checks ----
   ## check that covariates (cov) and type are set in the col_data
   if(!all(c("cov","type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_gamm() needs the columns cov and type to specify the model")
@@ -54,15 +63,18 @@ setMethod("calc_gamm", "metime_analyser", function(object,
       dplyr::pull(id)
     
     ## make list of formulas
-    my_formula <- lapply(unique(my_trait),function(x)
-        test <- object@list_of_col_data[[which_data]] %>% 
-          dplyr::select(cov, type, id) %>% 
-          dplyr::filter(id %in% my_met) %>% 
-          dplyr::rename("met"="id") %>% 
-          dplyr::mutate(trait=x,
-                        cov = paste0(ifelse(is.na(cov), "", cov),
-                                     object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
-      do.call(what=rbind.data.frame)
+    my_formula <- lapply(unique(my_trait),function(x) {
+    object@list_of_col_data[[which_data]] %>% 
+      dplyr::select(cov, type, id, random, interaction) %>% 
+      dplyr::filter(id %in% my_met) %>% 
+      dplyr::rename("met"="id") %>% 
+      dplyr::mutate(trait=x,
+                    cov = paste0(ifelse(is.na(cov), "", cov),
+                                 object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]),
+                      random=object@list_of_col_data[[which_data]]$random[object@list_of_col_data[[which_data]]$id==x],
+                      interaction=object@list_of_col_data[[which_data]]$interaction[object@list_of_col_data[[which_data]]$id==x])
+      }) %>% 
+    do.call(what=rbind.data.frame)
 
   # model calculation ----
   # changing mclapply to parLapply
@@ -73,7 +85,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
   }
   
   parallel::clusterExport(cl=cl, 
-                          varlist=c("my_formula", "gamm_data", "random", "interaction", "verbose"), # changed lmm_data to gamm_data
+                          varlist=c("my_formula", "gamm_data", "verbose", "k"), # changed lmm_data to gamm_data
                           envir = environment())
   opb <- pbapply::pboptions(title="Running calc_gamm(): ", type="timer")
   on.exit(pbapply::pboptions(opb))
@@ -92,25 +104,35 @@ setMethod("calc_gamm", "metime_analyser", function(object,
       dplyr::mutate(met=get(my_formula$met[x]), 
                     trait=get(my_formula$trait[x])) %>% 
       dplyr::filter(!is.na(met), !is.na(trait)) %>% 
+      #dplyr::drop_na(met) %>% dplyr::drop_na(trait) %>% 
       dplyr::mutate(time = as.numeric(gsub(pattern="([a-zA-Z])",replacement = "",x=time)),
                     subject = as.numeric(gsub(pattern="([a-zA-Z])",replacement = "",x=subject)))
     
     # extract formula information
-    formula_met <- my_formula$met[x]
-    formula_trait <- my_formula$trait[x]
-    formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""]
-    smoothing_cov <- sapply(formula_cov,function(y) ifelse(length(unique(this_data[[y]]))>3, paste0("s(",y,")"), y)) 
-    
-    formula_random <-  ifelse(!is.null(random), paste0("s(",random, ", bs='re')"), NA)
-    formula_interaction <- ifelse(!is.null(interaction), paste0("s(",interaction, ")"), NA)
-    
-    
-    # collapse formula
-    formula = paste0("met ~ trait", 
-                     ifelse(all(!is.na(smoothing_cov)), paste0("+",paste0(smoothing_cov,collapse = "+")), ""),
-                     ifelse(all(!is.na(formula_interaction)), paste0("+",paste0(formula_interaction,collapse = "+")), ""),
-                     ifelse(all(!is.na(formula_random)), paste0("+",paste0(formula_random,collapse = "+")), "")
-    )
+      formula_met <- my_formula$met[x]
+
+      formula_trait <- ifelse(is.na(my_formula$interaction[x]), 
+                                                  "trait", 
+                                                  paste0("trait", "*",
+                                                     paste0(my_formula$interaction[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""], collapse="*")))
+      
+      formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""]
+      if(is.null(k)) k <- this_data$time %>% unique() %>% length()/2
+       
+      smoothing_cov <- sapply(formula_cov,function(y) ifelse(length(unique(this_data[[y]]))>3, paste0("s(",y, ", k=", k, ")"), y)) 
+      
+      formula_random <-  ifelse(!is.na(my_formula$random[x]), paste0("s(",my_formula$random[x], ", bs='re')"), NA)
+      
+      #formula_interaction <- ifelse(!is.null(interaction), paste0("s(",interaction, ")"), NA)
+      
+      
+      # collapse formula
+      formula = paste0("met ~ ",
+                      ifelse(all(!is.na(formula_trait)), formula_trait, ""), 
+                       ifelse(all(!is.na(smoothing_cov)), paste0("+",paste0(smoothing_cov,collapse = "+")), ""),
+                       #ifelse(all(!is.na(formula_interaction)), paste0("+",paste0(formula_interaction,collapse = "+")), ""),
+                       ifelse(all(!is.na(formula_random)), paste0("+",paste0(formula_random,collapse = "+")), "")
+      )
     this_model = try(
       silent=T,
       mgcv::bam(
@@ -125,7 +147,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
         stringsAsFactors = F,
         met = my_formula$met[x],
         trait = my_formula$trait[x],
-        level = grep(x=names(results_sum$p.coeff), pattern="trait", value=T) %>% gsub(pattern="trait",replacement=""),
+        level = grep(x=names(results_sum$p.coeff), pattern="trait", value=T) %>% gsub(pattern="trait",replacement=my_formula$trait[x]),
         beta = results_sum$p.coeff[grep(x=names(results_sum$p.coeff), pattern="trait", value=T)] %>% as.numeric(),
         se = results_sum$se[grep(x=names(results_sum$se), pattern="trait", value=T)]%>% as.numeric(),
         pval = results_sum$p.pv[grep(x=names(results_sum$p.pv), pattern="trait", value=T)]%>% as.numeric(),
@@ -158,7 +180,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                   xmax=beta+abs(se), 
                   y=met, 
                   color= "none",
-                  type=ifelse(!is.na(level), paste0(trait, ".", level), trait))
+                  type=ifelse(!is.na(level), level, trait))
   #rownames(annotated_results) <- annotated_results$y 
   
   for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
@@ -210,12 +232,14 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                       params = list(which_data = which_data, 
                                     verbose = verbose, 
                                     cols_for_meta = cols_for_meta, 
-                                    random=random,
-                                    interaction=interaction,
+                                    #random=random,
+                                    #interaction=interaction,
                                     name = name, 
                                     stratifications = stratifications))
   
   return(out)
   
 })
+
+
 

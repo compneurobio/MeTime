@@ -7,28 +7,34 @@
 #' If you want automated facet wrapping option then set your new_columns as "facet_your_name"
 #' @param name a character vector to define the index within the results. Should be equal to length of which_data. Default set to regression_gamm_1.
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
-#' @param random a character vector defining which variables should be treated as random effects. Default set to "subject".
+##' @param random a character vector defining which variables should be treated as random effects. Default set to "subject".
 #' @param threshold a character of length 1 to define the type of threshold for significant interactions. 
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
-#' @param interaction a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.
+##' @param interaction a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.
 #' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
 #' @details Add details here
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
-setGeneric("calc_lmm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, random="subject", threshold=c("none","nominal","li","fdr","bonferroni"),interaction = NULL,verbose=T,name="regression_lmm_1", num_cores=NULL) standardGeneric("calc_lmm"))
+setGeneric("calc_lmm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, 
+      #random="subject", 
+      threshold=c("none","nominal","li","fdr","bonferroni"),
+      #interaction = NULL,
+      verbose=T,
+      name="regression_lmm_1", 
+      num_cores=NULL) standardGeneric("calc_lmm"))
 setMethod("calc_lmm", "metime_analyser", function(object,
                                                    which_data,
                                                    stratifications = NULL,
                                                    cols_for_meta=NULL,
-                                                   random="subject",
+                                                   #random="subject",
                                                    threshold=c("none","nominal","li","fdr","bonferroni"),
-                                                   interaction=NULL,
+                                                   #interaction=NULL,
                                                    verbose=T,
                                                    name="regression_lmm_1",
                                                    num_cores=NULL) {
   # sanity checks ----
   ## check that covariates (cov) and type are set in the col_data
-  if(!all(c("cov","type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lmm() needs the columns cov and type to specify the model")
+  if(!all(c("cov","type", "interaction", "random") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lmm() needs the columns cov and type to specify the model")
   
   ## check that results index are unique
   if(grep(name, names(object@results)) %>% length() >= 1) {
@@ -56,14 +62,17 @@ setMethod("calc_lmm", "metime_analyser", function(object,
     dplyr::pull(id)
   
   ## get formulas per trait metabolite combination 
-  my_formula <- lapply(unique(my_trait),function(x)
-    test <- object@list_of_col_data[[which_data]] %>% 
-      dplyr::select(cov, type, id) %>% 
+  my_formula <- lapply(unique(my_trait),function(x) {
+    object@list_of_col_data[[which_data]] %>% 
+      dplyr::select(cov, type, id, random, interaction) %>% 
       dplyr::filter(id %in% my_met) %>% 
       dplyr::rename("met"="id") %>% 
       dplyr::mutate(trait=x,
                     cov = paste0(ifelse(is.na(cov), "", cov),
-                                 object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
+                                 object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]),
+                      random=object@list_of_col_data[[which_data]]$random[object@list_of_col_data[[which_data]]$id==x],
+                      interaction=object@list_of_col_data[[which_data]]$interaction[object@list_of_col_data[[which_data]]$id==x])
+      }) %>% 
     do.call(what=rbind.data.frame)
   
   # model calculation ----
@@ -74,7 +83,7 @@ setMethod("calc_lmm", "metime_analyser", function(object,
   } else {
     cl <- parallel::makeCluster(spec = num_cores, type="PSOCK")
   }
-  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lmm_data", "random", "interaction"), envir=environment())
+  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lmm_data", "k"), envir=environment())
   opb <- pbapply::pboptions(title="Running calc_lmm(): ", type="timer")
   on.exit(pbapply::pboptions(opb))
   results=pbapply::pblapply(cl=cl, 1:nrow(my_formula), 
@@ -95,16 +104,20 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                                
                                # extract formula information
                                formula_met <- my_formula$met[x]
-                               formula_trait <- my_formula$trait[x]
+                               formula_trait <- ifelse(is.na(my_formula$interaction[x]), 
+                                                  "trait", 
+                                                  paste0("trait", "*",
+                                                     paste0(my_formula$interaction[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""], collapse="*")))
                                formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""]
-                               formula_random <-  ifelse(!is.null(random), paste0("(1|",random,")"), NA)
-                               formula_interaction <- ifelse(!is.null(interaction),interaction, NA)
+                               formula_random <-  ifelse(!is.null(my_formula$random[x]), paste0("(1|",my_formula$random[x],")"), NA)
+                               #formula_interaction <- ifelse(!is.null(interaction),interaction, NA)
                                
                                
                                # collapse formula
-                               formula = paste0("met ~ trait", 
+                               formula = paste0("met ~ ",
+                                                ifelse(all(!is.na(formula_trait)), formula_trait, ""), 
                                                 ifelse(all(!is.na(formula_cov)), paste0("+",paste0(formula_cov,collapse = "+")), ""),
-                                                ifelse(all(!is.na(formula_interaction)), paste0("+",paste0(formula_interaction,collapse = "+")), ""),
+                                                #ifelse(all(!is.na(formula_interaction)), paste0("+",paste0(formula_interaction,collapse = "+")), ""),
                                                 ifelse(all(!is.na(formula_random)), paste0("+",paste0(formula_random,collapse = "+")), "")
                                )
                                this_model = try(
@@ -121,7 +134,7 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                                    stringsAsFactors = F,
                                    met = my_formula$met[x],
                                    trait = my_formula$trait[x],
-                                   level = grep(x=rownames(results_sum$coefficients), pattern="trait", value=T) %>% gsub(pattern="trait",replacement=""),
+                                   level = grep(x=rownames(results_sum$coefficients), pattern="trait", value=T) %>% gsub(pattern="trait",replacement=my_formula$trait[x]),
                                    beta = results_sum$coefficients[,1][grep(x=names(results_sum$coefficients[,1]), pattern="trait", value=T)] %>% as.numeric(),
                                    se = results_sum$coefficients[,2][grep(x=names(results_sum$coefficients[,2]), pattern="trait", value=T)]%>% as.numeric(),
                                    pval = results_sum$coefficients[,5][grep(x=names(results_sum$coefficients[,4]), pattern="trait", value=T)]%>% as.numeric(),
@@ -150,7 +163,7 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                   xmax=beta+abs(se), 
                   y=met, 
                   color= "none",
-                  type=ifelse(!is.na(level), paste0(trait, ".", level), trait))
+                  type=ifelse(!is.na(level), level, trait))
   
   for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
     if(i=="none"){
@@ -203,8 +216,8 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                       params = list(which_data = which_data, 
                                     verbose = verbose, 
                                     cols_for_meta = cols_for_meta, 
-                                    random=random,
-                                    interaction=interaction,
+                                    #random=random,
+                                    #interaction=interaction,
                                     name = name, 
                                     stratifications = stratifications))
   

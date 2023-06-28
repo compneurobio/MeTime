@@ -9,12 +9,11 @@ calc_gamm(
   which_data,
   stratifications = NULL,
   cols_for_meta = NULL,
-  random = "subject",
   threshold = c("none", "nominal", "li", "fdr", "bonferroni"),
-  interaction = NULL,
   verbose = T,
   name = "regression_gamm_1",
-  num_cores = NULL
+  num_cores = NULL,
+  k = NULL
 )
 }
 \arguments{
@@ -27,18 +26,20 @@ calc_gamm(
 \item{cols_for_meta}{a character vector to define column names that are to be used for plotting purposes. Default set to NULL, therby not adding columns as metadata.
 If you want automated facet wrapping option then set your new_columns as "facet_your_name"}
 
-\item{random}{a character vector defining which variables should be treated as random effects. Default set to "subject".}
-
 \item{threshold}{a character of length 1 to define the type of threshold for significant interactions.
 allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)}
-
-\item{interaction}{a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.}
 
 \item{verbose}{a logical on whether to print the calculation progress. Default set to FALSE.}
 
 \item{name}{a character vector to define the index within the results. Should be equal to length of which_data. Default set to regression_gamm_1.}
 
 \item{num_cores}{numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.}
+
+\item{k}{numeric input for setting the basis complexity for smoothing in gam. See more on \link[mgcv:bam]{mgcv::bam}. Default is set to NULL which is equivalent to half of unique timepoints}
+
+\item{random}{a character vector defining which variables should be treated as random effects. Default set to "subject".}
+
+\item{interaction}{a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.}
 }
 \value{
 a S4 object of the class metime_analyzer with analysis results appended to the result section.

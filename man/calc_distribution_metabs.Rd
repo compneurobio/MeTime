@@ -14,9 +14,9 @@ calc_distribution_metabs(
 \arguments{
 \item{object}{An object of class metime_analyser}
 
-\item{which_data}{A Character vector to define the dataset of interest}
+\item{which_data}{Name of the dataset from which the samples will be extracted}
 
-\item{cols}{character vector to define the columns whose distributions are wanted from col_data#' @param which_data Name of the dataset from which the samples will be extracted}
+\item{cols}{character vector to define the columns whose distributions are wanted from col_data}
 
 \item{name}{Character to name the results}
 }
