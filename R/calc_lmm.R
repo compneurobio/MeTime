@@ -83,7 +83,7 @@ setMethod("calc_lmm", "metime_analyser", function(object,
   } else {
     cl <- parallel::makeCluster(spec = num_cores, type="PSOCK")
   }
-  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lmm_data", "k"), envir=environment())
+  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lmm_data"), envir=environment())
   opb <- pbapply::pboptions(title="Running calc_lmm(): ", type="timer")
   on.exit(pbapply::pboptions(opb))
   results=pbapply::pblapply(cl=cl, 1:nrow(my_formula), 
