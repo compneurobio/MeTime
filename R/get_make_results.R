@@ -73,7 +73,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 				if(is.null(metadata)) {
 					plot_data <- data
 				} else {
-					names <- names(plot_data)
+					names <- names(data)
 					plot_data <- lapply(seq_along(data), function(x) {
 						if(length(metadata)==0) {
 							return(data[[x]])
