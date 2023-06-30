@@ -12,7 +12,7 @@
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 ##' @param interaction a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.
 #' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
-#' @param k numeric input for setting the basis complexity for smoothing in gam. See more on [mgcv::bam]. Default is set to NULL which is equivalent to half of unique timepoints
+#' @param k numeric input for setting the basis complexity for smoothing in gam. See more on [mgcv::bam]. Default is set to 10 as suggested by mgcv
 #' @details The calculation function fits multiple generalized additive mixed models (GAMMs) on a longitudinal dataset. Here, one model fits one metabolite vs one trait. The degree of smoothness of a model term is estimated as part of the fitting. 
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
@@ -23,7 +23,7 @@ setGeneric("calc_gamm", function(object, which_data, stratifications = NULL, col
   verbose=T,
   name="regression_gamm_1", 
   num_cores=NULL,
-  k=NULL) standardGeneric("calc_gamm"))
+  k=10) standardGeneric("calc_gamm"))
 setMethod("calc_gamm", "metime_analyser", function(object,
                                                    which_data,
                                                    stratifications = NULL,
@@ -34,7 +34,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                                                    verbose=T,
                                                    name="regression_gamm_1",
                                                    num_cores=NULL,
-                                                   k=NULL) {
+                                                   k=10) {
   # sanity checks ----
   ## check that covariates (cov) and type are set in the col_data
   if(!all(c("cov","type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_gamm() needs the columns cov and type to specify the model")
@@ -117,7 +117,6 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                                                      paste0(my_formula$interaction[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""], collapse="*")))
       
       formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""]
-      if(is.null(k)) k <- this_data$time %>% unique() %>% length()/2
        
       smoothing_cov <- sapply(formula_cov,function(y) ifelse(length(unique(this_data[[y]]))>3, paste0("s(",y, ", k=", k, ")"), y)) 
       
