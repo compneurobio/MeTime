@@ -182,7 +182,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                   y=met, 
                   color= "none",
                   type=ifelse(!is.na(level), level, trait))
-  rownames(annotated_results) <- annotated_results$y 
+  #rownames(annotated_results) <- annotated_results$y 
   
 
    # calculate the thresholds 

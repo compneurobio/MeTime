@@ -166,7 +166,7 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                   y=met, 
                   color= "none",
                   type=ifelse(!is.na(level), level, trait))
-  rownames(annotated_results) <- annotated_results$y 
+  #rownames(annotated_results) <- annotated_results$y 
   
   
   # calculate the thresholds 
