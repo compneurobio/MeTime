@@ -13,7 +13,7 @@ calc_gamm(
   verbose = T,
   name = "regression_gamm_1",
   num_cores = NULL,
-  k = NULL
+  k = 10
 )
 }
 \arguments{
@@ -35,7 +35,7 @@ allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as
 
 \item{num_cores}{numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.}
 
-\item{k}{numeric input for setting the basis complexity for smoothing in gam. See more on \link[mgcv:bam]{mgcv::bam}. Default is set to NULL which is equivalent to half of unique timepoints}
+\item{k}{numeric input for setting the basis complexity for smoothing in gam. See more on \link[mgcv:bam]{mgcv::bam}. Default is set to 10 as suggested by mgcv}
 
 \item{random}{a character vector defining which variables should be treated as random effects. Default set to "subject".}
 

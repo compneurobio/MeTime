@@ -20,7 +20,7 @@ setMethod("calc_clusters_wgcna", "metime_analyser", function(object, which_data,
         if(length(which_data)!=1 & !which_data %in% names(object@list_of_data)) warning("calc_clusters_wgcna(): which_data not in metime_analyzer, or more than one which_data selected")
         else if(length(grep(baseline, rownames(object@list_of_data[[which_data]])))<=0) warning("calc_clusters_wgcna(): baseline timepoint not found")
         else{
-                if(grep(name, names(object@results)) %>% length() >=1) {
+                while(grep(name, names(object@results)) %>% length() >=1) {
                         warning("name of the results was previously used, using a different name")
                         index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
                         index <- c(0:9)[grep(index, 0:9)+1]
@@ -36,7 +36,8 @@ setMethod("calc_clusters_wgcna", "metime_analyser", function(object, which_data,
                 # Call the network topology analysis function
                 sft = WGCNA::pickSoftThreshold(data, powerVector = powers) # verbose 0 = silent, verbose 5 = print info
                 res <- sft$fitIndices[,1][which(-sign(sft$fitIndices[,3])*sft$fitIndices[,2] > 0.88)] 
-                softPower <- res[1]
+                softPower <- readline("input power of choice: ")
+                softPower <- as.numeric(softPower)
                 adjacency <- WGCNA::adjacency(data, power=softPower)
                 # Turn adjacency into topological overlap
                 TOM = WGCNA::TOMsimilarity(adjacency)

@@ -12,7 +12,7 @@
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 ##' @param interaction a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.
 #' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
-#' @param k numeric input for setting the basis complexity for smoothing in gam. See more on [mgcv::bam]. Default is set to NULL which is equivalent to half of unique timepoints
+#' @param k numeric input for setting the basis complexity for smoothing in gam. See more on [mgcv::bam]. Default is set to 10 as suggested by mgcv
 #' @details The calculation function fits multiple generalized additive mixed models (GAMMs) on a longitudinal dataset. Here, one model fits one metabolite vs one trait. The degree of smoothness of a model term is estimated as part of the fitting. 
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
@@ -23,7 +23,7 @@ setGeneric("calc_gamm", function(object, which_data, stratifications = NULL, col
   verbose=T,
   name="regression_gamm_1", 
   num_cores=NULL,
-  k=NULL) standardGeneric("calc_gamm"))
+  k=10) standardGeneric("calc_gamm"))
 setMethod("calc_gamm", "metime_analyser", function(object,
                                                    which_data,
                                                    stratifications = NULL,
@@ -34,12 +34,12 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                                                    verbose=T,
                                                    name="regression_gamm_1",
                                                    num_cores=NULL,
-                                                   k=NULL) {
+                                                   k=10) {
   # sanity checks ----
   ## check that covariates (cov) and type are set in the col_data
-  if(!all(c("cov","type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_gamm() needs the columns cov and type to specify the model")
+  if(!all(c("cov","type","interaction","random") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_gamm() needs the columns cov and type to specify the model")
   
-  if(grep(name, names(object@results)) %>% length() >= 1) {
+  while(grep(name, names(object@results)) %>% length() >= 1) {
     warning("name of the results was previously used, using a different name")
     index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
     index <- c(0:9)[grep(index, 0:9)+1]
@@ -117,7 +117,6 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                                                      paste0(my_formula$interaction[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""], collapse="*")))
       
       formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""]
-      if(is.null(k)) k <- this_data$time %>% unique() %>% length()/2
        
       smoothing_cov <- sapply(formula_cov,function(y) ifelse(length(unique(this_data[[y]]))>3, paste0("s(",y, ", k=", k, ")"), y)) 
       
@@ -151,7 +150,8 @@ setMethod("calc_gamm", "metime_analyser", function(object,
         beta = results_sum$p.coeff[grep(x=names(results_sum$p.coeff), pattern="trait", value=T)] %>% as.numeric(),
         se = results_sum$se[grep(x=names(results_sum$se), pattern="trait", value=T)]%>% as.numeric(),
         pval = results_sum$p.pv[grep(x=names(results_sum$p.pv), pattern="trait", value=T)]%>% as.numeric(),
-        tval = results_sum$p.t[grep(x=names(results_sum$p.t), pattern="trait", value=T)]%>% as.numeric()
+        tval = results_sum$p.t[grep(x=names(results_sum$p.t), pattern="trait", value=T)]%>% as.numeric(),
+        formula=formula
       ) %>% 
         cbind(as.data.frame(t(results_sum$s.table[,1])))
     } else {
@@ -163,7 +163,8 @@ setMethod("calc_gamm", "metime_analyser", function(object,
         beta= NA,
         se=NA,
         pval=NA,
-        tval=NA
+        tval=NA,
+        formula = formula
       )
     }
     return(out_this_model)
@@ -181,37 +182,55 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                   y=met, 
                   color= "none",
                   type=ifelse(!is.na(level), level, trait))
-  #rownames(annotated_results) <- annotated_results$y 
+  rownames(annotated_results) <- annotated_results$y 
   
-  for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
-    if(i=="none"){
-      annotated_results<-annotated_results %>% 
-        dplyr::mutate(color="none") 
-    }else if(i=="nominal"){
-      annotated_results<-annotated_results %>% 
-        dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))
-    }else if(i == "li"){
-      eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use = "pairwise.complete.obs") %>%
-        eigen()
-      li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
-      annotated_results<-annotated_results%>% 
-        dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color))
-    }else if(i=="fdr"){
-      annotated_results<-annotated_results %>% 
-        dplyr::mutate(fdr=p.adjust(pval, method="BH")) %>% 
-        dplyr::mutate(color=ifelse(fdr<=0.05, "fdr",color)) %>% 
-        dplyr::select(-fdr)
-    }else if(i=="bonferroni"){
-      annotated_results=annotated_results %>% 
-        dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color))
-    }
-  }
+
+   # calculate the thresholds 
+  thresh_bonferroni <- 0.05/length(my_met)
+  eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
+    eigen()
+  thresh_li <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+  annotated_results <- annotated_results %>% dplyr::mutate(li_thresh=thresh_li, bonferroni_thresh=thresh_bonferroni)
+
+  
+  # for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
+  #   if(i=="none"){
+  #     annotated_results<-annotated_results %>% 
+  #       dplyr::mutate(color="none") 
+  #   }else if(i=="nominal"){
+  #     annotated_results<-annotated_results %>% 
+  #       dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))
+  #   }else if(i == "li"){
+  #     eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use = "pairwise.complete.obs") %>%
+  #       eigen()
+  #     li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+  #     annotated_results<-annotated_results%>% 
+  #       dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color))
+  #   }else if(i=="fdr"){
+  #     annotated_results<-annotated_results %>% 
+  #       dplyr::mutate(fdr=p.adjust(pval, method="BH")) %>% 
+  #       dplyr::mutate(color=ifelse(fdr<=0.05, "fdr",color)) %>% 
+  #       dplyr::select(-fdr)
+  #   }else if(i=="bonferroni"){
+  #     annotated_results=annotated_results %>% 
+  #       dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color))
+  #   }
+  # }
   # split into single results files ----
-  out_results <- lapply(unique(annotated_results$type), function(y) annotated_results[which(annotated_results$type==y),])
-  out_results <- lapply(seq_along(out_results), function(ind) {
-          rownames(out_results[[ind]]) <- out_results[[ind]]$met
-          return(out_results[[ind]]) 
-    })
+  out_results <- lapply(unique(annotated_results$type), function(y){
+    annotated_results[which(annotated_results$type==y),] %>% 
+      dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
+      dplyr::mutate(color = ifelse(pval <= 0.05, "nominally","none")) %>% 
+      dplyr::mutate(color = ifelse(qval <= 0.05, "fdr",color)) %>% 
+      dplyr::mutate(color = ifelse(pval <= thresh_li, "li",color)) %>% 
+      dplyr::mutate(color = ifelse(pval <= thresh_bonferroni, "bonferroni",color)) %>% 
+      `rownames<-`(.[,"met"])
+  })
+  
+  # out_results <- lapply(seq_along(out_results), function(ind) {
+  #         rownames(out_results[[ind]]) <- out_results[[ind]]$met
+  #         return(out_results[[ind]]) 
+  #   })
   names(out_results) <- unique(annotated_results$type)
   
   if(is.null(cols_for_meta)) {
@@ -234,6 +253,8 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                                     cols_for_meta = cols_for_meta, 
                                     #random=random,
                                     #interaction=interaction,
+                                    num_cores=num_cores,
+                                    threshold=threshold,
                                     name = name, 
                                     stratifications = stratifications))
   

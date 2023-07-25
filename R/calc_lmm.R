@@ -37,7 +37,7 @@ setMethod("calc_lmm", "metime_analyser", function(object,
   if(!all(c("cov","type", "interaction", "random") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lmm() needs the columns cov and type to specify the model")
   
   ## check that results index are unique
-  if(grep(name, names(object@results)) %>% length() >= 1) {
+  while(grep(name, names(object@results)) %>% length() >= 1) {
     warning("name of the results was previously used, using a different name")
     index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
     index <- c(0:9)[grep(index, 0:9)+1]
@@ -83,15 +83,15 @@ setMethod("calc_lmm", "metime_analyser", function(object,
   } else {
     cl <- parallel::makeCluster(spec = num_cores, type="PSOCK")
   }
-  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lmm_data", "k"), envir=environment())
+  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lmm_data"), envir=environment())
   opb <- pbapply::pboptions(title="Running calc_lmm(): ", type="timer")
   on.exit(pbapply::pboptions(opb))
   results=pbapply::pblapply(cl=cl, 1:nrow(my_formula), 
                              #mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
                              #mc.preschedule = TRUE,
                              function(x) {
-                               if(verbose) cat(x, " , ") # report iteration
                                # extract data 
+                               require(magrittr)
                                this_data <-  lmm_data$data %>% 
                                  dplyr::select(any_of(setdiff(names(lmm_data$data), c("subject","time")))) %>% 
                                  dplyr::mutate(id = rownames(.[])) %>%
@@ -138,7 +138,8 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                                    beta = results_sum$coefficients[,1][grep(x=names(results_sum$coefficients[,1]), pattern="trait", value=T)] %>% as.numeric(),
                                    se = results_sum$coefficients[,2][grep(x=names(results_sum$coefficients[,2]), pattern="trait", value=T)]%>% as.numeric(),
                                    pval = results_sum$coefficients[,5][grep(x=names(results_sum$coefficients[,4]), pattern="trait", value=T)]%>% as.numeric(),
-                                   tval = results_sum$coefficients[,3][grep(x=names(results_sum$coefficients[,3]), pattern="trait", value=T)]%>% as.numeric()
+                                   tval = results_sum$coefficients[,3][grep(x=names(results_sum$coefficients[,3]), pattern="trait", value=T)]%>% as.numeric(),
+                                   formula = formula
                                  )
                                } else {
                                  out_this_model <- data.frame(
@@ -149,7 +150,8 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                                    beta=NA,
                                    se=NA, 
                                    pval=NA,
-                                   tval=NA
+                                   tval=NA,
+                                   formula=formula
                                  )
                                }
                                return(out_this_model)
@@ -164,38 +166,57 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                   y=met, 
                   color= "none",
                   type=ifelse(!is.na(level), level, trait))
+  rownames(annotated_results) <- annotated_results$y 
   
-  for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
-    if(i=="none"){
-      annotated_results<-annotated_results %>% 
-        dplyr::mutate(color="none") 
-    }else if(i=="nominal"){
-      annotated_results<-annotated_results %>% 
-      dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))
-    }else if(i == "li"){
-      eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
-        eigen()
-      li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
-      annotated_results<-annotated_results%>% 
-        dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color))
-    }else if(i=="fdr"){
-      annotated_results<-annotated_results %>% 
-      dplyr::mutate(fdr=p.adjust(pval, method="BH")) %>% 
-      dplyr::mutate(color=ifelse(fdr<=0.05, "fdr",color)) %>% 
-      dplyr::select(-fdr)
-    }else if(i=="bonferroni"){
-      annotated_results=annotated_results %>% 
-        dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color))
-    }
-  }
+  
+  # calculate the thresholds 
+  thresh_bonferroni <- 0.05/length(my_met)
+  eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
+    eigen()
+  thresh_li <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+
+  annotated_results <- annotated_results %>% dplyr::mutate(li_thresh=thresh_li, bonferroni_thresh=thresh_bonferroni)
+  
+  # for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
+  #   if(i=="none"){
+  #     annotated_results<-annotated_results %>% 
+  #       dplyr::mutate(color="none") 
+  #   }else if(i=="nominal"){
+  #     annotated_results<-annotated_results %>% 
+  #     dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))
+  #   }else if(i == "li"){
+  #     eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
+  #       eigen()
+  #     li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+  #     annotated_results<-annotated_results%>% 
+  #       dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color))
+  #   }else if(i=="fdr"){
+  #     annotated_results<-annotated_results %>% 
+  #     dplyr::mutate(fdr=p.adjust(pval, method="BH")) %>% 
+  #     dplyr::mutate(color=ifelse(fdr<=0.05, "fdr",color)) %>% 
+  #     dplyr::select(-fdr)
+  #   }else if(i=="bonferroni"){
+  #     annotated_results=annotated_results %>% 
+  #       dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color))
+  #   }
+  # }
 
   #rownames(annotated_results) <- annotated_results$y
   # split into single results files 
-  out_results <- lapply(unique(annotated_results$type), function(y) annotated_results[which(annotated_results$type==y),])
-  out_results <- lapply(seq_along(out_results), function(ind) {
-          rownames(out_results[[ind]]) <- out_results[[ind]]$met
-          return(out_results[[ind]]) 
+  out_results <- lapply(unique(annotated_results$type), function(y){
+    annotated_results[which(annotated_results$type==y),] %>% 
+      dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
+      dplyr::mutate(color = ifelse(pval <= 0.05, "nominally","none")) %>% 
+      dplyr::mutate(color = ifelse(qval <= 0.05, "fdr",color)) %>% 
+      dplyr::mutate(color = ifelse(pval <= thresh_li, "li",color)) %>% 
+      dplyr::mutate(color = ifelse(pval <= thresh_bonferroni, "bonferroni",color)) %>% 
+      `rownames<-`(.[,"met"])
     })
+  
+  # out_results <- lapply(seq_along(out_results), function(ind) {
+  #         rownames(out_results[[ind]]) <- out_results[[ind]]$met
+  #         return(out_results[[ind]]) 
+  #   })
   names(out_results) <- unique(annotated_results$type)
   
   if(is.null(cols_for_meta)) {
@@ -218,6 +239,8 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                                     cols_for_meta = cols_for_meta, 
                                     #random=random,
                                     #interaction=interaction,
+                                    num_cores=num_cores,
+                                    threshold=threshold,
                                     name = name, 
                                     stratifications = stratifications))
   
