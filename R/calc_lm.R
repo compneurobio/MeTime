@@ -126,12 +126,13 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                  }else{
                                    out <- my_formula %>% 
                                      dplyr::select(met,trait) %>% 
-                                     dplyr::mutate(statistic=NA,pvalue=NA,FDR=NA,beta=NA, x=NA,y=met)
+                                     dplyr::mutate(statistic=NA,pval=NA,beta=NA, x=NA,y=met)
                                    out$time = as.character(my_runs$time[x])
                                    out$type = out$time
                                  }
                                  out <- out %>% dplyr::mutate(
-                                   color= "none")
+                                   color= "none") %>%
+                                  dplyr::mutate(qval=p.adjust(pval, method="BH"))
   
                                       for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
                                         if(i=="none"){
@@ -145,15 +146,15 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                             eigen()
                                           li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
                                           out<-out%>% 
-                                            dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color))
+                                            dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color)) %>%
+                                            dplyr::mutate(li_thresh=li_thresh)
                                         }else if(i=="fdr"){
                                           out<-out %>% 
-                                            dplyr::mutate(fdr=p.adjust(pval, method="BH")) %>% 
-                                            dplyr::mutate(color=ifelse(fdr<=0.05, "fdr",color)) %>% 
-                                            dplyr::select(-fdr)
+                                            dplyr::mutate(color=ifelse(qval<=0.05, "fdr",color))
                                         }else if(i=="bonferroni"){
                                           out=out %>% 
-                                            dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color))
+                                            dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color)) %>%
+                                            dplyr::mutate(bonferroni_thresh=0.05/length(my_met))
                                         }
                                       }
                                  out
@@ -179,7 +180,8 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                     verbose = verbose, 
                                     cols_for_meta = cols_for_meta,
                                     name = name, 
-                                    stratifications = stratifications))
+                                    stratifications = stratifications,
+                                    num_cores=num_cores))
   
   return(out)
 })
