@@ -42,7 +42,7 @@ setMethod("calc_conservation_metabolite", "metime_analyser", function(object, wh
     this_data <- data %>% 
       dplyr::mutate(id = rownames(.[])) %>% 
       dplyr::left_join(row_data[,index_var], by = "id") %>% 
-      dplyr::mutate(time = gsub(x=id, pattern="[a-z|A-Z][-|0-9]+_", replacement="")) %>% 
+      dplyr::mutate(time = gsub(x=id, pattern="[a-z|A-Z]+[0-9]+_", replacement="")) %>% 
       `rownames<-`(.[,"id"]) %>% 
       dplyr::arrange(subject, time)
   
