@@ -87,8 +87,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						results$information$calc_type[ind_data] %in% "CI_metabotype") {
 						df <- results$plot_data[[ind_data]]
 						exclude_cols <- c("x","y", "ci", "id", "time_from", "time_to", "nsubject", "n", "rank", "cor", "id_from", "id_to", "subject", "time")
+						dimen <- df[,!(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] %>% dim()  
 						#df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
-						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
+						if(dimen[2]!=0) {
+							df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
   										if(is.na(min(a)) | is.na(max(a))) {
   											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
   										} else {
@@ -100,7 +102,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
   												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
   												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
-						})
+							})
+						}
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=x, y=ci)) + 
 								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic() +
@@ -156,8 +159,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 					} else if(results$information$calc_type[ind_data] %in% "PCA") {
 						df <- results$plot_data[[ind_data]]
 						exclude_cols <- c("PC1", "PC2", "time", "id", "subject", "name")
+						dimen <- df[,!(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] %>% dim()
 						#df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
-						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
+						if(dimen[2]!=0) {
+							df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
   										if(is.na(min(a)) | is.na(max(a))) {
   											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
   										} else {
@@ -169,7 +174,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
   												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
   												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
-						})
+							})
+						}
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=PC1, y=PC2)) + 
 								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic() +
@@ -184,8 +190,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 					} else if(results$information$calc_type[ind_data] %in% "UMAP") {
 						df <- results$plot_data[[ind_data]]
 						exclude_cols <- c("UMAP1", "UMAP2", "time", "id", "subject", "name")
+						dimen <- df[,!(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] %>% dim()
 						#df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
-						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
+						if(dimen[2]!=0) {
+							df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
   										if(is.na(min(a)) | is.na(max(a))) {
   											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
   										} else {
@@ -197,8 +205,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
   												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
   												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
-
-						})
+							})
+						}
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=UMAP1, y=UMAP2)) + 
 								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic() +
@@ -213,8 +221,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 					} else if(results$information$calc_type[ind_data] %in% "tSNE") {
 						df <- results$plot_data[[ind_data]]
 						exclude_cols <- c( "X1", "X2", "time", "id", "subject", "name")
+						dimen <- df[,!(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] %>% dim()
 						#df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))] <- apply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.character) | sapply(df, is.factor))], 2, factor)
-						df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
+						if(dimen[2]!=0) {
+							df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))] <- lapply(df[, !(colnames(df) %in% exclude_cols) & (sapply(df, is.numeric) | sapply(df, is.integer))], function(a) {
   										if(is.na(min(a)) | is.na(max(a))) {
   											breaks <- c(-Inf, quantile(a, probs = c(0.25, 0.5, 0.75), na.rm=TRUE), Inf)
   										} else {
@@ -226,7 +236,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
   												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
   												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
-						})
+							})
+						}
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=X1, y=X2)) + 
 								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic()+
