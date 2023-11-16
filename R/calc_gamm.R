@@ -220,7 +220,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
   out_results <- lapply(unique(annotated_results$type), function(y){
     annotated_results[which(annotated_results$type==y),] %>% 
       dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
-      dplyr::mutate(color = ifelse(pval <= 0.05, "nominally","none")) %>% 
+      dplyr::mutate(color = ifelse(pval <= 0.05, "nominal","none")) %>% 
       dplyr::mutate(color = ifelse(qval <= 0.05, "fdr",color)) %>% 
       dplyr::mutate(color = ifelse(pval <= thresh_li, "li",color)) %>% 
       dplyr::mutate(color = ifelse(pval <= thresh_bonferroni, "bonferroni",color)) %>% 
