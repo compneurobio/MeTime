@@ -9,23 +9,21 @@
 #' @param threshold a character vector to define the type of threshold for significant interactions. Default set to all availabe thresholds: c("none","nominal","li","fdr","bonferroni").
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
-#' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
 #' @details Add details here
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
-setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold=c("none","nominal","li","fdr","bonferroni"), verbose=T,name="regression_lm_1", num_cores=NULL) standardGeneric("calc_lm"))
+setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold=c("none","nominal","li","fdr","bonferroni"), verbose=T,name="regression_lm_1") standardGeneric("calc_lm"))
 setMethod("calc_lm", "metime_analyser", function(object,
                                                   which_data,
                                                   stratifications = NULL,
                                                   cols_for_meta=NULL,
                                                   threshold=c("none","nominal","li","fdr","bonferroni"),
                                                   verbose=T,
-                                                  name="regression_lm_1",
-                                                  num_cores=NULL) {
+                                                  name="regression_lm_1") {
   #sanity checks
   if(!all(c("cov", "type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lm() requires columns with covariates (named 'cov') and type")
 
-  if(grep(name, names(object@results)) %>% length() >= 1) {
+  while(grep(name, names(object@results)) %>% length() >= 1) {
     warning("name of the results was previously used, using a different name")
     index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
     index <- c(0:9)[grep(index, 0:9)+1]
@@ -41,6 +39,11 @@ setMethod("calc_lm", "metime_analyser", function(object,
     dplyr::select(any_of(setdiff(names(lm_data$data), c("subject","time")))) %>% 
     dplyr::mutate(id = rownames(.[])) %>%
     dplyr::left_join(by="id", lm_data$row_data[,c("id","time","subject")])
+
+  if(length(unique(lm_data$data$time)) > 1) {
+      message("There are more than one timepoints. Exiting without making any changes")
+      return(object)
+  }
   
   # find list of metabolites
   my_met <- object@list_of_col_data[[which_data]] %>% 
@@ -58,32 +61,22 @@ setMethod("calc_lm", "metime_analyser", function(object,
       dplyr::select(cov, type, id) %>% 
       dplyr::filter(id %in% my_met) %>% 
       dplyr::rename("met"="id") %>% 
-      dplyr::mutate(trait=x,
+      dplyr::mutate(trait=x
                     cov = paste0(ifelse(is.na(cov), "", cov),
                                  object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
     do.call(what=rbind.data.frame)
   
-  # prep for parallel computation
-  my_runs <-lapply(unique(lm_data$data$time),function(x) my_formula %>% 
-                     dplyr::distinct(cov) %>% 
-                     dplyr::mutate(time = x)
-                   ) %>% 
-    do.call(what=rbind.data.frame)
-  # Changing mclapply to parLapply 
-  if(is.null(num_cores)) {
-    cl <- parallel::makeCluster(spec = parallel::detectCores(all.tests = FALSE, logical = TRUE)-1, type="PSOCK")
-  } else {
-    cl <- parallel::makeCluster(spec = num_cores, type="PSOCK")
-  }
-  parallel::clusterExport(cl=cl, varlist=c("my_runs", "my_formula", "lm_data", "threshold"), envir=environment())
-  opb <- pbapply::pboptions(title="Running calc_lm(): ", type="timer")
-  on.exit(pbapply::pboptions(opb))
-  on.exit(parallel::stopCluster(cl))
-  results=pbapply::pblapply(cl=cl, 1:nrow(my_runs), 
-                             #mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
-                             #mc.preschedule = TRUE,
-                             function(x) {
-                               if(verbose) cat(x, " , ") # report iteration
+  # runs are defined by unique covariates versus time - not needed as only single timepoint
+  #my_runs <- lapply(unique(lm_data$data$time),function(x) my_formula %>% 
+  #                   dplyr::distinct(cov) %>% 
+  #                   dplyr::mutate(time = x)
+  #                 ) %>% 
+  #  do.call(what=rbind.data.frame)
+
+  
+  
+  results=lapply(1:nrow(my_formula), 
+                 function(x) {
                                # extract data 
                                met = unique(my_formula$met[which(my_formula$cov==my_runs$cov[x])])
                                trait = unique(my_formula$trait[which(my_formula$cov==my_runs$cov[x])])
@@ -98,10 +91,14 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                  #dplyr::filter(!is.na(trait), !is.na(met))
                                
                               met_data <- MatrixEQTL::SlicedData$new()
-                              met_data$CreateFromMatrix(t(this_data %>% dplyr::select(any_of(met)))) # leave in features X metabolites
+                              met_data$CreateFromMatrix(t(this_data %>% 
+                                                            dplyr::select(any_of(met))%>% 
+                                                            dplyr::mutate_all(as.numeric))) # leave in features X metabolites
                                  
                               t_data <- MatrixEQTL::SlicedData$new()
-                              t_data$CreateFromMatrix(t(this_data %>%  dplyr::select(any_of(trait))
+                              t_data$CreateFromMatrix(t(this_data %>%  
+                                                          dplyr::select(any_of(trait)) %>% 
+                                                          dplyr::mutate_all(as.numeric)
                                                            ))
                                  cov_data <- MatrixEQTL::SlicedData$new()
                                  cov_data$CreateFromMatrix(t(this_data %>% 
@@ -124,43 +121,64 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                    out$time = as.character(my_runs$time[x])
                                    out$type = out$time
                                  }else{
-                                   out <- my_formula %>% 
-                                     dplyr::select(met,trait) %>% 
-                                     dplyr::mutate(statistic=NA,pval=NA,beta=NA, x=NA,y=met)
-                                   out$time = as.character(my_runs$time[x])
-                                   out$type = out$time
+                                   out <- NULL
                                  }
-                                 out <- out %>% dplyr::mutate(
-                                   color= "none") %>%
-                                  dplyr::mutate(qval=p.adjust(pval, method="BH"))
-  
-                                      for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
-                                        if(i=="none"){
-                                          out<-out %>% 
-                                            dplyr::mutate(color="none") 
-                                        }else if(i=="nominal"){
-                                          out<-out %>% 
-                                            dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))
-                                        }else if(i == "li"){
-                                          eigenvals <- cor(lm_data$data[which(lm_data$data$time == my_runs$time[x]),my_met]) %>%
-                                            eigen()
-                                          li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
-                                          out<-out%>% 
-                                            dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color)) %>%
-                                            dplyr::mutate(li_thresh=li_thresh)
-                                        }else if(i=="fdr"){
-                                          out<-out %>% 
-                                            dplyr::mutate(color=ifelse(qval<=0.05, "fdr",color))
-                                        }else if(i=="bonferroni"){
-                                          out=out %>% 
-                                            dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color)) %>%
-                                            dplyr::mutate(bonferroni_thresh=0.05/length(my_met))
-                                        }
-                                      }
                                  out
-                               })
+                             })
   
-  names(results) <- paste0(name,"_" ,unique(lm_data$data$time))
+  # combine all results and do post processing - cancelled idea - now we want the results to be separate
+
+  out_results <- results %>%
+    plyr::rbind.fill()
+
+  #out_results <- lapply(unique(results))
+  
+  all_results <- lapply(unique(out_results$trait), function(a) {
+      this_results <- out_results %>% dplyr::filter(trait %in% a)
+      eigenvals <- cor(lm_data$data[ ,my_met],use = 'pairwise.complete.obs') %>% eigen()
+      li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+
+      res <- this_results %>%
+        dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
+        dplyr::mutate(color= "none") %>% ## add color layers
+        dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))%>% 
+        dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color)) %>%
+        dplyr::mutate(li_thresh=li_thresh) %>% 
+        dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color)) %>%
+        dplyr::mutate(bonferroni_thresh=0.05/length(my_met))
+      return(res)
+  })
+
+  names(all_results) <- unique(out_results$trait)
+
+
+
+
+  # for(x_trait in unique(out_results$trait)){
+  #   this_results <- out_results[which(out_results$time == x_time),]
+  #   eigenvals <- cor(lm_data$data[which(lm_data$data$time == x_time),my_met],use = 'pairwise.complete.obs') %>%eigen()
+  #   li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+    
+  #   all_results[[paste0("t",x_time)]] <- lapply(unique(this_results$trait), function(x) {
+  #     res <- this_results[which(this_results$trait == x),] %>% 
+  #       dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
+  #       dplyr::mutate(color= "none") %>% ## add color layers
+  #       dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))%>% 
+  #       dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color)) %>%
+  #       dplyr::mutate(li_thresh=li_thresh) %>% 
+  #       dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color)) %>%
+  #       dplyr::mutate(bonferroni_thresh=0.05/length(my_met))  
+  #   }) %>% 
+  #     plyr::rbind.fill()
+  # }
+
+  # fixing the bug here
+  #all_results <- lapply(seq_along(all_results), function(x) {
+  #    rownames(all_results[[x]]) <- all_results[[x]]$met
+  #    return(all_results[[x]])
+  #})
+                            
+  # add cols_for_meta
   
   if(is.null(cols_for_meta)) {
     metadata <- NULL
@@ -168,12 +186,12 @@ setMethod("calc_lm", "metime_analyser", function(object,
     metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta)
   }
                             
-  # continue here
+  # make result item
   out <- get_make_results(object = object, 
-                          data = results, 
+                          data = all_results, 
                           metadata = metadata, 
-                          calc_type = rep("regression",each=length(results)),
-                          calc_info = paste0("lm_calculation_for_", which_data,"at time ",unique(lm_data$data$time)),
+                          calc_type = rep("regression",each=length(all_results)),
+                          calc_info = paste0("lm regression for ",names(all_results)),
                           name = name) %>%
     add_function_info(function_name = "calc_lm", 
                       params = list(which_data = which_data, 
@@ -181,8 +199,7 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                     cols_for_meta = cols_for_meta,
                                     name = name, 
                                     stratifications = stratifications,
-                                    num_cores=num_cores))
+                                    threshold=threshold))
   
   return(out)
 })
-
