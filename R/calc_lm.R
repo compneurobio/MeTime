@@ -61,7 +61,7 @@ setMethod("calc_lm", "metime_analyser", function(object,
       dplyr::select(cov, type, id) %>% 
       dplyr::filter(id %in% my_met) %>% 
       dplyr::rename("met"="id") %>% 
-      dplyr::mutate(trait=x
+      dplyr::mutate(trait=x,
                     cov = paste0(ifelse(is.na(cov), "", cov),
                                  object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
     do.call(what=rbind.data.frame)
