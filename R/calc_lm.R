@@ -9,17 +9,21 @@
 #' @param threshold a character vector to define the type of threshold for significant interactions. Default set to all availabe thresholds: c("none","nominal","li","fdr","bonferroni").
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
+#' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
+#' @param timepoint time input for cross-sectional model should be the same as the value in time column in row_data.
 #' @details Add details here
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
-setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold=c("none","nominal","li","fdr","bonferroni"), verbose=T,name="regression_lm_1") standardGeneric("calc_lm"))
+setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold=c("none","nominal","li","fdr","bonferroni"), verbose=T,name="regression_lm_1", timepoint=NULL, num_cores=NULL) standardGeneric("calc_lm"))
 setMethod("calc_lm", "metime_analyser", function(object,
                                                   which_data,
                                                   stratifications = NULL,
                                                   cols_for_meta=NULL,
                                                   threshold=c("none","nominal","li","fdr","bonferroni"),
                                                   verbose=T,
-                                                  name="regression_lm_1") {
+                                                  name="regression_lm_1", 
+                                                  timepoint=NULL,
+                                                  num_cores=NULL) {
   #sanity checks
   if(!all(c("cov", "type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lm() requires columns with covariates (named 'cov') and type")
 
@@ -33,17 +37,27 @@ setMethod("calc_lm", "metime_analyser", function(object,
   #stratify data
   lm_data <- get_stratified_data(which_data=which_data, 
                                   object=object, stratifications=stratifications)
+ 
   
+
+  if(is.null(timepoint)) {
+
+      message("Timepoint has to be specified. Exiting without making any changes")
+      return(object)
+  }
+
+  if(length(timepoint)>1) {
+      message("Timepoint has to be of length 1. Exiting without making any changes")
+      return(object)
+  }
+
+
   # add time and subject to dataframe
   lm_data$data <-  lm_data$data %>% 
     dplyr::select(any_of(setdiff(names(lm_data$data), c("subject","time")))) %>% 
     dplyr::mutate(id = rownames(.[])) %>%
-    dplyr::left_join(by="id", lm_data$row_data[,c("id","time","subject")])
-
-  if(length(unique(lm_data$data$time)) > 1) {
-      message("There are more than one timepoints. Exiting without making any changes")
-      return(object)
-  }
+    dplyr::left_join(by="id", lm_data$row_data[,c("id","time","subject")]) %>%
+    dplyr::filter(time %in% timepoint)
   
   # find list of metabolites
   my_met <- object@list_of_col_data[[which_data]] %>% 
@@ -67,116 +81,123 @@ setMethod("calc_lm", "metime_analyser", function(object,
     do.call(what=rbind.data.frame)
   
   # runs are defined by unique covariates versus time - not needed as only single timepoint
-  #my_runs <- lapply(unique(lm_data$data$time),function(x) my_formula %>% 
+  # my_runs <- lapply(unique(lm_data$data$time),function(x) my_formula %>% 
   #                   dplyr::distinct(cov) %>% 
   #                   dplyr::mutate(time = x)
   #                 ) %>% 
   #  do.call(what=rbind.data.frame)
 
+  # model calculation ----
+  ## add verbose processbar 
+  ## changing from mclapply to parLapply
+  if(is.null(num_cores)) {
+    cl <- parallel::makeCluster(spec = parallel::detectCores(all.tests = FALSE, logical = TRUE)-1, type="PSOCK")
+  } else {
+    cl <- parallel::makeCluster(spec = num_cores, type="PSOCK")
+  }
+  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lm_data"), envir=environment())
+  opb <- pbapply::pboptions(title="Running calc_lm(): ", type="timer")
+  on.exit(pbapply::pboptions(opb))
   
-  
-  results=lapply(1:nrow(my_formula), 
+  results=pbapply::pblapply(cl=cl, 1:nrow(my_formula), 
                  function(x) {
                                # extract data 
-                               met = unique(my_formula$met[which(my_formula$cov==my_runs$cov[x])])
-                               trait = unique(my_formula$trait[which(my_formula$cov==my_runs$cov[x])])
-                               cov = my_runs$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character()
-                               cov = setdiff(cov, c("time","subject")) # time cannot be a covariate
+                               this_data <-  lm_data$data %>% 
+                                 dplyr::select(any_of(setdiff(names(lm_data$data), c("subject","time")))) %>% 
+                                 dplyr::mutate(id = rownames(.[])) %>%
+                                 dplyr::left_join(by="id", lm_data$row_data[,c("id","time","subject")]) %>% 
+                                 dplyr::mutate(met=get(my_formula$met[x]), 
+                                               trait=get(my_formula$trait[x])) %>% 
+                                 #dplyr::filter(!is.na(met), !is.na(trait)) %>% 
+                                 dplyr::mutate(time = as.numeric(gsub(pattern="([a-zA-Z])",replacement = "",x=time)),
+                                               subject = as.numeric(gsub(pattern="([a-zA-Z])",replacement = "",x=subject)))
                                
-                               # get full data
-                               this_data <- lm_data$data %>% 
-                                 dplyr::filter(time==my_runs$time[x]) %>% 
-                                 dplyr::select(any_of(met), any_of(trait),any_of(cov)) #%>% 
-                                 #dplyr::mutate(across(trait, as.numeric)) %>% 
-                                 #dplyr::filter(!is.na(trait), !is.na(met))
+                               # extract formula information
+                               formula_met <- my_formula$met[x]
+                               formula_trait <- my_formula$trait[x]
+                               formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""]
                                
-                              met_data <- MatrixEQTL::SlicedData$new()
-                              met_data$CreateFromMatrix(t(this_data %>% 
-                                                            dplyr::select(any_of(met))%>% 
-                                                            dplyr::mutate_all(as.numeric))) # leave in features X metabolites
-                                 
-                              t_data <- MatrixEQTL::SlicedData$new()
-                              t_data$CreateFromMatrix(t(this_data %>%  
-                                                          dplyr::select(any_of(trait)) %>% 
-                                                          dplyr::mutate_all(as.numeric)
-                                                           ))
-                                 cov_data <- MatrixEQTL::SlicedData$new()
-                                 cov_data$CreateFromMatrix(t(this_data %>% 
-                                                               dplyr::select(any_of(cov))
-                                                             ))
-                                 
-                                 this_model = try(
-                                   MatrixEQTL::Matrix_eQTL_main(
-                                   snps = met_data, #met_data
-                                   gene = t_data, #t_data
-                                   cvrt = cov_data,
-                                   pvOutputThreshold = 1, # output all p-values
-                                   verbose = F
-                                   ),
-                                 silent = T)
-                                 if(all(class(this_model)!="try-error")){
-                                   out <- this_model$all$eqtls %>%
-                                     dplyr::rename(trait=gene, met=snps, pval=pvalue) %>%
-                                     dplyr::mutate(x=beta, y=met)
-                                   out$time = as.character(my_runs$time[x])
-                                   out$type = out$time
-                                 }else{
-                                   out <- NULL
-                                 }
-                                 out
-                             })
+                               formula = paste0("met ~ ",
+                                                ifelse(all(!is.na(formula_trait)), "trait", ""), 
+                                                ifelse(all(!is.na(formula_cov)), paste0("+",paste0(formula_cov,collapse = "+")), "")
+                                        )
+                               
+                               this_model = try(
+                                  silent=T,
+                                  lm(
+                                    formula=formula, 
+                                    data= this_data
+                                  )
+                               )
+
+
+
+                               if(all(class(this_model)!="try-error")) {
+                                  results_sum <- summary(this_model)
+
+                                  out <- data.frame(
+                                      met=my_formula$met[x],
+                                      trait=my_formula$trait[x],
+                                      level=grep(x=rownames(results_sum$coefficients), pattern="trait", value=T) %>% gsub(pattern="trait",replacement=my_formula$trait[x]),
+                                      beta = results_sum$coefficients[,1][grep(x=names(results_sum$coefficients[,1]), pattern="trait", value=T)] %>% as.numeric(),
+                                      se = results_sum$coefficients[,2][grep(x=names(results_sum$coefficients[,2]), pattern="trait", value=T)]%>% as.numeric(),
+                                      pval = results_sum$coefficients[,4][grep(x=names(results_sum$coefficients[,4]), pattern="trait", value=T)]%>% as.numeric(),
+                                      tval = results_sum$coefficients[,3][grep(x=names(results_sum$coefficients[,3]), pattern="trait", value=T)]%>% as.numeric(),
+                                      formula = formula
+                                    )
+                               } else {
+                                  out <- data.frame(
+                                      met=my_formula$met[x],
+                                      trait=my_formula$trait[x],
+                                      level=NA, 
+                                      beta=NA,
+                                      se=NA, 
+                                      pval=NA,
+                                      tval=NA,
+                                      formula=formula
+                                    )
+                               }
+                               
+                              return(out)
+
+                        })
   
   # combine all results and do post processing - cancelled idea - now we want the results to be separate
 
-  out_results <- results %>%
-    plyr::rbind.fill()
+  annotated_results <- plyr::rbind.fill(results)
+  on.exit(parallel::stopCluster(cl))
+  ## modify results to for pipeline
+  annotated_results <- annotated_results %>% 
+    dplyr::mutate(x=beta, 
+                  xmin=beta-abs(se), 
+                  xmax=beta+abs(se), 
+                  y=met, 
+                  color= "none",
+                  type=ifelse(!is.na(level), level, trait))
 
   #out_results <- lapply(unique(results))
+
+  # calculate the thresholds 
+  thresh_bonferroni <- 0.05/length(my_met)
+  eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
+    eigen()
+  thresh_li <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+
+  annotated_results <- annotated_results %>% dplyr::mutate(li_thresh=thresh_li, bonferroni_thresh=thresh_bonferroni)
   
-  all_results <- lapply(unique(out_results$trait), function(a) {
-      this_results <- out_results %>% dplyr::filter(trait %in% a)
-      eigenvals <- cor(lm_data$data[ ,my_met],use = 'pairwise.complete.obs') %>% eigen()
-      li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+  # split into single results files 
+  out_results <- lapply(unique(annotated_results$type), function(y){
+    annotated_results[which(annotated_results$type==y),] %>% 
+      dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
+      dplyr::mutate(color = ifelse(pval <= 0.05, "nominally","none")) %>% 
+      dplyr::mutate(color = ifelse(qval <= 0.05, "fdr",color)) %>% 
+      dplyr::mutate(color = ifelse(pval <= thresh_li, "li",color)) %>% 
+      dplyr::mutate(color = ifelse(pval <= thresh_bonferroni, "bonferroni",color)) %>% 
+      `rownames<-`(.[,"met"])
+    })
 
-      res <- this_results %>%
-        dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
-        dplyr::mutate(color= "none") %>% ## add color layers
-        dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))%>% 
-        dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color)) %>%
-        dplyr::mutate(li_thresh=li_thresh) %>% 
-        dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color)) %>%
-        dplyr::mutate(bonferroni_thresh=0.05/length(my_met))
-      return(res)
-  })
+  names(out_results) <- unique(annotated_results$type)
 
-  names(all_results) <- unique(out_results$trait)
-
-
-
-
-  # for(x_trait in unique(out_results$trait)){
-  #   this_results <- out_results[which(out_results$time == x_time),]
-  #   eigenvals <- cor(lm_data$data[which(lm_data$data$time == x_time),my_met],use = 'pairwise.complete.obs') %>%eigen()
-  #   li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
-    
-  #   all_results[[paste0("t",x_time)]] <- lapply(unique(this_results$trait), function(x) {
-  #     res <- this_results[which(this_results$trait == x),] %>% 
-  #       dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
-  #       dplyr::mutate(color= "none") %>% ## add color layers
-  #       dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))%>% 
-  #       dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color)) %>%
-  #       dplyr::mutate(li_thresh=li_thresh) %>% 
-  #       dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color)) %>%
-  #       dplyr::mutate(bonferroni_thresh=0.05/length(my_met))  
-  #   }) %>% 
-  #     plyr::rbind.fill()
-  # }
-
-  # fixing the bug here
-  #all_results <- lapply(seq_along(all_results), function(x) {
-  #    rownames(all_results[[x]]) <- all_results[[x]]$met
-  #    return(all_results[[x]])
-  #})
                             
   # add cols_for_meta
   
@@ -203,3 +224,5 @@ setMethod("calc_lm", "metime_analyser", function(object,
   
   return(out)
 })
+
+
