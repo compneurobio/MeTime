@@ -208,11 +208,12 @@ setMethod("calc_lm", "metime_analyser", function(object,
   }
                             
   # make result item
+   # make result item
   out <- get_make_results(object = object, 
-                          data = all_results, 
+                          data = out_results, 
                           metadata = metadata, 
-                          calc_type = rep("regression",each=length(all_results)),
-                          calc_info = paste0("lm regression for ",names(all_results)),
+                          calc_type = rep("regression",each=length(out_results)),
+                          calc_info = paste0("lm regression for ",names(out_results)),
                           name = name) %>%
     add_function_info(function_name = "calc_lm", 
                       params = list(which_data = which_data, 
@@ -221,7 +222,6 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                     name = name, 
                                     stratifications = stratifications,
                                     threshold=threshold))
-  
   return(out)
 })
 
