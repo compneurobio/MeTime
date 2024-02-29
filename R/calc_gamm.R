@@ -103,7 +103,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
       dplyr::left_join(by="id", gamm_data$row_data[,c("id","time","subject")]) %>% 
       dplyr::mutate(met=get(my_formula$met[x]), 
                     trait=get(my_formula$trait[x])) %>% 
-      dplyr::filter(!is.na(met), !is.na(trait)) %>% 
+      #dplyr::filter(!is.na(met), !is.na(trait)) %>% 
       #dplyr::drop_na(met) %>% dplyr::drop_na(trait) %>% 
       dplyr::mutate(time = as.numeric(gsub(pattern="([a-zA-Z])",replacement = "",x=time)),
                     subject = as.numeric(gsub(pattern="([a-zA-Z])",replacement = "",x=subject)))
@@ -116,7 +116,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                                                   paste0("trait", "*",
                                                      paste0(my_formula$interaction[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""], collapse="*")))
       
-      formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""]
+      formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% c("", "NA", NA)]
        
       smoothing_cov <- sapply(formula_cov,function(y) ifelse(length(unique(this_data[[y]]))>3, paste0("s(",y, ", k=", k, ")"), y)) 
       
@@ -152,8 +152,8 @@ setMethod("calc_gamm", "metime_analyser", function(object,
         pval = results_sum$p.pv[grep(x=names(results_sum$p.pv), pattern="trait", value=T)]%>% as.numeric(),
         tval = results_sum$p.t[grep(x=names(results_sum$p.t), pattern="trait", value=T)]%>% as.numeric(),
         formula=formula
-      ) %>% 
-        cbind(as.data.frame(t(results_sum$s.table[,1])))
+      ) #%>% 
+        #cbind(as.data.frame(t(results_sum$s.table[,1])))
     } else {
       out_this_model <- data.frame(
         stringsAsFactors = F,
@@ -220,7 +220,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
   out_results <- lapply(unique(annotated_results$type), function(y){
     annotated_results[which(annotated_results$type==y),] %>% 
       dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
-      dplyr::mutate(color = ifelse(pval <= 0.05, "nominal","none")) %>% 
+      dplyr::mutate(color = ifelse(pval <= 0.05, "nominally","none")) %>% 
       dplyr::mutate(color = ifelse(qval <= 0.05, "fdr",color)) %>% 
       dplyr::mutate(color = ifelse(pval <= thresh_li, "li",color)) %>% 
       dplyr::mutate(color = ifelse(pval <= thresh_bonferroni, "bonferroni",color)) %>% 
