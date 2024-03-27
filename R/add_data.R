@@ -13,7 +13,7 @@ setMethod("add_data", "metime_analyser", function(object, which_data, type="data
   if(!is.data.frame(x)) warning("add_data() x is not a data.frame.")
   else if(!type %in% c("data","col_data","row_data")) warning("add_data() type can only be 'data', 'col_data' or 'row_data'")
   else{
-    if(is.null(id)) id <- colnames(data)[1]
+    if(is.null(id)) id <- "id"
     # if id is null then the first column of the data.frame is used as id
     if(type=="data"){
     out@list_of_data[[which_data]] <- out@list_of_data[[which_data]] %>% 

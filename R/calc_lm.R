@@ -221,7 +221,7 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                     name = name, 
                                     stratifications = stratifications,
                                     threshold=threshold))
-  
+
   return(out)
 })
 

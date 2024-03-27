@@ -27,8 +27,8 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
   
   # check if results should be saved per run - this doesn't work on server because the path cannot be extracted like this
   # This is the new approach
-  if(save_per_run && !"tmp" %in% list.dirs(getwd(), recursive=F, full.names=F)) {
-    dir.create(file.path(getwd(), "tmp"), showWarnings=F)
+  if(save_per_run && !paste0("tmp_", name) %in% list.dirs(getwd(), recursive=F, full.names=F)) {
+    dir.create(file.path(getwd(), paste0("tmp_", name)), showWarnings=F)
   }
   
   # sanity checks
@@ -82,7 +82,7 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
     this_x <- object@list_of_col_data[[which_x]]$id
     this_y <- object@list_of_col_data[[which_y]]$id
     file_path = getwd()
-    out_path = file.path(getwd(), "tmp")
+    out_path = file.path(getwd(), paste0("tmp_", name))
     
     # Set up parallel processing
     if(Sys.info()["sysname"] == "Windows"){
