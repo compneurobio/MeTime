@@ -10,22 +10,24 @@
 #'      allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as Default)
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
 #' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
+#' @param timepoint time input for cross-sectional model should be the same as the value in time column in row_data.
 #' @details Add details here
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
-setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold=c("none","nominal","li","fdr","bonferroni"), verbose=T,name="regression_lm_1", num_cores=NULL) standardGeneric("calc_lm"))
+setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold=c("none","nominal","li","fdr","bonferroni"), verbose=T,name="regression_lm_1", timepoint=NULL, num_cores=NULL) standardGeneric("calc_lm"))
 setMethod("calc_lm", "metime_analyser", function(object,
                                                   which_data,
                                                   stratifications = NULL,
                                                   cols_for_meta=NULL,
                                                   threshold=c("none","nominal","li","fdr","bonferroni"),
                                                   verbose=T,
-                                                  name="regression_lm_1",
+                                                  name="regression_lm_1", 
+                                                  timepoint=NULL,
                                                   num_cores=NULL) {
   #sanity checks
   if(!all(c("cov", "type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lm() requires columns with covariates (named 'cov') and type")
 
-  if(grep(name, names(object@results)) %>% length() >= 1) {
+  while(grep(name, names(object@results)) %>% length() >= 1) {
     warning("name of the results was previously used, using a different name")
     index <- name %>% gsub(pattern="[a-z|A-Z]+_[a-z|A-Z]+_", replacement="") %>% as.numeric()
     index <- c(0:9)[grep(index, 0:9)+1]
@@ -35,12 +37,27 @@ setMethod("calc_lm", "metime_analyser", function(object,
   #stratify data
   lm_data <- get_stratified_data(which_data=which_data, 
                                   object=object, stratifications=stratifications)
+ 
   
+
+  if(is.null(timepoint)) {
+
+      message("Timepoint has to be specified. Exiting without making any changes")
+      return(object)
+  }
+
+  if(length(timepoint)>1) {
+      message("Timepoint has to be of length 1. Exiting without making any changes")
+      return(object)
+  }
+
+
   # add time and subject to dataframe
   lm_data$data <-  lm_data$data %>% 
     dplyr::select(any_of(setdiff(names(lm_data$data), c("subject","time")))) %>% 
     dplyr::mutate(id = rownames(.[])) %>%
-    dplyr::left_join(by="id", lm_data$row_data[,c("id","time","subject")])
+    dplyr::left_join(by="id", lm_data$row_data[,c("id","time","subject")]) %>%
+    dplyr::filter(time %in% timepoint)
   
   # find list of metabolites
   my_met <- object@list_of_col_data[[which_data]] %>% 
@@ -63,104 +80,126 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                  object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
     do.call(what=rbind.data.frame)
   
-  # prep for parallel computation
-  my_runs <-lapply(unique(lm_data$data$time),function(x) my_formula %>% 
-                     dplyr::distinct(cov) %>% 
-                     dplyr::mutate(time = x)
-                   ) %>% 
-    do.call(what=rbind.data.frame)
-  # Changing mclapply to parLapply 
+  # runs are defined by unique covariates versus time - not needed as only single timepoint
+  # my_runs <- lapply(unique(lm_data$data$time),function(x) my_formula %>% 
+  #                   dplyr::distinct(cov) %>% 
+  #                   dplyr::mutate(time = x)
+  #                 ) %>% 
+  #  do.call(what=rbind.data.frame)
+
+  # model calculation ----
+  ## add verbose processbar 
+  ## changing from mclapply to parLapply
   if(is.null(num_cores)) {
     cl <- parallel::makeCluster(spec = parallel::detectCores(all.tests = FALSE, logical = TRUE)-1, type="PSOCK")
   } else {
     cl <- parallel::makeCluster(spec = num_cores, type="PSOCK")
   }
-  parallel::clusterExport(cl=cl, varlist=c("my_runs", "my_formula", "lm_data", "threshold"), envir=environment())
+  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lm_data"), envir=environment())
   opb <- pbapply::pboptions(title="Running calc_lm(): ", type="timer")
   on.exit(pbapply::pboptions(opb))
-  on.exit(parallel::stopCluster(cl))
-  results=pbapply::pblapply(cl=cl, 1:nrow(my_runs), 
-                             #mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
-                             #mc.preschedule = TRUE,
-                             function(x) {
-                               if(verbose) cat(x, " , ") # report iteration
+  
+  results=pbapply::pblapply(cl=cl, 1:nrow(my_formula), 
+                 function(x) {
                                # extract data 
-                               met = unique(my_formula$met[which(my_formula$cov==my_runs$cov[x])])
-                               trait = unique(my_formula$trait[which(my_formula$cov==my_runs$cov[x])])
-                               cov = my_runs$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character()
-                               cov = setdiff(cov, c("time","subject")) # time cannot be a covariate
+                               this_data <-  lm_data$data %>% 
+                                 dplyr::select(any_of(setdiff(names(lm_data$data), c("subject","time")))) %>% 
+                                 dplyr::mutate(id = rownames(.[])) %>%
+                                 dplyr::left_join(by="id", lm_data$row_data[,c("id","time","subject")]) %>% 
+                                 dplyr::mutate(met=get(my_formula$met[x]), 
+                                               trait=get(my_formula$trait[x])) %>% 
+                                 #dplyr::filter(!is.na(met), !is.na(trait)) %>% 
+                                 dplyr::mutate(time = as.numeric(gsub(pattern="([a-zA-Z])",replacement = "",x=time)),
+                                               subject = as.numeric(gsub(pattern="([a-zA-Z])",replacement = "",x=subject)))
                                
-                               # get full data
-                               this_data <- lm_data$data %>% 
-                                 dplyr::filter(time==my_runs$time[x]) %>% 
-                                 dplyr::select(any_of(met), any_of(trait),any_of(cov)) #%>% 
-                                 #dplyr::mutate(across(trait, as.numeric)) %>% 
-                                 #dplyr::filter(!is.na(trait), !is.na(met))
+                               # extract formula information
+                               formula_met <- my_formula$met[x]
+                               formula_trait <- my_formula$trait[x]
+                               formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""]
                                
-                              met_data <- MatrixEQTL::SlicedData$new()
-                              met_data$CreateFromMatrix(t(this_data %>% dplyr::select(any_of(met)))) # leave in features X metabolites
-                                 
-                              t_data <- MatrixEQTL::SlicedData$new()
-                              t_data$CreateFromMatrix(t(this_data %>%  dplyr::select(any_of(trait))
-                                                           ))
-                                 cov_data <- MatrixEQTL::SlicedData$new()
-                                 cov_data$CreateFromMatrix(t(this_data %>% 
-                                                               dplyr::select(any_of(cov))
-                                                             ))
-                                 
-                                 this_model = try(
-                                   MatrixEQTL::Matrix_eQTL_main(
-                                   snps = met_data, #met_data
-                                   gene = t_data, #t_data
-                                   cvrt = cov_data,
-                                   pvOutputThreshold = 1, # output all p-values
-                                   verbose = F
-                                   ),
-                                 silent = T)
-                                 if(all(class(this_model)!="try-error")){
-                                   out <- this_model$all$eqtls %>%
-                                     dplyr::rename(trait=gene, met=snps, pval=pvalue) %>%
-                                     dplyr::mutate(x=beta, y=met)
-                                   out$time = as.character(my_runs$time[x])
-                                   out$type = out$time
-                                 }else{
-                                   out <- my_formula %>% 
-                                     dplyr::select(met,trait) %>% 
-                                     dplyr::mutate(statistic=NA,pval=NA,beta=NA, x=NA,y=met)
-                                   out$time = as.character(my_runs$time[x])
-                                   out$type = out$time
-                                 }
-                                 out <- out %>% dplyr::mutate(
-                                   color= "none") %>%
-                                  dplyr::mutate(qval=p.adjust(pval, method="BH"))
+                               formula = paste0("met ~ ",
+                                                ifelse(all(!is.na(formula_trait)), "trait", ""), 
+                                                ifelse(all(!is.na(formula_cov)), paste0("+",paste0(formula_cov,collapse = "+")), "")
+                                        )
+                               
+                               this_model = try(
+                                  silent=T,
+                                  lm(
+                                    formula=formula, 
+                                    data= this_data
+                                  )
+                               )
+
+
+
+                               if(all(class(this_model)!="try-error")) {
+                                  results_sum <- summary(this_model)
+
+                                  out <- data.frame(
+                                      met=my_formula$met[x],
+                                      trait=my_formula$trait[x],
+                                      level=grep(x=rownames(results_sum$coefficients), pattern="trait", value=T) %>% gsub(pattern="trait",replacement=my_formula$trait[x]),
+                                      beta = results_sum$coefficients[,1][grep(x=names(results_sum$coefficients[,1]), pattern="trait", value=T)] %>% as.numeric(),
+                                      se = results_sum$coefficients[,2][grep(x=names(results_sum$coefficients[,2]), pattern="trait", value=T)]%>% as.numeric(),
+                                      pval = results_sum$coefficients[,4][grep(x=names(results_sum$coefficients[,4]), pattern="trait", value=T)]%>% as.numeric(),
+                                      tval = results_sum$coefficients[,3][grep(x=names(results_sum$coefficients[,3]), pattern="trait", value=T)]%>% as.numeric(),
+                                      formula = formula
+                                    )
+                               } else {
+                                  out <- data.frame(
+                                      met=my_formula$met[x],
+                                      trait=my_formula$trait[x],
+                                      level=NA, 
+                                      beta=NA,
+                                      se=NA, 
+                                      pval=NA,
+                                      tval=NA,
+                                      formula=formula
+                                    )
+                               }
+                               
+                              return(out)
+
+                        })
   
-                                      for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
-                                        if(i=="none"){
-                                          out<-out %>% 
-                                            dplyr::mutate(color="none") 
-                                        }else if(i=="nominal"){
-                                          out<-out %>% 
-                                            dplyr::mutate(color=ifelse(pval<=0.05, "nominal",color))
-                                        }else if(i == "li"){
-                                          eigenvals <- cor(lm_data$data[which(lm_data$data$time == my_runs$time[x]),my_met]) %>%
-                                            eigen()
-                                          li_thresh <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
-                                          out<-out%>% 
-                                            dplyr::mutate(color=ifelse(pval<=li_thresh, "li",color)) %>%
-                                            dplyr::mutate(li_thresh=li_thresh)
-                                        }else if(i=="fdr"){
-                                          out<-out %>% 
-                                            dplyr::mutate(color=ifelse(qval<=0.05, "fdr",color))
-                                        }else if(i=="bonferroni"){
-                                          out=out %>% 
-                                            dplyr::mutate(color=ifelse(pval<=0.05/length(my_met), "bonferroni",color)) %>%
-                                            dplyr::mutate(bonferroni_thresh=0.05/length(my_met))
-                                        }
-                                      }
-                                 out
-                               })
+  # combine all results and do post processing - cancelled idea - now we want the results to be separate
+
+  annotated_results <- plyr::rbind.fill(results)
+  on.exit(parallel::stopCluster(cl))
+  ## modify results to for pipeline
+  annotated_results <- annotated_results %>% 
+    dplyr::mutate(x=beta, 
+                  xmin=beta-abs(se), 
+                  xmax=beta+abs(se), 
+                  y=met, 
+                  color= "none",
+                  type=ifelse(!is.na(level), level, trait))
+
+  #out_results <- lapply(unique(results))
+
+  # calculate the thresholds 
+  thresh_bonferroni <- 0.05/length(my_met)
+  eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
+    eigen()
+  thresh_li <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+
+  annotated_results <- annotated_results %>% dplyr::mutate(li_thresh=thresh_li, bonferroni_thresh=thresh_bonferroni)
   
-  names(results) <- paste0(name,"_" ,unique(lm_data$data$time))
+  # split into single results files 
+  out_results <- lapply(unique(annotated_results$type), function(y){
+    annotated_results[which(annotated_results$type==y),] %>% 
+      dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
+      dplyr::mutate(color = ifelse(pval <= 0.05, "nominal","none")) %>% 
+      dplyr::mutate(color = ifelse(qval <= 0.05, "fdr",color)) %>% 
+      dplyr::mutate(color = ifelse(pval <= thresh_li, "li",color)) %>% 
+      dplyr::mutate(color = ifelse(pval <= thresh_bonferroni, "bonferroni",color)) %>% 
+      `rownames<-`(.[,"met"])
+    })
+
+  names(out_results) <- unique(annotated_results$type)
+
+                            
+  # add cols_for_meta
   
   if(is.null(cols_for_meta)) {
     metadata <- NULL
@@ -168,12 +207,12 @@ setMethod("calc_lm", "metime_analyser", function(object,
     metadata <- get_metadata_for_columns(object=object, which_data=which_data, columns=cols_for_meta)
   }
                             
-  # continue here
+  # make result item
   out <- get_make_results(object = object, 
-                          data = results, 
+                          data = out_results, 
                           metadata = metadata, 
-                          calc_type = rep("regression",each=length(results)),
-                          calc_info = paste0("lm_calculation_for_", which_data,"at time ",unique(lm_data$data$time)),
+                          calc_type = rep("regression",each=length(out_results)),
+                          calc_info = paste0("lm regression for ",names(out_results)),
                           name = name) %>%
     add_function_info(function_name = "calc_lm", 
                       params = list(which_data = which_data, 
@@ -181,8 +220,9 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                     cols_for_meta = cols_for_meta,
                                     name = name, 
                                     stratifications = stratifications,
-                                    num_cores=num_cores))
+                                    threshold=threshold))
   
   return(out)
 })
+
 

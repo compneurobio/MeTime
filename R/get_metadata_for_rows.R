@@ -28,13 +28,13 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 						} else {
 							data <- object@list_of_data[[which_data]]
 							phenotype <- object@list_of_row_data[[which_data]]
-							out <- phenotype[rownames(phenotype) %in% rownames(data), columns]
+							out <- as.data.frame(phenotype[rownames(phenotype) %in% rownames(data), columns])
 							out <- out[order(rownames(out)), ]
-							timepoints <- rownames(out) %>% gsub(pattern="[a-z|A-Z][-|0-9]+_", replacement="")
-							samples <- rownames(out) %>% gsub(pattern="_[a-z|A-Z][-|0-9]+", replacement="")
-							levels <- timepoints %>% gsub(pattern="t", replacement="") %>% as.numeric() %>% 
+							timepoints <- rownames(out) %>% gsub(pattern="[a-z|A-Z]+[0-9]+_", replacement="")
+							samples <- rownames(out) %>% gsub(pattern="_[a-z|A-Z]+[0-9]+", replacement="")
+							levels <- timepoints %>% gsub(pattern="[A-Z|a-z]", replacement="") %>% as.numeric() %>% 
 										unique() %>% sort()	
-							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
+							timepoints <- factor(timepoints, levels=levels)
 							out$time <- timepoints
 							out$subject <- samples
 						}

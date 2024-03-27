@@ -98,7 +98,7 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                                  dplyr::left_join(by="id", lmm_data$row_data[,c("id","time","subject")]) %>% 
                                  dplyr::mutate(met=get(my_formula$met[x]), 
                                                trait=get(my_formula$trait[x])) %>% 
-                                 dplyr::filter(!is.na(met), !is.na(trait)) %>% 
+                                 #dplyr::filter(!is.na(met), !is.na(trait)) %>% 
                                  dplyr::mutate(time = as.numeric(gsub(pattern="([a-zA-Z])",replacement = "",x=time)),
                                                subject = as.numeric(gsub(pattern="([a-zA-Z])",replacement = "",x=subject)))
                                
@@ -108,7 +108,7 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                                                   "trait", 
                                                   paste0("trait", "*",
                                                      paste0(my_formula$interaction[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""], collapse="*")))
-                               formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""]
+                               formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% c("", "NA", NA)]
                                formula_random <-  ifelse(!is.null(my_formula$random[x]), paste0("(1|",my_formula$random[x],")"), NA)
                                #formula_interaction <- ifelse(!is.null(interaction),interaction, NA)
                                

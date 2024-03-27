@@ -124,7 +124,7 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 										y="ci", color="black", fill=add$box_x, alpha=0.5, notch=F) +
           						ggpubr::stat_compare_means(method="wilcox.test", comparisons=my_comparisons, 
           							label.y=seq(from=3.5, to=11, by=0.5)) 
-          					plot <-	ggpubr::ggpar(plot, ylab="-log10(1-ci)") + labs(caption=info)
+          					plot <-	ggpubr::ggpar(plot, ylab="-log10(1-ic)") + labs(caption=info)
 						} else {
 							stop("This type of plot is not available for this calculation")
 						}

@@ -94,8 +94,7 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
       parallel::clusterExport(cl=cl, 
                               varlist=c("this_data","this_x","this_y","save_per_run","file_path", "out_path"),
                               envir = environment())
-    }
-    else{
+    }else{
       max_cores <- parallel::detectCores() - 1
       if (is.null(num_cores) || num_cores>max_cores) num_cores <- max_cores # num_cores can only be max number of cores -1 
       cl <- num_cores

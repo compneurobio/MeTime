@@ -85,7 +85,7 @@ setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data,
           	} else {
           		out <- get_make_analyser_object(data=data_to_append, col_data=col_data_true, 
           				row_data=object@list_of_row_data[[whichd_ata]], 
-          				annotations_index=list(), name=paste(which_data, "with_eigenmetabs", sep="_"), results=list())
+          				annotations_index=list(), name=name, results=list())
           	}
             out <- add_function_info(object=out, function_name="mod_trans_eigendata", 
                 params=list(which_data=which_data, append=append, results_index=results_index, cols_for_meta=cols_for_meta, name=name, ...))

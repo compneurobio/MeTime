@@ -11,7 +11,7 @@ Description: R Package to aid in longitudinal data analysis with a focus on meta
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.0
 Imports: 
     Boruta,
     DT,

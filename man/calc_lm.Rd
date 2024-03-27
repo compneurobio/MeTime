@@ -12,6 +12,7 @@ calc_lm(
   threshold = c("none", "nominal", "li", "fdr", "bonferroni"),
   verbose = T,
   name = "regression_lm_1",
+  timepoint = NULL,
   num_cores = NULL
 )
 }
@@ -31,6 +32,8 @@ allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as
 \item{verbose}{a logical on whether to print the calculation progress. Default set to FALSE.}
 
 \item{name}{a character vector to define the index within the results. Should be equal to length of which_data. Default set to regression_lm_1.}
+
+\item{timepoint}{time input for cross-sectional model should be the same as the value in time column in row_data.}
 
 \item{num_cores}{numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.}
 }
