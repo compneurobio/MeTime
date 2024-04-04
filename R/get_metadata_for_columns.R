@@ -33,6 +33,7 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 							colnames(data) <- c("id", names_check)
 							rownames(data) <- data$id
 							data$class <- rep(which_data[a], each=length(rownames(data)))
+							data[order(rownames(data)),]
 							return(data)
 						}) %>% do.call(what=rbind.data.frame)
 				} else {
@@ -41,6 +42,7 @@ setMethod("get_metadata_for_columns", "metime_analyser", function(object, which_
 							colnames(data) <- names_check
 							rownames(data) <- data$id
 							data$class <- rep(which_data[a], each=length(rownames(data)))
+							data <- data[order(rownames(data)), ]
 							return(data)
 						}) %>% do.call(what=rbind.data.frame)
 				}

@@ -15,6 +15,7 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 							list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 							list_of_data <- lapply(list_of_data, function(x) return(x[order(rownames(x)), ]))
 							out <- object@list_of_row_data[[which_data[1]]] %>% dplyr::select(dplyr::all_of(columns))
+							out <- out[order(rownames(out)),,drop=FALSE]
 							timepoints <- rownames(out) %>% gsub(pattern="[a-z|A-Z][-|0-9]+_", replacement="")
 							samples <- rownames(out) %>% gsub(pattern="_[a-z|A-Z][-|0-9]+", replacement="")
 							#levels <- timepoints %>% gsub(pattern="[A-Z|a-z]", replacement="") %>% as.numeric()
