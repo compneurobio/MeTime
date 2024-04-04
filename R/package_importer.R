@@ -106,8 +106,12 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						}
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=x, y=ci)) + 
-								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic() +
-								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape]))) + xlab("Subject order")
+								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic() + 
+								xlab("Subject order")
+							if(!is.null(add$shape)) {
+								plot <- plot +
+									scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
+							}
 						} else if(plot_type %in% "box") {
 							if(is.null(add$box_x)) {
 								stop("Define x-axis for boxplot. Use box_x=variable as an argument in the plot function")
@@ -178,8 +182,11 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						}
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=PC1, y=PC2)) + 
-								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic() +
-								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
+								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic()
+							if(!is.null(add$shape)) {
+								plot <- plot +
+									scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
+							}
 						} else {
 							stop("This type of plot is not available for this calculation")
 						}
@@ -209,8 +216,11 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						}
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=UMAP1, y=UMAP2)) + 
-								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic() +
-								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
+								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic()
+							if(!is.null(add$shape)) {
+								plot <- plot +
+									scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
+							}
 						} else {
 							stop("This type of plot is not available for this calculation")
 						}
@@ -241,7 +251,10 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=X1, y=X2)) + 
 								geom_point(aes(mapping=!!!args)) + facet_wrap(add$strats) + theme_classic()+
-								scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
+							if(!is.null(add$shape)) {
+								plot <- plot +
+									scale_shape_manual(values=1:nlevels(as.factor(df[ ,add$shape])))
+							}
 						} else {
 							stop("This type of plot is not available for this calculation")
 						}

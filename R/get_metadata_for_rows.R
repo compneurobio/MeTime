@@ -14,11 +14,11 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 							object <- mod_extract_common_samples(object)
 							list_of_data <- object@list_of_data[names(object@list_of_data) %in% which_data]
 							list_of_data <- lapply(list_of_data, function(x) return(x[order(rownames(x)), ]))
-							out <- object@list_of_row_data[[which_data[1]]][ ,columns]
+							out <- object@list_of_row_data[[which_data[1]]] %>% dplyr::select(dplyr::all_of(columns))
 							timepoints <- rownames(out) %>% gsub(pattern="[a-z|A-Z][-|0-9]+_", replacement="")
 							samples <- rownames(out) %>% gsub(pattern="_[a-z|A-Z][-|0-9]+", replacement="")
-							levels <- timepoints %>% gsub(pattern="t", replacement="") %>% as.numeric() %>% sort()
-							timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
+							#levels <- timepoints %>% gsub(pattern="[A-Z|a-z]", replacement="") %>% as.numeric()
+							#timepoints <- factor(timepoints, levels=paste("t",levels,sep=""))
 							out$subject <- samples
 							out$time <- timepoints
 						}
@@ -28,13 +28,14 @@ setMethod("get_metadata_for_rows", "metime_analyser", function(object, which_dat
 						} else {
 							data <- object@list_of_data[[which_data]]
 							phenotype <- object@list_of_row_data[[which_data]]
-							out <- as.data.frame(phenotype[rownames(phenotype) %in% rownames(data), columns])
-							out <- out[order(rownames(out)), ]
+							out <- phenotype[rownames(phenotype) %in% rownames(data),] %>% as.data.frame() %>%
+										dplyr::select(dplyr::all_of(columns))
+							out <- out[order(rownames(out)), ,drop=FALSE]
 							timepoints <- rownames(out) %>% gsub(pattern="[a-z|A-Z]+[0-9]+_", replacement="")
 							samples <- rownames(out) %>% gsub(pattern="_[a-z|A-Z]+[0-9]+", replacement="")
-							levels <- timepoints %>% gsub(pattern="[A-Z|a-z]", replacement="") %>% as.numeric() %>% 
-										unique() %>% sort()	
-							timepoints <- factor(timepoints, levels=levels)
+							#levels <- timepoints %>% gsub(pattern="[A-Z|a-z]", replacement="") %>% as.numeric() %>% 
+							#			unique() %>% sort()	
+							#timepoints <- factor(timepoints, levels=levels)
 							out$time <- timepoints
 							out$subject <- samples
 						}

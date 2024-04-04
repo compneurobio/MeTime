@@ -1,4 +1,3 @@
-
 #' Function to calculate metabotype conservation index
 #' @description Method applied on the object metime_analyser to calculate the metabotype conservation index
 #' @examples #calculating metabotype_conservation_index 
