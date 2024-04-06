@@ -120,8 +120,13 @@ setMethod("calc_gamm", "metime_analyser", function(object,
        
       smoothing_cov <- sapply(formula_cov,function(y) ifelse(length(unique(this_data[[y]]))>3, paste0("s(",y, ", k=", k, ")"), y)) 
       
-      formula_random <-  ifelse(!is.na(my_formula$random[x]), paste0("s(",my_formula$random[x], ", bs='re')"), NA)
-      
+      #formula_random <-  ifelse(!is.na(my_formula$random[x]), paste0("s(",my_formula$random[x], ", bs='re')"), NA)
+      if(!(is.null(my_formula$random[x]) | is.na(my_formula$random[x]))) {
+            formula_random <- my_formula$random[x] %>%
+                                  stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""] %>%
+                                    vapply(function(y) paste0("s(", y, ", bs='re')"), character(1))
+      } 
+
       #formula_interaction <- ifelse(!is.null(interaction), paste0("s(",interaction, ")"), NA)
       
       

@@ -109,9 +109,14 @@ setMethod("calc_lmm", "metime_analyser", function(object,
                                                   paste0("trait", "*",
                                                      paste0(my_formula$interaction[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""], collapse="*")))
                                formula_cov <- my_formula$cov[x] %>% stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% c("", "NA", NA)]
-                               formula_random <-  ifelse(!is.null(my_formula$random[x]), paste0("(1|",my_formula$random[x],")"), NA)
+                               #formula_random <-  ifelse(!is.null(my_formula$random[x]), paste0("(1|",my_formula$random[x],")"), NA)
                                #formula_interaction <- ifelse(!is.null(interaction),interaction, NA)
-                               
+                               if(!(is.null(my_formula$random[x]) | is.na(my_formula$random[x]))) {
+                                    formula_random <- my_formula$random[x] %>%
+                                                          stringr::str_split(pattern="###",simplify = T) %>% as.character() %>% .[!. %in% ""] %>%
+                                                          vapply(function(y) paste0("(1|", y, ")"), character(1))
+                                } 
+                          
                                
                                # collapse formula
                                formula = paste0("met ~ ",
