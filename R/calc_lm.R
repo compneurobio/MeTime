@@ -101,6 +101,7 @@ setMethod("calc_lm", "metime_analyser", function(object,
   
   results=pbapply::pblapply(cl=cl, 1:nrow(my_formula), 
                  function(x) {
+                               require(magrittr)
                                # extract data 
                                this_data <-  lm_data$data %>% 
                                  dplyr::select(any_of(setdiff(names(lm_data$data), c("subject","time")))) %>% 
