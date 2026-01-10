@@ -28,6 +28,10 @@ mod_merge_metime_analysers <- function(..., annotations_index) {
 						names(list_of_objects[[index]]@results) <- paste(names(list_of_objects)[index], "_", names(list_of_objects[[index]]@results), sep="")
 						return(list_of_objects[[index]]@results)
 					})
+				list_of_data <- do.call(c, list_of_data)
+				list_of_col_data <- do.call(c, list_of_col_data)
+				list_of_row_data <- do.call(c, list_of_row_data)
+				list_of_results <- do.call(c, list_of_results)
 
 				if(is.null(annotations_index)) {
 					annotations_index <- list_of_objects[[1]]@annotations
@@ -45,4 +49,3 @@ mod_merge_metime_analysers <- function(..., annotations_index) {
 				out <- final_object
 				return(out)
 	}
-
