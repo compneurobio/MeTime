@@ -46,14 +46,16 @@ mod_merge_results <- function(object, results_index, sub_results=1, groups, name
 					warning("length of groups and results dataframes are not equal. Exiting without making any changes.")
 					return(object)
 				} else {
-					new_data <- lapply(unname(unlist(sub_results)), function(b) {
-							results$plot_data[[b]]$groups <- rep(groups[b], 
+					sub_indices <- unname(unlist(sub_results))
+					new_data <- lapply(seq_along(sub_indices), function(ind) {
+							b <- sub_indices[ind]
+							results$plot_data[[b]]$groups <- rep(groups[ind], 
 									each=length(results$plot_data[[b]][,1]))
 							return(results$plot_data[[b]])	
 						}) %>% do.call(what=rbind.data.frame)
 					out <- get_make_results(object=object, data=list(new_data), metadata=NULL, 
-						calc_info= paste(results$information$calc_info[sub_results], collapse=" || "),
-						calc_type= paste(results$information$calc_type[sub_results[1]]),
+						calc_info= paste(results$information$calc_info[sub_indices], collapse=" || "),
+						calc_type= paste(results$information$calc_type[sub_indices[1]]),
 						name=name)
 					out <- add_function_info(object=out, function_name="mod_merge_results", 
 						params=list(results_index=results_index, groups=groups, sub_results=sub_results))
@@ -103,5 +105,4 @@ mod_merge_results <- function(object, results_index, sub_results=1, groups, name
 			return(out)
 		}
 	}
-
 

@@ -13,7 +13,7 @@
 setGeneric("add_dataset", function(object, data, col_data, row_data, name) standardGeneric("add_dataset"))
 setMethod("add_dataset", "metime_analyser",function(object, data, col_data, row_data, name=NULL) {
   if(is.null(name)) name <- "set1"
-  if(!all(rownames(data) %in% row_data$id) & !all(colnames(data) %in% col_data$id)) stop("id of col or row data do not match dataframe")
+  if(!all(rownames(data) %in% row_data$id) | !all(colnames(data) %in% col_data$id)) stop("id of col or row data do not match dataframe")
   if(!all(c("id","subject","time") %in% names(row_data))) stop("id, subject or timepoint column missing")
   
   object@list_of_data[[name]] <- data
@@ -23,4 +23,3 @@ setMethod("add_dataset", "metime_analyser",function(object, data, col_data, row_
   out <- object
   return(out)
 })
-
