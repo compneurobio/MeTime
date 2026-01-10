@@ -13,8 +13,14 @@ setMethod("add_data", "metime_analyser", function(object, which_data, type="data
   if(!is.data.frame(x)) warning("add_data() x is not a data.frame.")
   else if(!type %in% c("data","col_data","row_data")) warning("add_data() type can only be 'data', 'col_data' or 'row_data'")
   else{
-    if(is.null(id)) id <- "id"
     # if id is null then the first column of the data.frame is used as id
+    if(is.null(id)) {
+      id <- names(x)[1]
+    }
+    if(!id %in% names(x)) {
+      warning("add_data() id column not found in x.")
+      return(out)
+    }
     if(type=="data"){
     out@list_of_data[[which_data]] <- out@list_of_data[[which_data]] %>% 
       dplyr::full_join(y = x, by=id) 
