@@ -54,7 +54,7 @@ setMethod("check_rownames_and_colnames", "metime_analyser", function(object) {
 							message("In Dataset ", names(list_of_data)[i], " some samples are duplicated", sep=" ")
 							out <- FALSE
 						})
-					if(!(names(list_of_data)[i] %in% object@annotations$phenotype | names(list_of_data)[i] %in% object@annotations$medication)) {
+					if(!(names(list_of_data)[i] %in% object@annotations[[1]]$phenotype | names(list_of_data)[i] %in% object@annotations[[1]]$medication)) {
 						tryCatch(all(list_of_col_data[[i]]$id %in% colnames(list_of_data[[i]])), 
 							error=function(e) {
 								message("In Dataset ", names(list_of_data)[i], " all metabolites are not mapped in the col data")
