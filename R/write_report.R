@@ -7,7 +7,9 @@
 #' @param device a character string specifying the format of the report. By default is set to html. Other options include pdf.
 #' @param interactive a logical indicating whether plots are interactive - only possible for html. Default set to FALSE
 #' @param author a character specifying the name of the author
+#' 
 #' @return Saves the report as html/pdf
+#' @seealso [write_report], [write_results]
 #' @export
 
 setGeneric("write_report", function(object, title=NULL, file=NULL, write_results=F, device="html", interactive=F, author=NULL) standardGeneric("write_report"))
@@ -57,14 +59,14 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
       out <- c(paste0('---\n',
                       'title: "', title,'"\n',
                       'date: ',Sys.Date(),'\n',
-                      ifelse(!is.null(author), paste0('author: ',paste0(author, collapse=", "),'\n'),''),
+                      ifelse(!is.null(author), paste0('author: ',paste0(author, collapse=", "),'\n'),''), 
                       'output:\n',
                       " rmdformats::readthedown:\n  highlight: kate\n  code_folding: hide\n--- \n"))
     } else if(type == "pdf") {
       out <- paste0('---\n',
                     'title: "', title,'"\n',
                     'date: ',Sys.Date(),'\n',
-                    ifelse(!is.null(author), paste0('author: ',paste0(author, collapse=", "),'\n'),''),
+                    ifelse(!is.null(author), paste0('author: ',paste0(author, collapse=", "),'\n'),''), 
                     'output: \npdf_document:\n',
                     'toc: true\n',
                     'toc_depth: 2\n',
@@ -188,7 +190,7 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
       get_db <- tools::Rd_db(package = get_package)
       if(length(grep(pattern=fun, names(get_db), value=T)) > 0) {
         my_fun_db <- get_db[[grep(pattern=paste0(fun, ".Rd"), names(get_db), value=T)]]
-        out <- capture.output(tools::Rd2HTML(my_fun_db))[-c(1:7)]
+        out <- capture.output(tools::Rd2txt(my_fun_db))
       } else {
         out <- "function not found"
       }
@@ -197,6 +199,8 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
         gsub(pattern=fun, fixed=T, replacement = "\n         ")
     }
     out <- out %>% gsub(pattern='"', replacement = "'", fixed = T)
+    out <- paste0(out, collapse = "\n")
+    out <- gsub("\n", "\\\\n", out, fixed = TRUE)
     return(out)
   }
 
@@ -223,7 +227,7 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
                'bsplus::bs_modal(id = "', paste0(prefix, x), '",',
                'title = "', names(functions)[x], '",',
                'size = "large",',
-               'body = htmltools::HTML("', paste0(write_report_function_info(names(functions)[x]), collapse=""), '")',
+               'body = "', paste0(write_report_function_info(names(functions)[x]), collapse=""), '"',
                ')\n``` \n')
       }) %>% unlist()
 
@@ -260,6 +264,10 @@ var tempInput = document.createElement('input');
     return(out)
   }
 
+  is_plot_object <- function(x) {
+    inherits(x, c("ggplot", "plotly", "htmlwidget", "visNetwork"))
+  }
+
   ## write body
   out_body <- lapply(seq_along(results_list), function(nr_analyzer) {
     list(
@@ -270,23 +278,54 @@ var tempInput = document.createElement('input');
           section_pipe = write_report_pipe_information(results_list[[nr_analyzer]][[nr_subitem]][["functions_applied"]], prefix=nr_subitem, type=device),
           section_plot_info = write_report_heading(text="Plots", level=2, tabset=T, type=device),
           section_body = lapply(seq_along(results_list[[nr_analyzer]][[nr_subitem]]$items), function(nr_plot) {
+            plot_items <- results_list[[nr_analyzer]][[nr_subitem]]$items[[nr_plot]]$plots
+            if(is_plot_object(plot_items) || is.data.frame(plot_items)) {
+              plot_items <- list(plot_items)
+            }
             list(
               plot_heading = write_report_heading(text=names(results_list[[nr_analyzer]][[nr_subitem]]$items)[nr_plot], level=3, tabset=F, type=device),
               plot_info = write_report_text(results_list[[nr_analyzer]][[nr_subitem]]$items[[nr_plot]]$calc_info, type=device),
-              plot = lapply(seq_along(results_list[[nr_analyzer]][[nr_subitem]]$items[[nr_plot]]$plots), function(nr_subplot) {
-                if(is.list(results_list[[nr_analyzer]][[nr_subitem]]$items[[nr_plot]]$plots[[nr_subplot]])) {
+              plot = lapply(seq_along(plot_items), function(nr_subplot) {
+                plot_entry <- plot_items[[nr_subplot]]
+                plot_location <- if(is_plot_object(results_list[[nr_analyzer]][[nr_subitem]]$items[[nr_plot]]$plots) ||
+                                     is.data.frame(results_list[[nr_analyzer]][[nr_subitem]]$items[[nr_plot]]$plots)) {
+                  paste0("results_list[[", nr_analyzer, "]][[", nr_subitem, "]]$items[[", nr_plot, "]]$plots")
+                } else {
+                  paste0("results_list[[", nr_analyzer, "]][[", nr_subitem, "]]$items[[", nr_plot, "]]$plots[[", nr_subplot, "]]")
+                }
+                if(is_plot_object(plot_entry)) {
                   # if it is a list, display as a figure
                   write_report_plot(
-                    plot_location = paste0("results_list[[", nr_analyzer, "]][[", nr_subitem, "]]$items[[", nr_plot, "]]$plots[[", nr_subplot, "]]"),
+                    plot_location = plot_location,
                     type=device,
                     interactive = interactive)
 
-                } else {
+                } else if(is.data.frame(plot_entry)) {
                   # if the item is a data.frame display as table
                   write_report_table(
-                    table_location = paste0("results_list[[", nr_analyzer, "]][[", nr_subitem, "]]$items[[", nr_plot, "]]$plots[[", nr_subplot, "]]"),
+                    table_location = plot_location,
                     type=device,
                     interactive = interactive)
+                } else if(is.list(plot_entry)) {
+                  plot_entry_parts <- lapply(seq_along(plot_entry), function(nr_nested) {
+                    plot_nested <- plot_entry[[nr_nested]]
+                    if(is_plot_object(plot_nested)) {
+                      write_report_plot(
+                        plot_location = plot_location,
+                        type=device,
+                        interactive = interactive)
+                    } else if(is.data.frame(plot_nested)) {
+                      write_report_table(
+                        table_location = plot_location,
+                        type=device,
+                        interactive = interactive)
+                    } else {
+                      ""
+                    }
+                  })
+                  plot_entry_parts %>% unlist()
+                } else {
+                  ""
                 }
               }) %>% unlist()
             )

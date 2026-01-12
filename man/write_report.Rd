@@ -35,3 +35,6 @@ Saves the report as html/pdf
 \description{
 Write an HTML or PDF report that summarizes one or more "me_time_analyser" objects and display all results
 }
+\seealso{
+\link{write_report}, \link{write_results}
+}

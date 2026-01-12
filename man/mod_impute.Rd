@@ -30,5 +30,5 @@ S4 object of the class "metime_analyser" with mutated col_data and row_data.
 This function imputes missing values using one of the implemented imputation methods.
 }
 \details{
-TBD
+additional methods are currently not implemented such as knn, pmm, norm etc.
 }

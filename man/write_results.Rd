@@ -15,5 +15,8 @@ write_results(object, file = NULL)
 saves all plot data in an xlsx sheet
 }
 \description{
-Saves plot_data from an analyser_objec into an xlsx file
+Saves plot_data from an analyser_objec into an xlsx file (no Java)
+}
+\seealso{
+\link{write_report}, \link{write_data}
 }

@@ -32,5 +32,5 @@ metime_analyser object with merged results
 Modification(mod) function to merge two sets of results based on calc_type
 }
 \seealso{
-\link{mod_merge_data}
+\link{mod_merge_data}, \link{mod_merge_row_data_and_data}
 }

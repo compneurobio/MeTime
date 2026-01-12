@@ -9,9 +9,32 @@
 #' @export
 validity <- function(object) {
 		out <- TRUE
-		if(!check_rownames_and_colnames(object)) out <- FALSE 
-		if(!check_ids_and_classes(object)) out <- FALSE
-		if(!check_results(object)) out <- FALSE
+		if(!validate_metime_analyser(object)$ok) out <- FALSE
+		if(!length(object@results)==0) {
+			test <- lapply(seq_along(object@results), function(x) {
+					if(length(grep("calc_", object@results[[x]][["functions"]]))>=1) {
+						tryCatch(object@results[[x]][["plot"]] %>% is_ggplot() |
+							all(class(object@results[[x]][["plot"]]) %in% c("plotly", "htmlwidget")) |
+							  all(class(object@results[[x]][["plot"]]) %in% c("visNetwork", "htmlwidget")), 
+							  	error=function(e) {
+							  			message("plot of the results in", names(object@results)[x], " is missing")
+							  			out <<- FALSE
+							  		})
+						if(class(object@results[[x]][["plot_data"]]) %in% "data.frame") {
+							tryCatch(dim(object@results[[x]][["plot_data"]])[1] != 0, 
+								error= function(e) {
+									message("plot_data is wrong in ", names(object@results)[x])
+								})
+						} else if(class(object@results[[x]][["plot_data"]]) %in% "list") {
+							tryCatch(dim(object@results[[x]][["plot_data"]][["node"]])[1] != 0 && 
+										dim(object@results[[x]][["plot_data"]][["edge"]])[1] != 0, 
+								error= function(e) {
+									message("plot_data is wrong in ", names(object@results)[x])
+								})
+						}
+					}
+				})
+		}
 		return(out) 
 	}
 

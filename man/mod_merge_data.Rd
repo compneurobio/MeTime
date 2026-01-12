@@ -43,5 +43,5 @@ If you want to use certain columns for the rest of the analysis properly for ann
 function to rename the colnames and rownames (if applicable) to maintain consistency in the merged dataset
 }
 \seealso{
-\link{mod_merge_results}
+\link{mod_merge_results}, \link{mod_merge_row_data_and_data}
 }

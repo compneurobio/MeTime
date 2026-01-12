@@ -14,7 +14,7 @@ add_distribution_vars_to_rows(
 \arguments{
 \item{object}{An object of class metime_analyser}
 
-\item{screening_vars}{A character vector to define the vars that are to be updated else set it to NULL(Default)}
+\item{screening_vars}{A character vector to define the vars that are to be updated as per add_screening_vars() else set it to NULL(Default).}
 
 \item{distribution_vars}{A character naming the vars of interest}
 
