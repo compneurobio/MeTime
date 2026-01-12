@@ -1,0 +1,65 @@
+---
+title: "Basic Data Statistics"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Basic Data Statistics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette walks through common summary statistics and correlation checks for a longitudinal dataset.
+
+## Prerequisites
+
+```{r setup, eval=FALSE}
+library(MeTime)
+library(magrittr)
+```
+
+You will need an imputed `metime_analyser` object saved to disk. The example below assumes an object named `adni_nmr_data` and a dataset named `nmr_data`.
+
+## Workflow
+
+```{r, eval=FALSE}
+# Load the imputed analyser object.
+load("adni_nmr_data")
+which_data <- "nmr_data"
+
+# 1) Distribution summaries for samples and metabolites.
+adni_nmr_data <- adni_nmr_data %>%
+  add_distribution_vars_to_rows(
+    screening_vars=NULL,
+    distribution_vars=c("APOEGrp", "PTGENDER", "Age", "BMI", "PTEDUCAT", "DXGrp_long"),
+    which_data=which_data
+  ) %>%
+  calc_distribution_samples(
+    which_data=which_data,
+    cols=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp", "DXGrp_longi", "Age", "BMI", "PTEDUCAT"),
+    stratifications=NULL,
+    name="samples_distribution"
+  ) %>%
+  mod_generate_plots(type="distribution") %>%
+  calc_distribution_metabs(
+    which_data=which_data,
+    cols=c("Group", "Subgroup"),
+    name="metabs_distribution"
+  ) %>%
+  mod_generate_plots(type="distribution")
+
+adni_nmr_data %>%
+  write_report(file="distributions.html", title="ADNI NMR data variables information")
+
+# 2) Column statistics and correlation summaries.
+adni_nmr_data <- adni_nmr_data %>%
+  calc_col_stats(which_data=which_data) %>%
+  calc_correlation_pairwise(
+    which_data=which_data,
+    method="spearman",
+    stratifications=NULL,
+    cols_for_meta=list(nmr_data=c(id="id", sub_pathway="Group"))
+  ) %>%
+  mod_generate_plots(type="correlation")
+
+adni_nmr_data %>%
+  write_report(file="correlations.html", title="ADNI NMR correlation summaries")
+```

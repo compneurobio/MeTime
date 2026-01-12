@@ -1,11 +1,14 @@
 require(MeTime)
 
-#loading the imputed analyser object
+# Example conservation index workflow using an imputed MeTime object.
+
+# Loading the imputed analyser object.
 
 load("adni_nmr_data")
-# Dataset of interest
+# Dataset of interest.
 which_data <- "nmr_data"
 
+# Pipeline: clean metadata, filter trajectories, z-score, and run CI analyses.
 res_conservation_index <- adni_nmr_data %>%
   add_distribution_vars_to_rows(screening_vars=NULL, 
                                 distribution_vars=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp",  "DXGrp_longi", "PTGENDER", "Age", "BMI", "PTEDUCAT"), 

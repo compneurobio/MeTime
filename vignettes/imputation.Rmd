@@ -1,0 +1,49 @@
+---
+title: "Imputation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Imputation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette demonstrates missingness checks and random-forest imputation.
+
+## Prerequisites
+
+```{r setup, eval=FALSE}
+library(MeTime)
+library(magrittr)
+```
+
+## Workflow
+
+```{r, eval=FALSE}
+# Load the imputed analyser object.
+load("adni_nmr_data")
+which_data <- "nmr_data"
+
+# Introduce missingness to demonstrate the workflow.
+df <- adni_nmr_data@list_of_data[[which_data]]
+sample_names <- rownames(df)
+df <- as.data.frame(lapply(df, function(cc) cc[sample(c(TRUE, NA), prob=c(0.85, 0.15), size=length(cc), replace=TRUE)]))
+rownames(df) <- sample_names
+adni_nmr_data@list_of_data[[which_data]] <- df
+
+# Check missingness and plot for random 100 metabolites.
+adni_nmr_data %>%
+  plot_missingness(which_data=which_data, max_features=100)
+
+# Filter by missingness and run imputation.
+adni_nmr_data <- adni_nmr_data %>%
+  mod_filter_features_by_missingness(which_data=which_data, threshold=0.3) %>%
+  mod_filter_samples_by_missingness(which_data=which_data, threshold=0.3) %>%
+  mod_filter(which_data=which_data, type="row_data", BIFAST==1) %>%
+  # mod_trans_log(which_data=which_data, base=2) # Uncomment if data is not log-transformed
+  mod_impute(
+    which_data=which_data,
+    thresh=0.3,
+    path_to_diagnostics=getwd(),
+    method="rf"
+  )
+```

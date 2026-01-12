@@ -1,13 +1,12 @@
 # Introduction to MeTime
 
-The goal of MeTime(Metabolomics Time) is to unburden scientists from developing code to perform statistical analysis on longitudinal metabolomics data. This package enables users to perform different kinds of analysis by building pipelines. Users can browse different vignettes to see the different kinds of analysis that MeTime provides along with example data and analysis. 
+MeTime (Metabolomics Time) helps scientists analyze longitudinal metabolomics data without rebuilding bespoke pipelines for every study. The package provides modular, pipeline-friendly functions that allow you to chain analyses for a given dataset, then reuse or remix those steps across projects. Example workflows are provided as vignettes (see the **Vignettes** section below). 
 
-To make this package user-friendly and easy to implement we have used a puzzle analogy to build this package. For example, you are trying to understand the mechanistic changes of a disease using longitudinal data. Each individual analysis answers a specific question and can be considered as a unique sub-puzzle. These multiple sub-puzzles collectively give us the full picture of the mechanistic changes thereby completing the puzzle you set out to solve for. These sub-puzzles are inturn made up of puzzle pieces that are the pipeline functions and these puzzle pieces are modular in nature such that they can be removed, changed in position etc based on what the user prefers. See the image below to get visual picture of this analogy.
-This developmental approach of this package can be seen in the image below. To understand the modular pieces shown in the image, please refer to section [2. Building pipelines]
+To make this package user-friendly and easy to implement, we use a puzzle analogy. Each analysis answers a specific question and can be considered as a sub-puzzle. These sub-puzzles collectively give a complete mechanistic picture, and each sub-puzzle is made up of modular pipeline functions. See the images below for a visual depiction of this approach. To understand the modular pieces shown in the image, please refer to section [2. Building pipelines].
 
 <img width="463" alt="puzzle" src="https://user-images.githubusercontent.com/64539275/232745515-a4bfc9fe-d353-402a-92b5-7433b0aed2a4.PNG">
 
-There are different methods to analyse longitudinal metabolomics data such that each method has its own unique significance and answers a specific question. These methods are listed below. To better understand the application of each of these methods and to see examples on how to perform such an analysis, please refer to their own specific vignettes.
+There are different methods to analyse longitudinal metabolomics data such that each method has its own unique significance and answers a specific question. These methods are listed below. To better understand the application of each of these methods and to see examples on how to perform such an analysis, please refer to their specific vignettes.
 <br> 1.  Distributions  
 <br> 2.  Feature selection
 <br> 3.  Imputation
@@ -18,6 +17,52 @@ There are different methods to analyse longitudinal metabolomics data such that 
 <br> 8.  Data-driven networks
 <br> 9.  meta-analyses
 
+
+## Vignettes
+
+Each vignette mirrors a master script and focuses on a single analysis workflow:
+
+1. Basic data statistics  
+2. Feature selection  
+3. Imputation  
+4. Dimensionality reduction  
+5. Eigendata calculation  
+6. Conservation index analysis  
+7. Regressions  
+8. Data-driven networks  
+
+## Getting started
+
+### Installation
+
+```r
+install.packages("remotes")
+remotes::install_github("your-org/MeTime")
+```
+
+### Quick start
+
+```r
+library(MeTime)
+library(magrittr)
+
+# Load or build a metime_analyser object
+# object <- get_make_analyser_object(...)
+
+# Example pipeline
+object %>%
+  mod_trans_zscore(which_data = "nmr_data") %>%
+  calc_dimensionality_reduction_samples(which_data = "nmr_data", type = "PCA")
+```
+
+### Building the website (pkgdown)
+
+```r
+pkgload::load_all()
+pkgdown::build_site()
+```
+
+## Documentation map
 
 This document is divided into four main sections: 
 <br> [1. metime_analyser class and data preparation]
@@ -30,7 +75,7 @@ This document is divided into four main sections:
 
 This package builds upon the S4 class of metime_analyser which serves as a central object that stores the data, results and the information of functions applied onto this object in a pipeline. The reasons to create such an object is as follows:
 <br> 1. There are often multiple datasets that a user wants to analyse and there is no class in R that can store all the data at once. The closest relative of metime_analyser is summarizedExperiment(SE), which however stores information of only a single dataset that is cross-sectional in nature
-<br> 2. As the metime_analyser object will contatin multiple datasets at once. It is easier to parse this into other functions and modify/analyse all the datasets at once thereby removing the need of duplicating the same analysis for different datasets.
+<br> 2. As the metime_analyser object will contain multiple datasets at once. It is easier to parse this into other functions and modify/analyse all the datasets at once thereby removing the need of duplicating the same analysis for different datasets.
 <br> 3. Moreover, users can now perform analyses which clubs two or more datasets at once.
 <br> 4. To be able to reproduce the results and maintain transparency, information regarding the functions applied onto a metime_analyser object are also stored. See the structure of results below to understand this better. 
 
@@ -39,11 +84,11 @@ The metime_analyser class has 5 slots:
 <br> 2. list_of_row_data: Consists of a list of row-data information(samples) for the respective data matrices
 <br> 3. list_of_col_data: Consists of a list of col-data information(metabolites) for the respective data matrices
 <br> 4. annotations: This is a list to define how the phenotype data and medication data are named. Can also include other datasets, however, only phenotype and medication data are important as they are different from the other datasets which are actually analysed.
-<br> 5. results: List where the results of the analyses are stored. This list contains upto 4 elements namely:
+<br> 5. results: List where the results of the analyses are stored. This list contains up to 4 elements namely:
 <br> &emsp; 1. functions_applied: A named list with names being the functions that were applied onto the object until a particular calculation(analysis) is performed and the values of each list item is a named character vector with parameters as names of the character vector and values are their respective values. If an argument's value is anything other than a character vector then that value is converted into a class of character type. 
  <br> &emsp; 2. plot_data: A list of dataframes which are the results of an analysis.
  <br> &emsp; 3. plots: A list where the plots generated by mod_generate_plots() are stored. For more information see [Building pipelines] section
- <br> &emsp; 4. information: A list with two elements calc_type and calc_info. calc_type is a character vector that defines the type of analysis and calc_info is a more detailed desciption of the calculation performed. calc_type and calc_info are generated automatically after a calculation and is used as key for plotting the results or for performing meta analysis. 
+ <br> &emsp; 4. information: A list with two elements calc_type and calc_info. calc_type is a character vector that defines the type of analysis and calc_info is a more detailed description of the calculation performed. calc_type and calc_info are generated automatically after a calculation and is used as key for plotting the results or for performing meta analysis. 
 
 <img width="435" alt="metime_analyser" src="https://user-images.githubusercontent.com/64539275/232745616-7149a04a-a051-4fea-9079-5f5fb2106089.png">
 
@@ -51,8 +96,8 @@ The metime_analyser class has 5 slots:
 
 ### 1.2. Data preparation
 
-This package aims to be a general package that can handle any type of longitudinal dataset and in order to acheive that we expect the users to make a few changes to the dataset. These changes are:
-1. The sample ids should always be in this format: [a-z|A-z][0-9]+_[a-z|A-Z][0-9]+(Example: subject=R1, time=t0, id=R1_t0). The part before the underscore represents the subject and the part after represents the timepoint of measurement. If the timepoints in the data are not a singular value then we suggest the user to create a psuedotime scale to match this format.
+This package aims to be a general package that can handle any type of longitudinal dataset and in order to achieve that we expect the users to make a few changes to the dataset. These changes are:
+1. The sample ids should always be in this format: [a-z|A-z][0-9]+_[a-z|A-Z][0-9]+(Example: subject=R1, time=t0, id=R1_t0). The part before the underscore represents the subject and the part after represents the timepoint of measurement. If the timepoints in the data are not a singular value then we suggest the user to create a pseudotime scale to match this format.
 2. Every row_data dataframe should contain the columns id, subject and time and every col_data dataframe should contain the column id. And the ids in row_data should match the rownames of the data matrix and the ids in col_data should match the colnames of the data matrix. 
 
 The first step in using this package is to create an S4 object of class metime_analyser with all the data that a user wants to analyse. There are multiple ways in which this S4 object can be created:
