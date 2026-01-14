@@ -55,6 +55,10 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
         my_data <- my_data[rownames(my_data) %in% rownames(row_data), ]
   }
     # calculate correlation matrix and pvalues
+    if (nrow(my_data) < 2 || ncol(my_data) < 2) {
+      warning("calc_correlation_pairwise(): need at least 2 samples and 2 features after filtering")
+      return(object)
+    }
     cor_mat <- my_data %>% 
       as.matrix() %>% 
       Hmisc::rcorr(type=method)
@@ -69,5 +73,4 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
                 params=list(which_data=which_data, method=method, cols_for_meta=cols_for_meta))
     return(out)
 })
-
 
