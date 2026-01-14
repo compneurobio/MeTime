@@ -152,7 +152,16 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
     } else if(type == "html" & !interactive) {
       out <- c(ifelse(!is.null(title), paste0('\n', title, ' \n'), ""),
                "```{r,echo=F, warning=FALSE, message=FALSE}\n",
+               "plot_obj <- ",
                plot_location,
+               "\n",
+               "if (inherits(plot_obj, \"htmlwidget\")) {\n",
+               "  plot_obj\n",
+               "} else if (is.list(plot_obj) && length(plot_obj) == 1 && inherits(plot_obj[[1]], \"htmlwidget\")) {\n",
+               "  plot_obj[[1]]\n",
+               "} else {\n",
+               "  plot_obj\n",
+               "}\n",
                "\n```",
                ifelse(!is.null(caption), paste0('\n', caption, ' \n'), "")
       )
