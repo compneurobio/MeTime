@@ -389,6 +389,9 @@ meta_build_regression_comparisons_across <- function(results1, results2) {
 
 meta_make_analyser <- function(analyzers, results, out, calc_type, calc_info, name, function_name, params) {
   base <- analyzers[[1]]
+  if (!isClass("meta_analyser")) {
+    setClass("meta_analyser", slots=list(meta_results="list"), contains="metime_analyser")
+  }
   source_results <- meta_merge_source_results(results)
   meta_results <- list()
   meta_results[[name]] <- list(
