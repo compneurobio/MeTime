@@ -125,7 +125,7 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
   }
 
   ### write table into the rmd file
-  write_report_table <- function(table_location, caption=NULL, rownames=F, type="html") {
+  write_report_table <- function(table_location, caption=NULL, rownames=F, type="html", interactive=F) {
     table_location <- table_location %>% gsub(pattern='"', replacement = "'")
     if(type == "html") {
       out <- paste0('```{r ,echo=F}\nDT::datatable(', table_location, ', caption = "', caption, '", rownames=', rownames, ', ',
