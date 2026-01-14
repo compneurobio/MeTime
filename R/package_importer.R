@@ -52,6 +52,8 @@ validity <- function(object) {
 setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
 								 annotations="list", results="list"), validity=validity) 
 
+setClass("meta_analyser", slots=list(meta_results="list"), contains="metime_analyser")
+
 
 
 
@@ -73,11 +75,14 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 		}
 		results <- x@results[[results_index]]
 		get_text_for_plot <- function(data, colnames) {	
+						if (nrow(data) == 0 || length(colnames) == 0) {
+							return(character(0))
+						}
 						out <- c()
 						count <- 1
 						text <- c()
-						for(l in 1:length(rownames(data))) {
-							for(m in 1:length(colnames)) {
+						for(l in seq_len(nrow(data))) {
+							for(m in seq_along(colnames)) {
 								if(m==1) {
 									text <- paste("<br /> ", colnames[m], " : ", data[l, colnames[m]], sep="")
 								} else {
@@ -836,4 +841,3 @@ setMethod("mod_generate_plots", "metime_analyser", function(object, .interactive
 		object@results[[results_index]] <- results
 		return(object)
 	})
-

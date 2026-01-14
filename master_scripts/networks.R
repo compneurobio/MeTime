@@ -1,8 +1,13 @@
 require(MeTime)
 
-#loading the imputed analyser object
+# Example network analysis workflow using Gaussian graphical models.
+
+# Loading the imputed analyser object.
 load("adni_nmr_data")
+# Dataset of interest.
 which_data <- "nmr_data"
+
+# Merge metadata, prepare covariates, and compute longitudinal GGM networks.
 adni_nmr_data <- adni_nmr_data %>%
   add_distribution_vars_to_rows(screening_vars=NULL, 
                                 distribution_vars=c("APOEGrp", "PTGENDER", "Age", "BMI", "PTEDUCAT", "DXGrp_long"), 
@@ -24,7 +29,6 @@ adni_nmr_data <- adni_nmr_data %>%
 
 adni_nmr_data %>% 
     write_report(title="ADNI NMR networks", file="networks.html")
-
 
 
 

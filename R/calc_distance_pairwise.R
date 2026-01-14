@@ -56,7 +56,12 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
         my_data <- my_data[rownames(my_data) %in% rownames(row_data), ]
   }
   
-  if(dist %in% c("euclidean","maximum","minimum","manhattan","canberra","minkowski")){
+  if (nrow(my_data) < 2 || ncol(my_data) < 2) {
+    warning("calc_distance_pairwise(): need at least 2 samples and 2 features after filtering")
+    return(object)
+  }
+
+  if(method %in% c("euclidean","maximum","minimum","manhattan","canberra","minkowski")){
     
     out <- my_data %>%
       stats::dist(method = method) %>%
@@ -69,9 +74,9 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
                       name=name)
   }
   else {
-    out=NA
+    warning("calc_distance_pairwise(): unsupported method")
+    return(object)
   }
   return(out)
 })
-
 

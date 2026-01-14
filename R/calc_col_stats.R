@@ -16,7 +16,7 @@ setMethod("calc_col_stats", "metime_analyser", function(object, which_data, meth
   out <- object
   # sanity checks
   if(!all(which_data %in% names(object@list_of_data))) warning("add_col_stats(): which_data not in metime_analyzer, or more than one which_data selected")
-  else if(!all(type %in% c("shapiro", "ks"))) warning("add_col_stats(): type can only be 'shapiro', 'ks'")
+  else if(!all(method %in% c("shapiro", "ks"))) warning("add_col_stats(): method can only be 'shapiro', 'ks'")
   else {
     # calculate iterations across which_data
     if(grep(name, names(object@results)) %>% length() >=1) {
@@ -25,22 +25,22 @@ setMethod("calc_col_stats", "metime_analyser", function(object, which_data, meth
                         index <- c(0:9)[grep(index, 0:9)+1]
                         name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
                 }
-    add <- lapply(which_data, function(i) {
+    data_list <- lapply(which_data, function(i) {
       # iterate per which_data column
-      lapply(out@list_of_col_data[[which_data]]$id, function(x) {
+      lapply(out@list_of_col_data[[i]]$id, function(x) {
         this_out <- data.frame(id=x, stringsAsFactors = F)
-        if("shapiro" %in% type){
+        if("shapiro" %in% method){
           # shapiro test from base::sharpio.test
-          my_shapiro <- shapiro.test(object@list_of_data[[which_data]][, x])
+          my_shapiro <- shapiro.test(object@list_of_data[[i]][, x])
           this_out <- this_out %>% 
             dplyr::mutate(id=x,
                           shapiro_pval=as.numeric(my_shapiro$p.value),
                           shapiro_statistic=as.numeric(my_shapiro$statistic),
                           shapiro_normal = ifelse(as.numeric(my_shapiro$p.value)>0.05, TRUE,FALSE))
         }
-        if("ks" %in% type){
+        if("ks" %in% method){
           # ks test from base::ks.test
-          my_ks <- ks.test(x=object@list_of_data[[which_data]][, x], y='pnorm')
+          my_ks <- ks.test(x=object@list_of_data[[i]][, x], y='pnorm')
           this_out <- this_out %>% 
             dplyr::mutate(id=x,
                           ks_pval=as.numeric(my_ks$p.value),
@@ -51,16 +51,20 @@ setMethod("calc_col_stats", "metime_analyser", function(object, which_data, meth
       }) %>% 
         plyr::rbind.fill()
 
-    }) %>% 
-      setNames(which_data)
-    rownames(this_out) <- this_out$id
+    })
+    data_list <- setNames(data_list, which_data)
+    data_list <- lapply(data_list, function(df) {
+      rownames(df) <- df$id
+      df
+    })
     if(is.null(cols_for_meta)) {
       metadata <- NULL
     } else {
       metadata <- get_metadata_for_columns(object=object, 
                                 which_data=which_data, columns=cols_for_meta)
     }
-    out <- get_make_results(object=object, data=list(col_stats=this_out), metadata=metadata, calc_type="normality", 
+    col_stats <- if (length(which_data) == 1) data_list[[1]] else data_list
+    out <- get_make_results(object=object, data=list(col_stats=col_stats), metadata=metadata, calc_type="normality", 
                   calc_info=paste("Normality statistics of ", which_data, sep=""), name=name) %>%
            add_function_info(function_name="calc_col_stats", 
                   params=list(which_data=which_data, method=method, cols_for_meta=cols_for_meta))

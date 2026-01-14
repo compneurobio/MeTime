@@ -1,12 +1,15 @@
 require(MeTime)
 
-#loading the imputed analyser object
+# Example dimensionality reduction workflow using PCA, UMAP, and t-SNE.
+
+# Loading the imputed analyser object.
 
 load("adni_nmr_data")
-# Dataset of interest
+# Dataset of interest.
 which_data <- "nmr_data"
 
 
+# Pipeline: clean metadata, filter, z-score, then run multiple reductions.
 my_analyzer <- adni_nmr_data %>%
   add_distribution_vars_to_rows(screening_vars=NULL, 
                                 distribution_vars=c("APOEGrp", "PTGENDER", "Age", "BMI", "PTEDUCAT", "DXGrp_long"), 
@@ -51,4 +54,3 @@ my_analyzer <- adni_nmr_data %>%
 
 my_analyzer %>%
   write_report(file="dimensionality_reduction.html", title="ADNI NMR Dimensionality Reduction")
-

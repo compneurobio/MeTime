@@ -1,19 +1,21 @@
 require(MeTime)
 
-#loading the imputed analyser object
+# Example regression workflows: meta-analysis, time-interaction, GAMM, and baseline LM.
+
+# Loading the imputed analyser object.
 load("adni_nmr_data")
-# load covariate sheets
+# Load covariate sheets.
 load("covariate_sheets")
 
-meta_analysis <- covariate_sheets$meta
-time_interaction <- covariate_sheets$lmm
-linear_models <- covariate_sheets$lm
+meta <- covariate_sheets$meta
+lmm <- covariate_sheets$lmm
+lm_model <- covariate_sheets$lm
 gamm <- covariate_sheets$lmm
 
 
 which_data <- "nmr_data"
 object <- adni_nmr_data
-# in this example we show you different kinds of regressions you can perform in R:
+# In this example we show you different kinds of regressions you can perform in R.
 
 adni_nmr_data <- adni_nmr_data %>%
   	add_distribution_vars_to_rows(screening_vars=NULL, 
@@ -55,8 +57,8 @@ adni_nmr_data <- adni_nmr_data %>%
              "fdgpet" = (FDG_Cing_Mean + FDG_LAng_Mean + FDG_LTemp_Mean + FDG_RTemp_Mean + FDG_RAng_Mean) %>% as.numeric() %>% scale(),
              "diagnosis_at_visit" = as.numeric(ifelse(DXGrp %in% c(1,5), 0, ifelse(DXGrp %in% c(2,3), 1, 2))))
 
-# running regression analysis in different objects otherwise the objects would blow up in size
-# multi-timepoint meta analysis here
+# Running regression analysis in different objects otherwise the objects would blow up in size.
+# Multi-timepoint meta analysis.
 std_meta <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",x=meta, id="id") %>%
     calc_lmm(which_data="regression", 
             name="adni_nmr_meta", 
@@ -65,7 +67,7 @@ std_meta <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",
             num_cores=12) %>%
     mod_generate_plots(type="regression", interactive=T)
 
-# Time-interaction analysis
+# Time-interaction analysis.
 
 std_lmm <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",x=lmm, id="id") %>%
     calc_lmm(which_data="regression", 
@@ -75,7 +77,7 @@ std_lmm <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",x
             num_cores=12) %>%
     mod_generate_plots(type="regression", interactive=T)
 
-# GAMM analysis here - all continuous covariates are smoothed
+# GAMM analysis here - all continuous covariates are smoothed.
 
 std_gamm <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",x=lmm, id="id") %>%
     calc_gamm(which_data="regression", 
@@ -85,7 +87,7 @@ std_gamm <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",
             num_cores=12) %>%
     mod_generate_plots(type="regression", interactive=T)
 
-# linear models for cross-sectional analysis - example shown for baseline
+# Linear models for cross-sectional analysis - example shown for baseline.
 
 std_lm0 <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",x=lm_model, id="id") %>%
     calc_lm(which_data="regression", 
@@ -95,10 +97,9 @@ std_lm0 <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",x
              num_cores=2, timepoint="t0") %>%
     mod_generate_plots(type="regression", interactive=T)
 
-# run if you want to visualize reports
+# Run if you want to visualize reports.
 
 std_meta %>% write_report(title="ADNI NMR meta-analysis results", file="meta_analysis.html")
 std_lmm %>% write_report(title="ADNI NMR time-interaction results", file="time_interaction_analysis.html")
 std_gamm %>% write_report(title="ADNI NMR GAMM results", file="GAMM_analysis.html")
 std_lm0 %>% write_report(title="ADNI NMR baseline association results", file="baseline_analysis.html")
-

@@ -1,12 +1,15 @@
 require(MeTime)
 
-#loading the imputed analyser object
+# Example eigendata workflow, including optional downstream analysis.
+
+# Loading the imputed analyser object.
 
 load("adni_nmr_data")
-# Dataset of interest
+# Dataset of interest.
 which_data <- "nmr_data"
 
 
+# Pipeline: add metadata, filter, z-score, then compute eigendata modules.
 my_analyzer <- adni_nmr_data %>%
   add_screening_vars(vars=c("APOEGrp", "DXGrp_longi", "PTGENDER", "PTEDUCAT")) %>% 
   add_distribution_vars_to_rows(screening_vars=NULL, 
@@ -39,4 +42,3 @@ my_analyzer <- adni_nmr_data %>%
   #                             cols_for_meta=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp",  "DXGrp_longi", "PTGENDER", "Age", "BMI"), 
   #                             name="Conservation_Metabotype") %>%
   #mod_generate_plots(type="CI_metabotype", results_index = 3)
-

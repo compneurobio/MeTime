@@ -1,19 +1,21 @@
 require(MeTime)
 
-#loading the imputed analyser object
+# Example imputation workflow that injects missingness for demonstration.
+
+# Loading the imputed analyser object.
 load("adni_nmr_data")
-# this data is already imputed so we will randomly introduce missingness
-# to showcase this example
-df <- adni_nmr_data@list_of_data$nmr_data
+which_data <- "nmr_data"
+# This data is already imputed; we introduce missingness to showcase the workflow.
+df <- adni_nmr_data@list_of_data[[which_data]]
 sample_names <- rownames(df)
 df <- as.data.frame(lapply(df, function(cc) cc[ sample(c(TRUE, NA), prob = c(0.85, 0.15), size = length(cc), replace = TRUE) ]))
 rownames(df) <- sample_names
 adni_nmr_data@list_of_data$nmr_data <- df
 
-# checking the missingness and plotting for random 100 metabolites
+# Checking the missingness and plotting for random 100 metabolites.
 adni_nmr_data %>% plot_missingness(which_data="nmr_data", max_features=100)
 
-# checking thresholds
+# Filtering by missingness and running random forest imputation.
 adni_nmr_data <- adni_nmr_data %>% 
                     mod_filter_features_by_missingness(which_data="nmr_data", threshold=0.3) %>%
                     mod_filter_samples_by_missingness(which_data="nmr_data", threshold=0.3) %>%
