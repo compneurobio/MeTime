@@ -236,6 +236,9 @@ meta_build_comparisons_single_analyzer <- function(results, compare_label, allow
     if (length(group) == 1) {
       comparisons <- c(comparisons, meta_build_comparisons_within(group[[1]], compare_label))
     } else {
+      for (res in group) {
+        comparisons <- c(comparisons, meta_build_comparisons_within(res, compare_label))
+      }
       comparisons <- c(comparisons, meta_build_comparisons_across_results(group, allow_network_mismatch))
     }
   }
@@ -339,6 +342,9 @@ meta_build_regression_single_analyzer <- function(results) {
     if (length(group) == 1) {
       comparisons <- c(comparisons, meta_build_comparisons_within(group[[1]], "regression"))
     } else {
+      for (res in group) {
+        comparisons <- c(comparisons, meta_build_comparisons_within(res, "regression"))
+      }
       comparisons <- c(comparisons, meta_build_regression_comparisons_across(group, group))
     }
   }
