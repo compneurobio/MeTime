@@ -373,6 +373,9 @@ meta_normalize_result_names <- function(results) {
 }
 
 meta_normalize_plot_names <- function(result) {
+  if (is.null(result$plot_data)) {
+    return(result)
+  }
   if (is.null(names(result$plot_data)) || any(names(result$plot_data) == "")) {
     names(result$plot_data) <- paste0("plot_", seq_along(result$plot_data))
   }
