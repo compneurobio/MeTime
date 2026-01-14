@@ -184,9 +184,12 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
     get_package <- utils::find(fun) %>% gsub(pattern="package:", replacement = "")
     if(length(get_package) == 0) {
       out <- "NA"
-    } else if(get_package == ".GlobalEnv") {
+    } else if(all(get_package == ".GlobalEnv")) {
       out <- "NA"
     } else {
+      if (length(get_package) > 1) {
+        get_package <- get_package[get_package != ".GlobalEnv"][1]
+      }
       get_db <- tools::Rd_db(package = get_package)
       if(length(grep(pattern=fun, names(get_db), value=T)) > 0) {
         my_fun_db <- get_db[[grep(pattern=paste0(fun, ".Rd"), names(get_db), value=T)]]
