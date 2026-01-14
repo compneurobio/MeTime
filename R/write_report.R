@@ -268,7 +268,12 @@ var tempInput = document.createElement('input');
   }
 
   is_plot_object <- function(x) {
-    inherits(x, c("ggplot", "plotly", "htmlwidget", "visNetwork"))
+    inherits(x, c("ggplot", "plotly", "htmlwidget", "visNetwork")) ||
+      (is.list(x) &&
+        !is.null(x$x) &&
+        is.list(x$x) &&
+        !is.null(x$x$nodes) &&
+        !is.null(x$x$edges))
   }
 
   ## write body
@@ -301,7 +306,7 @@ var tempInput = document.createElement('input');
                   write_report_plot(
                     plot_location = plot_location,
                     type=device,
-                    interactive = interactive)
+                    interactive = interactive && inherits(plot_entry, "ggplot") && !inherits(plot_entry, "plotly"))
 
                 } else if(is.data.frame(plot_entry)) {
                   # if the item is a data.frame display as table
@@ -312,14 +317,19 @@ var tempInput = document.createElement('input');
                 } else if(is.list(plot_entry)) {
                   plot_entry_parts <- lapply(seq_along(plot_entry), function(nr_nested) {
                     plot_nested <- plot_entry[[nr_nested]]
+                    plot_location_nested <- if(!is.null(names(plot_entry)) && nzchar(names(plot_entry)[nr_nested])) {
+                      paste0(plot_location, "[[\"", names(plot_entry)[nr_nested], "\"]]")
+                    } else {
+                      paste0(plot_location, "[[", nr_nested, "]]")
+                    }
                     if(is_plot_object(plot_nested)) {
                       write_report_plot(
-                        plot_location = plot_location,
+                        plot_location = plot_location_nested,
                         type=device,
-                        interactive = interactive)
+                        interactive = interactive && inherits(plot_nested, "ggplot") && !inherits(plot_nested, "plotly"))
                     } else if(is.data.frame(plot_nested)) {
                       write_report_table(
-                        table_location = plot_location,
+                        table_location = plot_location_nested,
                         type=device,
                         interactive = interactive)
                     } else {
