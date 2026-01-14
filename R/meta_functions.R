@@ -1,107 +1,165 @@
 #' Meta comparison for conservation index results
 #' @description Compare conservation index results within a result or across results.
-#' @param object a S4 object of class metime_analyser
+#' @param object a S4 object of class metime_analyser or a list of two metime_analyser objects
 #' @param result_index character/numeric input for results. If NULL, all matching results are used.
 #' @param name a character input to set the name of the results
-#' @return An S4 object of class metime_analyser with this meta analysis stored as results
+#' @return An S4 object of class meta_analyser with the compared results and meta results
 #' @export
 setGeneric("meta_conservation", function(object, result_index=NULL, name="meta_conservation_1") standardGeneric("meta_conservation"))
+meta_conservation_impl <- function(object, result_index=NULL, name="meta_conservation_1") {
+  analyzers <- meta_unpack_analyzers(object, function_name="meta_conservation")
+  results <- meta_collect_results(analyzers, result_index, allowed_calc_types=c("CI_metabolite", "CI_metabotype"),
+                                  function_name="meta_conservation")
+  comparisons <- meta_build_conservation_comparisons(results)
+  out <- lapply(seq_along(comparisons), function(i) meta_compare_conservation(comparisons[[i]])) %>%
+    setNames(names(comparisons))
+  return(meta_make_analyser(analyzers, results, out, calc_type="meta_conservation",
+                            calc_info=names(out), name=name, function_name="meta_conservation",
+                            params=list(result_index=result_index)))
+}
+
 setMethod("meta_conservation", "metime_analyser", function(object, result_index=NULL, name="meta_conservation_1") {
-  results <- meta_resolve_results(object, result_index, allowed_calc_types=c("CI_metabolite", "CI_metabotype"), function_name="meta_conservation")
-  comparisons <- meta_build_comparisons(results, compare_label="conservation")
-  out <- lapply(seq_along(comparisons), function(i) {
-    comp <- comparisons[[i]]
-    meta_compare_conservation(comp)
-  }) %>% setNames(names(comparisons))
-  object <- meta_attach_results(object, out, calc_type="meta_conservation", calc_info=names(out), name=name,
-                                function_name="meta_conservation", params=list(result_index=result_index))
-  return(object)
+  meta_conservation_impl(object, result_index, name)
+})
+
+setMethod("meta_conservation", "list", function(object, result_index=NULL, name="meta_conservation_1") {
+  meta_conservation_impl(object, result_index, name)
 })
 
 #' Meta comparison for matrix similarity
 #' @description Compare pairwise distance or correlation results within or across results.
-#' @param object a S4 object of class metime_analyser
+#' @param object a S4 object of class metime_analyser or a list of two metime_analyser objects
 #' @param result_index character/numeric input for results. If NULL, all matching results are used.
 #' @param name a character input to set the name of the results
-#' @return An S4 object of class metime_analyser with this meta analysis stored as results
+#' @return An S4 object of class meta_analyser with the compared results and meta results
 #' @export
 setGeneric("meta_matrix_similarity", function(object, result_index=NULL, name="meta_matrix_similarity_1") standardGeneric("meta_matrix_similarity"))
-setMethod("meta_matrix_similarity", "metime_analyser", function(object, result_index=NULL, name="meta_matrix_similarity_1") {
-  results <- meta_resolve_results(object, result_index, allowed_calc_types=c("pairwise_distance", "pairwise_correlation"),
+meta_matrix_similarity_impl <- function(object, result_index=NULL, name="meta_matrix_similarity_1") {
+  analyzers <- meta_unpack_analyzers(object, function_name="meta_matrix_similarity")
+  results <- meta_collect_results(analyzers, result_index, allowed_calc_types=c("pairwise_distance", "pairwise_correlation"),
                                   function_name="meta_matrix_similarity")
   comparisons <- meta_build_comparisons(results, compare_label="matrix_similarity")
-  out <- lapply(seq_along(comparisons), function(i) {
-    comp <- comparisons[[i]]
-    meta_compare_matrix_similarity(comp)
-  }) %>% setNames(names(comparisons))
-  object <- meta_attach_results(object, out, calc_type="meta_matrix_similarity", calc_info=names(out), name=name,
-                                function_name="meta_matrix_similarity", params=list(result_index=result_index))
-  return(object)
+  out <- lapply(seq_along(comparisons), function(i) meta_compare_matrix_similarity(comparisons[[i]])) %>%
+    setNames(names(comparisons))
+  return(meta_make_analyser(analyzers, results, out, calc_type="meta_matrix_similarity",
+                            calc_info=names(out), name=name, function_name="meta_matrix_similarity",
+                            params=list(result_index=result_index)))
+}
+
+setMethod("meta_matrix_similarity", "metime_analyser", function(object, result_index=NULL, name="meta_matrix_similarity_1") {
+  meta_matrix_similarity_impl(object, result_index, name)
+})
+
+setMethod("meta_matrix_similarity", "list", function(object, result_index=NULL, name="meta_matrix_similarity_1") {
+  meta_matrix_similarity_impl(object, result_index, name)
 })
 
 #' Meta comparison for regression outputs
 #' @description Compare regression outputs within or across results.
-#' @param object a S4 object of class metime_analyser
+#' @param object a S4 object of class metime_analyser or a list of two metime_analyser objects
 #' @param result_index character/numeric input for results. If NULL, all matching results are used.
 #' @param name a character input to set the name of the results
-#' @return An S4 object of class metime_analyser with this meta analysis stored as results
+#' @return An S4 object of class meta_analyser with the compared results and meta results
 #' @export
 setGeneric("meta_regression", function(object, result_index=NULL, name="meta_regression_1") standardGeneric("meta_regression"))
-setMethod("meta_regression", "metime_analyser", function(object, result_index=NULL, name="meta_regression_1") {
-  results <- meta_resolve_results(object, result_index, allowed_calc_types="regression", function_name="meta_regression")
+meta_regression_impl <- function(object, result_index=NULL, name="meta_regression_1") {
+  analyzers <- meta_unpack_analyzers(object, function_name="meta_regression")
+  results <- meta_collect_results(analyzers, result_index, allowed_calc_types="regression", function_name="meta_regression")
   comparisons <- meta_build_regression_comparisons(results)
-  out <- lapply(seq_along(comparisons), function(i) {
-    comp <- comparisons[[i]]
-    meta_compare_regression(comp)
-  }) %>% setNames(names(comparisons))
-  object <- meta_attach_results(object, out, calc_type="meta_regression", calc_info=names(out), name=name,
-                                function_name="meta_regression", params=list(result_index=result_index))
-  return(object)
+  out <- lapply(seq_along(comparisons), function(i) meta_compare_regression(comparisons[[i]])) %>%
+    setNames(names(comparisons))
+  return(meta_make_analyser(analyzers, results, out, calc_type="meta_regression",
+                            calc_info=names(out), name=name, function_name="meta_regression",
+                            params=list(result_index=result_index)))
+}
+
+setMethod("meta_regression", "metime_analyser", function(object, result_index=NULL, name="meta_regression_1") {
+  meta_regression_impl(object, result_index, name)
+})
+
+setMethod("meta_regression", "list", function(object, result_index=NULL, name="meta_regression_1") {
+  meta_regression_impl(object, result_index, name)
 })
 
 #' Meta comparison for network overlap
 #' @description Compare network edge overlap within or across results.
-#' @param object a S4 object of class metime_analyser
+#' @param object a S4 object of class metime_analyser or a list of two metime_analyser objects
 #' @param result_index character/numeric input for results. If NULL, all matching results are used.
 #' @param name a character input to set the name of the results
-#' @return An S4 object of class metime_analyser with this meta analysis stored as results
+#' @return An S4 object of class meta_analyser with the compared results and meta results
 #' @export
 setGeneric("meta_network_overlap", function(object, result_index=NULL, name="meta_network_overlap_1") standardGeneric("meta_network_overlap"))
-setMethod("meta_network_overlap", "metime_analyser", function(object, result_index=NULL, name="meta_network_overlap_1") {
-  results <- meta_resolve_results(object, result_index, allowed_calc_types=c("genenet_ggm", "multibipartite_ggm", "temporal_network"),
+meta_network_overlap_impl <- function(object, result_index=NULL, name="meta_network_overlap_1") {
+  analyzers <- meta_unpack_analyzers(object, function_name="meta_network_overlap")
+  results <- meta_collect_results(analyzers, result_index, allowed_calc_types=c("genenet_ggm", "multibipartite_ggm", "temporal_network"),
                                   function_name="meta_network_overlap")
   comparisons <- meta_build_comparisons(results, compare_label="network_overlap", allow_network_mismatch=TRUE)
-  out <- lapply(seq_along(comparisons), function(i) {
-    comp <- comparisons[[i]]
-    meta_compare_network(comp)
-  }) %>% setNames(names(comparisons))
-  object <- meta_attach_results(object, out, calc_type="meta_network_overlap", calc_info=names(out), name=name,
-                                function_name="meta_network_overlap", params=list(result_index=result_index))
-  return(object)
+  out <- lapply(seq_along(comparisons), function(i) meta_compare_network(comparisons[[i]])) %>%
+    setNames(names(comparisons))
+  return(meta_make_analyser(analyzers, results, out, calc_type="meta_network_overlap",
+                            calc_info=names(out), name=name, function_name="meta_network_overlap",
+                            params=list(result_index=result_index)))
+}
+
+setMethod("meta_network_overlap", "metime_analyser", function(object, result_index=NULL, name="meta_network_overlap_1") {
+  meta_network_overlap_impl(object, result_index, name)
+})
+
+setMethod("meta_network_overlap", "list", function(object, result_index=NULL, name="meta_network_overlap_1") {
+  meta_network_overlap_impl(object, result_index, name)
 })
 
 #' Meta comparison for feature overlap
 #' @description Compare feature selection outputs within or across results.
-#' @param object a S4 object of class metime_analyser
+#' @param object a S4 object of class metime_analyser or a list of two metime_analyser objects
 #' @param result_index character/numeric input for results. If NULL, all matching results are used.
 #' @param name a character input to set the name of the results
-#' @return An S4 object of class metime_analyser with this meta analysis stored as results
+#' @return An S4 object of class meta_analyser with the compared results and meta results
 #' @export
 setGeneric("meta_feature_overlap", function(object, result_index=NULL, name="meta_feature_overlap_1") standardGeneric("meta_feature_overlap"))
-setMethod("meta_feature_overlap", "metime_analyser", function(object, result_index=NULL, name="meta_feature_overlap_1") {
-  results <- meta_resolve_results(object, result_index, allowed_calc_types="feature_selection", function_name="meta_feature_overlap")
+meta_feature_overlap_impl <- function(object, result_index=NULL, name="meta_feature_overlap_1") {
+  analyzers <- meta_unpack_analyzers(object, function_name="meta_feature_overlap")
+  results <- meta_collect_results(analyzers, result_index, allowed_calc_types="feature_selection", function_name="meta_feature_overlap")
   comparisons <- meta_build_comparisons(results, compare_label="feature_overlap")
-  out <- lapply(seq_along(comparisons), function(i) {
-    comp <- comparisons[[i]]
-    meta_compare_feature_overlap(comp)
-  }) %>% setNames(names(comparisons))
-  object <- meta_attach_results(object, out, calc_type="meta_feature_overlap", calc_info=names(out), name=name,
-                                function_name="meta_feature_overlap", params=list(result_index=result_index))
-  return(object)
+  out <- lapply(seq_along(comparisons), function(i) meta_compare_feature_overlap(comparisons[[i]])) %>%
+    setNames(names(comparisons))
+  return(meta_make_analyser(analyzers, results, out, calc_type="meta_feature_overlap",
+                            calc_info=names(out), name=name, function_name="meta_feature_overlap",
+                            params=list(result_index=result_index)))
+}
+
+setMethod("meta_feature_overlap", "metime_analyser", function(object, result_index=NULL, name="meta_feature_overlap_1") {
+  meta_feature_overlap_impl(object, result_index, name)
 })
 
-meta_resolve_results <- function(object, result_index, allowed_calc_types, function_name) {
-  results <- object@results
+setMethod("meta_feature_overlap", "list", function(object, result_index=NULL, name="meta_feature_overlap_1") {
+  meta_feature_overlap_impl(object, result_index, name)
+})
+
+meta_unpack_analyzers <- function(object, function_name) {
+  if (inherits(object, "metime_analyser")) {
+    return(list(object))
+  }
+  if (is.list(object) && length(object) == 2 && all(vapply(object, inherits, logical(1), "metime_analyser"))) {
+    return(object)
+  }
+  stop(paste0(function_name, "(): object must be a metime_analyser or a list of two metime_analyser objects."))
+}
+
+meta_collect_results <- function(analyzers, result_index, allowed_calc_types, function_name) {
+  results <- lapply(seq_along(analyzers), function(i) {
+    this_index <- result_index
+    if (is.list(result_index) && length(result_index) == length(analyzers)) {
+      this_index <- result_index[[i]]
+    }
+    meta_resolve_results(analyzers[[i]], this_index, allowed_calc_types, function_name)
+  })
+  results <- lapply(results, meta_normalize_result_names)
+  return(results)
+}
+
+meta_resolve_results <- function(analyzer, result_index, allowed_calc_types, function_name) {
+  results <- analyzer@results
   if (length(results) == 0) {
     stop(paste0(function_name, "(): no results available"))
   }
@@ -147,30 +205,51 @@ meta_warn_stratification_mismatch <- function(result1, result2) {
 
 meta_build_comparisons <- function(results, compare_label, allow_network_mismatch=FALSE) {
   if (length(results) == 1) {
-    if (length(results[[1]]$plot_data) <= 1) {
-      stop(paste0("Within result comparison is not possible for ", compare_label, ": only one plot_data entry."))
-    }
-    plot_names <- names(results[[1]]$plot_data)
-    combn_names <- combn(plot_names, 2, simplify=FALSE)
-    comparisons <- lapply(combn_names, function(pair) {
-      list(
-        result1=results[[1]],
-        result2=results[[1]],
-        label1=pair[1],
-        label2=pair[2],
-        plot1=results[[1]]$plot_data[[pair[1]]],
-        plot2=results[[1]]$plot_data[[pair[2]]]
-      )
-    })
-    names(comparisons) <- vapply(combn_names, function(pair) paste(pair, collapse="__"), character(1))
-    return(comparisons)
+    return(meta_build_comparisons_within(results[[1]], compare_label))
   }
+  if (length(results) == 2) {
+    return(meta_build_comparisons_across(results[[1]], results[[2]], allow_network_mismatch))
+  }
+  stop(paste0("Comparison for ", compare_label, " requires one analyser or two analysers."))
+}
 
-  combn_idx <- combn(seq_along(results), 2, simplify=FALSE)
+meta_build_comparisons_within <- function(result, compare_label) {
+  result <- meta_normalize_plot_names(result)
+  if (length(result$plot_data) <= 1) {
+    stop(paste0("Within result comparison is not possible for ", compare_label, ": only one plot_data entry."))
+  }
+  plot_names <- names(result$plot_data)
+  if (is.null(plot_names) || any(plot_names == "")) {
+    plot_names <- paste0("plot_", seq_along(result$plot_data))
+  }
+  plot_indices <- seq_along(result$plot_data)
+  combn_idx <- combn(plot_indices, 2, simplify=FALSE)
+  comparisons <- lapply(combn_idx, function(pair) {
+    list(
+      result1=result,
+      result2=result,
+      label1=plot_names[pair[1]],
+      label2=plot_names[pair[2]],
+      plot1=result$plot_data[[pair[1]]],
+      plot2=result$plot_data[[pair[2]]]
+    )
+  })
+  names(comparisons) <- vapply(combn_idx, function(pair) paste(plot_names[pair], collapse="__"), character(1))
+  comparisons
+}
+
+meta_build_comparisons_across <- function(results1, results2, allow_network_mismatch=FALSE) {
+  shared_results <- intersect(names(results1), names(results2))
+  if (length(shared_results) == 0) {
+    stop("These results are not comparable: no shared result names.")
+  }
   comparisons <- list()
-  for (pair in combn_idx) {
-    res1 <- results[[pair[1]]]
-    res2 <- results[[pair[2]]]
+  for (res_name in shared_results) {
+    res1 <- meta_normalize_plot_names(results1[[res_name]])
+    res2 <- meta_normalize_plot_names(results2[[res_name]])
+    if (length(unique(res1$information$calc_type)) > 1 || length(unique(res2$information$calc_type)) > 1) {
+      stop("Across result comparison is not feasible because calc_type contains multiple values.")
+    }
     if (!allow_network_mismatch && length(unique(c(res1$information$calc_type, res2$information$calc_type))) > 1) {
       stop("Across result comparison is not feasible because calc_type differs.")
     }
@@ -188,45 +267,38 @@ meta_build_comparisons <- function(results, compare_label, allow_network_mismatc
       stop("These results are not comparable: no shared plot_data names.")
     }
     for (name in shared) {
-      comparisons[[paste(names(results)[pair[1]], names(results)[pair[2]], name, sep="__")]] <- list(
+      comparisons[[paste(res_name, name, sep="__")]] <- list(
         result1=res1,
         result2=res2,
-        label1=names(results)[pair[1]],
-        label2=names(results)[pair[2]],
+        label1=res_name,
+        label2=res_name,
         plot1=res1$plot_data[[name]],
         plot2=res2$plot_data[[name]]
       )
     }
   }
-  return(comparisons)
+  comparisons
 }
 
 meta_build_regression_comparisons <- function(results) {
   if (length(results) == 1) {
-    if (length(results[[1]]$plot_data) <= 1) {
-      stop("Within result comparison is not possible for regression: only one plot_data entry.")
-    }
-    plot_names <- names(results[[1]]$plot_data)
-    combn_names <- combn(plot_names, 2, simplify=FALSE)
-    comparisons <- lapply(combn_names, function(pair) {
-      list(
-        result1=results[[1]],
-        result2=results[[1]],
-        label1=pair[1],
-        label2=pair[2],
-        plot1=results[[1]]$plot_data[[pair[1]]],
-        plot2=results[[1]]$plot_data[[pair[2]]]
-      )
-    })
-    names(comparisons) <- vapply(combn_names, function(pair) paste(pair, collapse="__"), character(1))
-    return(comparisons)
+    return(meta_build_comparisons_within(results[[1]], "regression"))
   }
+  if (length(results) == 2) {
+    return(meta_build_regression_comparisons_across(results[[1]], results[[2]]))
+  }
+  stop("Regression comparison requires one analyser or two analysers.")
+}
 
-  combn_idx <- combn(seq_along(results), 2, simplify=FALSE)
+meta_build_regression_comparisons_across <- function(results1, results2) {
+  shared_results <- intersect(names(results1), names(results2))
+  if (length(shared_results) == 0) {
+    stop("These regression results are not comparable: no shared result names.")
+  }
   comparisons <- list()
-  for (pair in combn_idx) {
-    res1 <- results[[pair[1]]]
-    res2 <- results[[pair[2]]]
+  for (res_name in shared_results) {
+    res1 <- results1[[res_name]]
+    res2 <- results2[[res_name]]
     meta_warn_stratification_mismatch(res1, res2)
     shared <- intersect(res1$information$calc_info, res2$information$calc_info)
     if (length(shared) == 0) {
@@ -238,24 +310,73 @@ meta_build_regression_comparisons <- function(results) {
       if (length(idx1) == 0 || length(idx2) == 0) {
         next
       }
-      comparisons[[paste(names(results)[pair[1]], names(results)[pair[2]], info, sep="__")]] <- list(
+      comparisons[[paste(res_name, info, sep="__")]] <- list(
         result1=res1,
         result2=res2,
-        label1=names(results)[pair[1]],
-        label2=names(results)[pair[2]],
+        label1=res_name,
+        label2=res_name,
         plot1=res1$plot_data[[idx1[1]]],
         plot2=res2$plot_data[[idx2[1]]]
       )
     }
   }
-  return(comparisons)
+  comparisons
 }
 
-meta_attach_results <- function(object, out, calc_type, calc_info, name, function_name, params) {
-  object <- get_make_results(object=object, data=out, metadata=NULL, calc_type=rep(calc_type, each=length(out)),
-                             calc_info=calc_info, name=name)
-  object <- add_function_info(object=object, function_name=function_name, params=params)
-  return(object)
+meta_make_analyser <- function(analyzers, results, out, calc_type, calc_info, name, function_name, params) {
+  base <- analyzers[[1]]
+  source_results <- meta_merge_source_results(results)
+  meta_results <- list()
+  meta_results[[name]] <- list(
+    functions_applied=list(meta_format_function_info(function_name, params)),
+    plot_data=out,
+    information=list(calc_type=rep(calc_type, each=length(out)), calc_info=calc_info),
+    plots=list()
+  )
+  meta_object <- new("meta_analyser",
+                     list_of_data=base@list_of_data,
+                     list_of_col_data=base@list_of_col_data,
+                     list_of_row_data=base@list_of_row_data,
+                     annotations=base@annotations,
+                     results=source_results,
+                     meta_results=meta_results)
+  return(meta_object)
+}
+
+meta_merge_source_results <- function(results) {
+  if (length(results) == 1) {
+    return(results[[1]])
+  }
+  names1 <- names(results[[1]])
+  names2 <- names(results[[2]])
+  if (any(names1 %in% names2)) {
+    names(results[[1]]) <- paste0("analyzer1_", names1)
+    names(results[[2]]) <- paste0("analyzer2_", names2)
+  }
+  c(results[[1]], results[[2]])
+}
+
+meta_format_function_info <- function(function_name, params) {
+  param_str <- paste0(names(params), "=", params, collapse=", ")
+  paste0(function_name, "(", param_str, ")")
+}
+
+meta_build_conservation_comparisons <- function(results) {
+  meta_build_comparisons(results, compare_label="conservation")
+}
+
+meta_normalize_result_names <- function(results) {
+  if (is.null(names(results)) || any(names(results) == "")) {
+    names(results) <- paste0("result_", seq_along(results))
+  }
+  results
+}
+
+meta_normalize_plot_names <- function(result) {
+  if (is.null(names(result$plot_data)) || any(names(result$plot_data) == "")) {
+    names(result$plot_data) <- paste0("plot_", seq_along(result$plot_data))
+  }
+  result
 }
 
 meta_compare_conservation <- function(comp) {
