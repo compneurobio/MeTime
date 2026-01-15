@@ -2,28 +2,34 @@
 #' @description Compare conservation index results within a result or across results.
 #' @param object a S4 object of class metime_analyser or a list of two metime_analyser objects
 #' @param result_index character/numeric input for results. If NULL, all matching results are used.
+#' @param top_k numeric indicating the top-K features used for overlap calculations
 #' @param name a character input to set the name of the results
 #' @return An S4 object of class meta_analyser with the compared results and meta results
 #' @export
-setGeneric("meta_conservation", function(object, result_index=NULL, name="meta_conservation_1") standardGeneric("meta_conservation"))
-meta_conservation_impl <- function(object, result_index=NULL, name="meta_conservation_1") {
+setGeneric("meta_conservation", function(object, result_index=NULL, top_k=50, name="meta_conservation_1") standardGeneric("meta_conservation"))
+meta_conservation_impl <- function(object, result_index=NULL, top_k=50, name="meta_conservation_1") {
   analyzers <- meta_unpack_analyzers(object, function_name="meta_conservation")
   results <- meta_collect_results(analyzers, result_index, allowed_calc_types=c("CI_metabolite", "CI_metabotype"),
                                   function_name="meta_conservation")
   comparisons <- meta_build_conservation_comparisons(results)
-  out <- lapply(seq_along(comparisons), function(i) meta_compare_conservation(comparisons[[i]])) %>%
-    setNames(names(comparisons))
+  out <- list()
+  for (i in seq_along(comparisons)) {
+    comp_out <- meta_compare_conservation(comparisons[[i]], top_k=top_k)
+    comp_names <- paste(names(comparisons)[i], names(comp_out), sep="__")
+    out[comp_names] <- comp_out
+  }
+  names(out) <- make.unique(names(out))
   return(meta_make_analyser(analyzers, results, out, calc_type="meta_conservation",
                             calc_info=names(out), name=name, function_name="meta_conservation",
-                            params=list(result_index=result_index)))
+                            params=list(result_index=result_index, top_k=top_k)))
 }
 
-setMethod("meta_conservation", "metime_analyser", function(object, result_index=NULL, name="meta_conservation_1") {
-  meta_conservation_impl(object, result_index, name)
+setMethod("meta_conservation", "metime_analyser", function(object, result_index=NULL, top_k=50, name="meta_conservation_1") {
+  meta_conservation_impl(object, result_index, top_k, name)
 })
 
-setMethod("meta_conservation", "list", function(object, result_index=NULL, name="meta_conservation_1") {
-  meta_conservation_impl(object, result_index, name)
+setMethod("meta_conservation", "list", function(object, result_index=NULL, top_k=50, name="meta_conservation_1") {
+  meta_conservation_impl(object, result_index, top_k, name)
 })
 
 #' Meta comparison for matrix similarity
@@ -228,16 +234,26 @@ meta_build_comparisons_single_analyzer <- function(results, compare_label, allow
   for (group_name in names(calc_groups)) {
     group <- calc_groups[[group_name]]
     if (group_name %in% c("mixed", "unknown")) {
-      for (res in group) {
-        comparisons <- c(comparisons, meta_build_comparisons_within(res, compare_label))
+      for (res_name in names(group)) {
+        comparisons <- c(comparisons,
+                         meta_prefix_comparison_names(
+                           meta_build_comparisons_within(group[[res_name]], compare_label),
+                           res_name))
       }
       next
     }
     if (length(group) == 1) {
-      comparisons <- c(comparisons, meta_build_comparisons_within(group[[1]], compare_label))
+      res_name <- names(group)[1]
+      comparisons <- c(comparisons,
+                       meta_prefix_comparison_names(
+                         meta_build_comparisons_within(group[[1]], compare_label),
+                         res_name))
     } else {
-      for (res in group) {
-        comparisons <- c(comparisons, meta_build_comparisons_within(res, compare_label))
+      for (res_name in names(group)) {
+        comparisons <- c(comparisons,
+                         meta_prefix_comparison_names(
+                           meta_build_comparisons_within(group[[res_name]], compare_label),
+                           res_name))
       }
       comparisons <- c(comparisons, meta_build_comparisons_across_results(group, allow_network_mismatch))
     }
@@ -334,16 +350,26 @@ meta_build_regression_single_analyzer <- function(results) {
   for (group_name in names(calc_groups)) {
     group <- calc_groups[[group_name]]
     if (group_name %in% c("mixed", "unknown")) {
-      for (res in group) {
-        comparisons <- c(comparisons, meta_build_comparisons_within(res, "regression"))
+      for (res_name in names(group)) {
+        comparisons <- c(comparisons,
+                         meta_prefix_comparison_names(
+                           meta_build_comparisons_within(group[[res_name]], "regression"),
+                           res_name))
       }
       next
     }
     if (length(group) == 1) {
-      comparisons <- c(comparisons, meta_build_comparisons_within(group[[1]], "regression"))
+      res_name <- names(group)[1]
+      comparisons <- c(comparisons,
+                       meta_prefix_comparison_names(
+                         meta_build_comparisons_within(group[[1]], "regression"),
+                         res_name))
     } else {
-      for (res in group) {
-        comparisons <- c(comparisons, meta_build_comparisons_within(res, "regression"))
+      for (res_name in names(group)) {
+        comparisons <- c(comparisons,
+                         meta_prefix_comparison_names(
+                           meta_build_comparisons_within(group[[res_name]], "regression"),
+                           res_name))
       }
       comparisons <- c(comparisons, meta_build_regression_comparisons_across(group, group))
     }
@@ -391,8 +417,7 @@ meta_make_analyser <- function(analyzers, results, out, calc_type, calc_info, na
   base <- analyzers[[1]]
   if (!isClass("meta_analyser")) {
     methods::setClass("meta_analyser",
-                      slots=list(meta_results="list"),
-                      contains="metime_analyser",
+                      slots=list(results="list", annotations="list", meta_results="list"),
                       where=globalenv())
   }
   source_results <- meta_merge_source_results(results)
@@ -404,9 +429,6 @@ meta_make_analyser <- function(analyzers, results, out, calc_type, calc_info, na
     plots=list()
   )
   meta_object <- new("meta_analyser",
-                     list_of_data=base@list_of_data,
-                     list_of_col_data=base@list_of_col_data,
-                     list_of_row_data=base@list_of_row_data,
                      annotations=base@annotations,
                      results=source_results,
                      meta_results=meta_results)
@@ -452,7 +474,7 @@ meta_normalize_plot_names <- function(result) {
   result
 }
 
-meta_compare_conservation <- function(comp) {
+meta_compare_conservation <- function(comp, top_k=50) {
   df1 <- comp$plot1
   df2 <- comp$plot2
   key1 <- if ("id" %in% names(df1)) df1$id else rownames(df1)
@@ -468,14 +490,63 @@ meta_compare_conservation <- function(comp) {
   if (!all(c("ci") %in% names(df1)) || !all(c("ci") %in% names(df2))) {
     stop("Conservation comparison requires a 'ci' column.")
   }
-  cor_val <- stats::cor(df1$ci, df2$ci, use="complete.obs")
-  data.frame(
+  if (!"id" %in% names(df1)) {
+    df1$id <- key1
+  }
+  if (!"id" %in% names(df2)) {
+    df2$id <- key2
+  }
+  out <- list()
+  out[["score_cor_pearson"]] <- data.frame(
     result1=comp$label1,
     result2=comp$label2,
     n_common=length(common),
-    ci_correlation=cor_val,
+    score_correlation=stats::cor(df1$ci, df2$ci, use="complete.obs", method="pearson"),
+    method="pearson",
     stringsAsFactors=FALSE
   )
+  out[["score_cor_spearman"]] <- data.frame(
+    result1=comp$label1,
+    result2=comp$label2,
+    n_common=length(common),
+    score_correlation=stats::cor(df1$ci, df2$ci, use="complete.obs", method="spearman"),
+    method="spearman",
+    stringsAsFactors=FALSE
+  )
+  k <- min(top_k, length(common))
+  top1 <- df1[order(df1$ci, decreasing=TRUE), , drop=FALSE]
+  top2 <- df2[order(df2$ci, decreasing=TRUE), , drop=FALSE]
+  top_ids1 <- top1$id[seq_len(k)]
+  top_ids2 <- top2$id[seq_len(k)]
+  overlap <- intersect(top_ids1, top_ids2)
+  union_vals <- length(unique(c(top_ids1, top_ids2)))
+  out[["topk_jaccard"]] <- data.frame(
+    result1=comp$label1,
+    result2=comp$label2,
+    top_k=k,
+    n_overlap=length(overlap),
+    jaccard=ifelse(union_vals == 0, NA_real_, length(overlap) / union_vals),
+    stringsAsFactors=FALSE
+  )
+  rank1 <- rank(-df1$ci, ties.method="average")
+  rank2 <- rank(-df2$ci, ties.method="average")
+  out[["rank_kendall"]] <- data.frame(
+    result1=comp$label1,
+    result2=comp$label2,
+    n_common=length(common),
+    rank_similarity=stats::cor(rank1, rank2, use="complete.obs", method="kendall"),
+    method="kendall",
+    stringsAsFactors=FALSE
+  )
+  out[["rank_spearman"]] <- data.frame(
+    result1=comp$label1,
+    result2=comp$label2,
+    n_common=length(common),
+    rank_similarity=stats::cor(rank1, rank2, use="complete.obs", method="spearman"),
+    method="spearman",
+    stringsAsFactors=FALSE
+  )
+  out
 }
 
 meta_compare_matrix_similarity <- function(comp) {
@@ -643,6 +714,14 @@ meta_make_edge_ids <- function(edge_df, directed=FALSE) {
   node_a <- pmin(edge_df$node1, edge_df$node2)
   node_b <- pmax(edge_df$node1, edge_df$node2)
   paste(node_a, node_b, sep="__")
+}
+
+meta_prefix_comparison_names <- function(comparisons, prefix) {
+  if (length(comparisons) == 0) {
+    return(comparisons)
+  }
+  names(comparisons) <- paste(prefix, names(comparisons), sep="__")
+  comparisons
 }
 
 meta_group_results_by_calc_type <- function(results) {
