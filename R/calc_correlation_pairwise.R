@@ -9,13 +9,12 @@
 #' @param object S4 Object of class metime_analyser
 #' @param which_data specify datasets to calculate on. One or more possible
 #' @param method default setting: method="pearson", Alternative "spearman" also possible
-#' @param cols_for_meta list equal to length of which_data defining the columns for metadata
 #' @param name name of the results should be of length=1
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @return data.frame with pairwise results
 #' @export
-setGeneric("calc_correlation_pairwise", function(object, which_data, method, cols_for_meta, name="calc_correlation_pairwise_1", stratifications) standardGeneric("calc_correlation_pairwise"))
-setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which_data, method="pearson", cols_for_meta, name="calc_correlation_pairwise_1", stratifications){
+setGeneric("calc_correlation_pairwise", function(object, which_data, method, name="calc_correlation_pairwise_1", stratifications) standardGeneric("calc_correlation_pairwise"))
+setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which_data, method="pearson", name="calc_correlation_pairwise_1", stratifications){
   stopifnot(all(which_data %in% names(object@list_of_data)))
   if(grep(name, names(object@results)) %>% length() >=1) {
     warning("name of the results was previously used, using a different name")
@@ -31,13 +30,6 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
       cor  =(cormat)[ut],
       p = pmat[ut]
     ))
-  }
-  if(is.null(cols_for_meta)) {
-      metadata <- NULL
-  } else {
-       metadata <- get_metadata_for_columns(object = object, 
-                                         which_data = which_data, 
-                                         columns = cols_for_meta)
   }
     
   my_data <-  lapply(which_data, function(x) object@list_of_data[[x]] %>% 
@@ -62,11 +54,11 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
       dplyr::mutate(type="cor") %>% 
       dplyr::rename("dist"="cor", "cut_p"="p")
 
-    out <- get_make_results(object=object, data=list(pairwise_correlation=out), metadata=metadata, calc_type="pairwise_correlation", 
+    out <- get_make_results(object=object, data=list(pairwise_correlation=out), metadata=NULL, calc_type="pairwise_correlation", 
                       calc_info = paste(which_data, "_and_" , method, "_pairwise_correlation", sep=""), 
                       name=name) %>%
           add_function_info(function_name="calc_correlation_pairwise",
-                params=list(which_data=which_data, method=method, cols_for_meta=cols_for_meta))
+                params=list(which_data=which_data, method=method))
     return(out)
 })
 

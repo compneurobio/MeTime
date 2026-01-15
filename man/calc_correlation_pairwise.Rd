@@ -8,7 +8,6 @@ calc_correlation_pairwise(
   object,
   which_data,
   method,
-  cols_for_meta,
   name = "calc_correlation_pairwise_1",
   stratifications
 )
@@ -19,8 +18,6 @@ calc_correlation_pairwise(
 \item{which_data}{specify datasets to calculate on. One or more possible}
 
 \item{method}{default setting: method="pearson", Alternative "spearman" also possible}
-
-\item{cols_for_meta}{list equal to length of which_data defining the columns for metadata}
 
 \item{name}{name of the results should be of length=1}
 

@@ -47,12 +47,12 @@ setMethod("mod_merge_row_data_and_data", "metime_analyser", function(object, whi
     if (is.null(name) || nchar(name) == 0) {
       name <- paste0(which_data, "_row_merged")
     }
-    if (new_name %in% names(object@list_of_data)) {
-      stop("new_name already exists in object@list_of_data")
+    if (name %in% names(object@list_of_data)) {
+      stop("name already exists in object@list_of_data")
     }
     # append data to analyzer object
   
-    object <- add_dataset(object=object, data=merged, col_data=object@list_of_col_data[[which_data]], row_data=row_data, name=name)
+    object <- add_dataset(object=object, data=merged, col_data=object@list_of_col_data[[which_data]], row_data=object@list_of_row_data[[which_data]], name=name)
   } else {
     object@list_of_data[[which_data]] <- merged
   }

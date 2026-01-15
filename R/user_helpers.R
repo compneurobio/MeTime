@@ -30,9 +30,9 @@ setMethod("validate_metime_analyser", "metime_analyser", function(object, which_
 
     if(!is.null(data) && !is.null(col_data)) {
       if("id" %in% names(col_data)) {
-        if(!all(colnames(data) %in% col_data$id)) dataset_issues <- c(dataset_issues, "col_data ids do not match colnames")
+        if(!all(col_data$id %in% colnames(data))) dataset_issues <- c(dataset_issues, "col_data ids do not match colnames")
       }
-      if(ncol(data) != nrow(col_data)) dataset_issues <- c(dataset_issues, "col_data rows do not match data columns")
+      if(ncol(data) < nrow(col_data)) dataset_issues <- c(dataset_issues, "All col_data rows are not in data columns")
     }
 
     dataset_issues

@@ -1,7 +1,7 @@
 
 #' Function to calculate dissimilarity using distance measures 
 #'
-#' @description calculate pairwise distances
+#' @description calculate pairwise distances between samples 
 #' This function creates a dataframe for plotting from a dataset.
 #' @examples # Example to calculate pairwise distances
 #' dist <- calc_pairwise_distance(object=metime_analyser_object, which_data="name of the dataset", 
@@ -11,12 +11,11 @@
 #' @param method default setting: method="euclidean", Alternative "maximum","minimum",
 #' "manhattan","canberra","minkowski" are also possible
 #' @param name name of the results should be of length=1
-#' @param cols_for_meta list equal to length of which_data defining the columns for metadata
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @return data.frame with pairwise results
 #' @export
-setGeneric("calc_distance_pairwise", function(object, which_data, method, name="calc_distance_pairwise_1", cols_for_meta, stratifications) standardGeneric("calc_distance_pairwise"))
-setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_data, method="euclidean", name="calc_distance_pairwise_1", cols_for_meta, stratifications) {
+setGeneric("calc_distance_pairwise", function(object, which_data, method, name="calc_distance_pairwise_1", stratifications) standardGeneric("calc_distance_pairwise"))
+setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_data, method="euclidean", name="calc_distance_pairwise_1", stratifications) {
   stopifnot(all(which_data %in% names(object@list_of_data)))
   if(grep(name, names(object@results)) %>% length() >=1) {
     warning("name of the results was previously used, using a different name")
@@ -33,14 +32,6 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
       dist  =(cormat)[ut]
     ))
   }
-  if(is.null(cols_for_meta)) {
-      metadata <- NULL
-  } else {
-       metadata <- get_metadata_for_columns(object = object, 
-                                         which_data = which_data, 
-                                         columns = cols_for_meta)
-  }
-  
   my_data <-  lapply(which_data, function(x) object@list_of_data[[x]] %>% 
                        dplyr::mutate(id=rownames(.[]))) %>% 
     plyr::join_all(by="id", type="inner") %>% 
@@ -56,20 +47,24 @@ setMethod("calc_distance_pairwise", "metime_analyser", function(object, which_da
         my_data <- my_data[rownames(my_data) %in% rownames(row_data), ]
   }
   
-  if(dist %in% c("euclidean","maximum","minimum","manhattan","canberra","minkowski")){
+  if(method %in% c("euclidean","maximum","minimum","manhattan","canberra","minkowski")){
     
     out <- my_data %>%
       stats::dist(method = method) %>%
-      as.matrix() %>% 
+      as.matrix() %>%   
       as.data.frame() %>% 
       flattenCorrMatrix() %>% 
       dplyr::mutate(type=method)
-    out <- get_make_results(data=list(pairwise_distance=out), object=object, metadata=metadata, calc_type="pairwise_distance", 
+    out <- get_make_results(data=list(pairwise_distance=out), object=object, metadata=NULL, calc_type="pairwise_distance", 
                       calc_info = paste(which_data, "and" , method, "pairwise_distance", sep=" "),
-                      name=name)
+                      name=name) %>%
+        add_function_info(function_name="calc_distance_pairwise",
+                params=list(which_data=which_data, method=method, stratifications=stratifications))
   }
   else {
     out=NA
+    warning("calc_distance_pairwise(): unsupported method")
+    return(object)
   }
   return(out)
 })

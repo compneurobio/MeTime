@@ -9,7 +9,6 @@ calc_distance_pairwise(
   which_data,
   method,
   name = "calc_distance_pairwise_1",
-  cols_for_meta,
   stratifications
 )
 }
@@ -23,15 +22,13 @@ calc_distance_pairwise(
 
 \item{name}{name of the results should be of length=1}
 
-\item{cols_for_meta}{list equal to length of which_data defining the columns for metadata}
-
 \item{stratifications}{List to stratify data into a subset. Usage list(name=value)}
 }
 \value{
 data.frame with pairwise results
 }
 \description{
-calculate pairwise distances
+calculate pairwise distances between samples
 This function creates a dataframe for plotting from a dataset.
 }
 \examples{

@@ -125,7 +125,7 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
   }
 
   ### write table into the rmd file
-  write_report_table <- function(table_location, caption=NULL, rownames=F, type="html") {
+  write_report_table <- function(table_location, caption=NULL, rownames=F, type="html", interactive=F) {
     table_location <- table_location %>% gsub(pattern='"', replacement = "'")
     if(type == "html") {
       out <- paste0('```{r ,echo=F}\nDT::datatable(', table_location, ', caption = "', caption, '", rownames=', rownames, ', ',
@@ -152,7 +152,16 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
     } else if(type == "html" & !interactive) {
       out <- c(ifelse(!is.null(title), paste0('\n', title, ' \n'), ""),
                "```{r,echo=F, warning=FALSE, message=FALSE}\n",
+               "plot_obj <- ",
                plot_location,
+               "\n",
+               "if (inherits(plot_obj, \"htmlwidget\")) {\n",
+               "  plot_obj\n",
+               "} else if (is.list(plot_obj) && length(plot_obj) == 1 && inherits(plot_obj[[1]], \"htmlwidget\")) {\n",
+               "  plot_obj[[1]]\n",
+               "} else {\n",
+               "  plot_obj\n",
+               "}\n",
                "\n```",
                ifelse(!is.null(caption), paste0('\n', caption, ' \n'), "")
       )
@@ -184,9 +193,12 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
     get_package <- utils::find(fun) %>% gsub(pattern="package:", replacement = "")
     if(length(get_package) == 0) {
       out <- "NA"
-    } else if(get_package == ".GlobalEnv") {
+    } else if(all(get_package == ".GlobalEnv")) {
       out <- "NA"
     } else {
+      if (length(get_package) > 1) {
+        get_package <- get_package[get_package != ".GlobalEnv"][1]
+      }
       get_db <- tools::Rd_db(package = get_package)
       if(length(grep(pattern=fun, names(get_db), value=T)) > 0) {
         my_fun_db <- get_db[[grep(pattern=paste0(fun, ".Rd"), names(get_db), value=T)]]
@@ -265,7 +277,12 @@ var tempInput = document.createElement('input');
   }
 
   is_plot_object <- function(x) {
-    inherits(x, c("ggplot", "plotly", "htmlwidget", "visNetwork"))
+    inherits(x, c("ggplot", "plotly", "htmlwidget", "visNetwork")) ||
+      (is.list(x) &&
+        !is.null(x$x) &&
+        is.list(x$x) &&
+        !is.null(x$x$nodes) &&
+        !is.null(x$x$edges))
   }
 
   ## write body
@@ -298,7 +315,7 @@ var tempInput = document.createElement('input');
                   write_report_plot(
                     plot_location = plot_location,
                     type=device,
-                    interactive = interactive)
+                    interactive = interactive && inherits(plot_entry, "ggplot") && !inherits(plot_entry, "plotly"))
 
                 } else if(is.data.frame(plot_entry)) {
                   # if the item is a data.frame display as table
@@ -309,14 +326,19 @@ var tempInput = document.createElement('input');
                 } else if(is.list(plot_entry)) {
                   plot_entry_parts <- lapply(seq_along(plot_entry), function(nr_nested) {
                     plot_nested <- plot_entry[[nr_nested]]
+                    plot_location_nested <- if(!is.null(names(plot_entry)) && nzchar(names(plot_entry)[nr_nested])) {
+                      paste0(plot_location, "[[\"", names(plot_entry)[nr_nested], "\"]]")
+                    } else {
+                      paste0(plot_location, "[[", nr_nested, "]]")
+                    }
                     if(is_plot_object(plot_nested)) {
                       write_report_plot(
-                        plot_location = plot_location,
+                        plot_location = plot_location_nested,
                         type=device,
-                        interactive = interactive)
+                        interactive = interactive && inherits(plot_nested, "ggplot") && !inherits(plot_nested, "plotly"))
                     } else if(is.data.frame(plot_nested)) {
                       write_report_table(
-                        table_location = plot_location,
+                        table_location = plot_location_nested,
                         type=device,
                         interactive = interactive)
                     } else {

@@ -73,11 +73,14 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 		}
 		results <- x@results[[results_index]]
 		get_text_for_plot <- function(data, colnames) {	
+						if (nrow(data) == 0 || length(colnames) == 0) {
+							return(character(0))
+						}
 						out <- c()
 						count <- 1
 						text <- c()
-						for(l in 1:length(rownames(data))) {
-							for(m in 1:length(colnames)) {
+						for(l in seq_len(nrow(data))) {
+							for(m in seq_along(colnames)) {
 								if(m==1) {
 									text <- paste("<br /> ", colnames[m], " : ", data[l, colnames[m]], sep="")
 								} else {
@@ -97,8 +100,9 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							x <- plot$x$data[[i]]$x
 							data <- .results$plot_data[[j]]
 							data <- data[data[ ,col] %in% x, ] 
-							plot$x$data[[i]]$text <- get_text_for_plot(data=data, 
+							text <- get_text_for_plot(data=data, 
 										colnames=colnames(data))
+							if(!length(text)==0) plot$x$data[[i]]$text <- text
 						}
 					}
 					return(plot)
