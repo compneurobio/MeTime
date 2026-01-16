@@ -4,7 +4,7 @@
 #' @param result_index character/numeric input for results. If NULL, all matching results are used.
 #' @param top_k numeric indicating the top-K features used for overlap calculations
 #' @param name a character input to set the name of the results
-#' @return An S4 object of class meta_analyser with the compared results and meta results
+#' @return An S4 object of class meta_results with the compared results and meta results
 #' @export
 setGeneric("meta_conservation", function(object, result_index=NULL, top_k=50, name="meta_conservation_1") standardGeneric("meta_conservation"))
 meta_conservation_impl <- function(object, result_index=NULL, top_k=50, name="meta_conservation_1") {
@@ -37,7 +37,7 @@ setMethod("meta_conservation", "list", function(object, result_index=NULL, top_k
 #' @param object a S4 object of class metime_analyser or a list of two metime_analyser objects
 #' @param result_index character/numeric input for results. If NULL, all matching results are used.
 #' @param name a character input to set the name of the results
-#' @return An S4 object of class meta_analyser with the compared results and meta results
+#' @return An S4 object of class meta_results with the compared results and meta results
 #' @export
 setGeneric("meta_matrix_similarity", function(object, result_index=NULL, name="meta_matrix_similarity_1") standardGeneric("meta_matrix_similarity"))
 meta_matrix_similarity_impl <- function(object, result_index=NULL, name="meta_matrix_similarity_1") {
@@ -66,7 +66,7 @@ setMethod("meta_matrix_similarity", "list", function(object, result_index=NULL, 
 #' @param method a character vector of methods 'sign', 'cor', 'het'
 #' @param result_index character/numeric input for results. If NULL, all matching results are used.
 #' @param name a character input to set the name of the results
-#' @return An S4 object of class meta_analyser with the compared results and meta results
+#' @return An S4 object of class meta_results with the compared results and meta results
 #' @export
 setGeneric("meta_regression", function(object, method=c("sign", "cor", "het"), result_index=NULL, name="meta_regression_1") standardGeneric("meta_regression"))
 meta_regression_impl <- function(object, method=c("sign", "cor", "het"), result_index=NULL, name="meta_regression_1") {
@@ -101,7 +101,7 @@ setMethod("meta_regression", "list", function(object, method=c("sign", "cor", "h
 #' @param object a S4 object of class metime_analyser or a list of two metime_analyser objects
 #' @param result_index character/numeric input for results. If NULL, all matching results are used.
 #' @param name a character input to set the name of the results
-#' @return An S4 object of class meta_analyser with the compared results and meta results
+#' @return An S4 object of class meta_results with the compared results and meta results
 #' @export
 setGeneric("meta_network_overlap", function(object, result_index=NULL, name="meta_network_overlap_1") standardGeneric("meta_network_overlap"))
 meta_network_overlap_impl <- function(object, result_index=NULL, name="meta_network_overlap_1") {
@@ -129,7 +129,7 @@ setMethod("meta_network_overlap", "list", function(object, result_index=NULL, na
 #' @param object a S4 object of class metime_analyser or a list of two metime_analyser objects
 #' @param result_index character/numeric input for results. If NULL, all matching results are used.
 #' @param name a character input to set the name of the results
-#' @return An S4 object of class meta_analyser with the compared results and meta results
+#' @return An S4 object of class meta_results with the compared results and meta results
 #' @export
 setGeneric("meta_feature_overlap", function(object, result_index=NULL, name="meta_feature_overlap_1") standardGeneric("meta_feature_overlap"))
 meta_feature_overlap_impl <- function(object, result_index=NULL, name="meta_feature_overlap_1") {
@@ -238,7 +238,7 @@ meta_build_comparisons_single_analyzer <- function(results, compare_label, allow
         comparisons <- c(comparisons,
                          meta_prefix_comparison_names(
                            meta_build_comparisons_within(group[[res_name]], compare_label),
-                           res_name))
+                           paste(group_name, res_name, sep="__")))
       }
       next
     }
@@ -247,13 +247,13 @@ meta_build_comparisons_single_analyzer <- function(results, compare_label, allow
       comparisons <- c(comparisons,
                        meta_prefix_comparison_names(
                          meta_build_comparisons_within(group[[1]], compare_label),
-                         res_name))
+                         paste(group_name, res_name, sep="__")))
     } else {
       for (res_name in names(group)) {
         comparisons <- c(comparisons,
                          meta_prefix_comparison_names(
                            meta_build_comparisons_within(group[[res_name]], compare_label),
-                           res_name))
+                           paste(group_name, res_name, sep="__")))
       }
       comparisons <- c(comparisons, meta_build_comparisons_across_results(group, allow_network_mismatch))
     }
@@ -354,7 +354,7 @@ meta_build_regression_single_analyzer <- function(results) {
         comparisons <- c(comparisons,
                          meta_prefix_comparison_names(
                            meta_build_comparisons_within(group[[res_name]], "regression"),
-                           res_name))
+                           paste(group_name, res_name, sep="__")))
       }
       next
     }
@@ -363,13 +363,13 @@ meta_build_regression_single_analyzer <- function(results) {
       comparisons <- c(comparisons,
                        meta_prefix_comparison_names(
                          meta_build_comparisons_within(group[[1]], "regression"),
-                         res_name))
+                         paste(group_name, res_name, sep="__")))
     } else {
       for (res_name in names(group)) {
         comparisons <- c(comparisons,
                          meta_prefix_comparison_names(
                            meta_build_comparisons_within(group[[res_name]], "regression"),
-                           res_name))
+                           paste(group_name, res_name, sep="__")))
       }
       comparisons <- c(comparisons, meta_build_regression_comparisons_across(group, group))
     }
@@ -415,20 +415,19 @@ meta_build_regression_comparisons_across <- function(results1, results2) {
 
 meta_make_analyser <- function(analyzers, results, out, calc_type, calc_info, name, function_name, params) {
   base <- analyzers[[1]]
-  if (!isClass("meta_analyser")) {
-    methods::setClass("meta_analyser",
+  if (!isClass("meta_results")) {
+    methods::setClass("meta_results",
                       slots=list(results="list", annotations="list", meta_results="list"),
                       where=globalenv())
   }
   source_results <- meta_merge_source_results(results)
   meta_results <- list()
   meta_results[[name]] <- list(
-    functions_applied=list(meta_format_function_info(function_name, params)),
     plot_data=out,
     information=list(calc_type=rep(calc_type, each=length(out)), calc_info=calc_info),
     plots=list()
   )
-  meta_object <- new("meta_analyser",
+  meta_object <- new("meta_results",
                      annotations=base@annotations,
                      results=source_results,
                      meta_results=meta_results)
@@ -624,16 +623,17 @@ meta_compare_regression <- function(comp, method) {
     diff_t <- (df1$beta - df2$beta) / sqrt(df1$se^2 + df2$se^2)
     diff_p <- 2 * stats::pnorm(-abs(diff_t))
     i_sq <- ifelse(abs(diff_t) > 1, ((abs(diff_t) - 1) / abs(diff_t)) * 100, 0)
-    sig <- ifelse(diff_p <= 0.05 / length(common), "significant", "non_significant")
-    het_df <- data.frame(significant=sig, stringsAsFactors=FALSE) %>%
-      dplyr::count(significant) %>%
-      tidyr::spread(key=significant, value=n)
-    out[["het"]] <- cbind.data.frame(
+    out[["het"]] <- data.frame(
       result1=comp$label1,
       result2=comp$label2,
-      n_common=length(common),
-      i_sq_mean=mean(i_sq, na.rm=TRUE),
-      het_df,
+      met=df1$key,
+      beta1=df1$beta,
+      beta2=df2$beta,
+      se1=df1$se,
+      se2=df2$se,
+      diff_t=diff_t,
+      diff_p=diff_p,
+      i_sq=i_sq,
       stringsAsFactors=FALSE
     )
   }

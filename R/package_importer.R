@@ -52,7 +52,7 @@ validity <- function(object) {
 setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
 								 annotations="list", results="list"), validity=validity) 
 
-setClass("meta_analyser", slots=list(results="list", annotations="list", meta_results="list"))
+setClass("meta_results", slots=list(results="list", annotations="list", meta_results="list"))
 
 
 
@@ -130,7 +130,8 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
   												paste("Q2_(", breaks[2], " - ", breaks[3], ")",sep=""), 
   												paste("Q3_(", breaks[3], " - ", breaks[4], ")",sep=""), 
   												paste("Q4_(", breaks[4], " - ", breaks[5], ")",sep=""))))
-							})
+})
+
 						}
 						if(plot_type %in% "dot") {
 							plot <- ggplot(df, aes(x=x, y=ci)) + 
@@ -569,6 +570,34 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
 		return(list(data=data, row_data=row_data, col_data=col_data))
 	})
 
+setMethod("plot", "meta_results", function(x, results_index, interactive, plot_type, ...) {
+	add <- list(...)
+	results <- x@meta_results[[results_index]]
+	if (is.null(results)) {
+		stop("plot(): results_index is invalid for meta_results")
+	}
+	if (plot_type %in% "dot") {
+		plot_data <- results$plot_data
+		if (!is.null(add$plot_name) && add$plot_name %in% names(plot_data)) {
+			df <- plot_data[[add$plot_name]]
+		} else if (!is.null(add$plot_index) && add$plot_index <= length(plot_data)) {
+			df <- plot_data[[add$plot_index]]
+		} else {
+			df <- plot_data[[1]]
+		}
+		if (!all(c("beta1", "beta2") %in% names(df))) {
+			stop("plot(): meta_results dot plot requires beta1 and beta2 columns.")
+		}
+		plot <- ggplot(df, aes(x=beta1, y=beta2)) +
+			geom_point() +
+			theme_classic() +
+			xlab("beta1") +
+			ylab("beta2")
+		return(plot)
+	}
+	stop("plot(): meta_results supports only plot_type='dot'.")
+})
+
 #' Function to update plots post calculations
 #' @description Modification(mod) Function to generate all possible/available plots of a calculation. 
 #' This function is a wrapper function for plot()
@@ -604,7 +633,8 @@ setMethod("mod_generate_plots", "metime_analyser", function(object, .interactive
 					network <- plot(object, results_index=results_index, 
 						interactive=.interactive, plot_type="network", color=a)
 					return(network)
-				})
+})
+
 				names(networks) <- cols_of_int
 			} else {
 				networks <- list(node_feature=plot(object, results_index=results_index, 
@@ -838,6 +868,36 @@ setMethod("mod_generate_plots", "metime_analyser", function(object, .interactive
 			warning("mod_generate_plots(): This type is not available. Exiting without making any changes")
 			return(object)
 		}
-		object@results[[results_index]] <- results
+	object@results[[results_index]] <- results
+	return(object)
+})
+
+setGeneric("mod_generate_meta_plots", function(object, .interactive=FALSE, type, results_index=NULL) standardGeneric("mod_generate_meta_plots"))
+setMethod("mod_generate_meta_plots", "meta_results", function(object, .interactive=FALSE, type, results_index=NULL) {
+	if (is.null(results_index)) {
+		results_index <- length(object@meta_results)
+	}
+	results <- object@meta_results[[results_index]]
+	if (is.null(results)) {
+		stop("mod_generate_meta_plots(): results_index is invalid for meta_results")
+	}
+	if (type %in% "meta_regression") {
+		plots <- lapply(seq_along(results$plot_data), function(ind) {
+			df <- results$plot_data[[ind]]
+			if (!all(c("beta1", "beta2") %in% names(df))) {
+				return(NULL)
+			}
+			ggplot(df, aes(x=beta1, y=beta2)) +
+				geom_point() +
+				theme_classic() +
+				xlab("beta1") +
+				ylab("beta2")
+		})
+		names(plots) <- names(results$plot_data)
+		results$plots <- list(plots)
+		object@meta_results[[results_index]] <- results
 		return(object)
-	})
+	}
+	warning("mod_generate_meta_plots(): This type is not available. Exiting without making any changes")
+	return(object)
+})
