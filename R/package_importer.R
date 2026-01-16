@@ -52,7 +52,7 @@ validity <- function(object) {
 setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
 								 annotations="list", results="list"), validity=validity) 
 
-setClass("meta_results", slots=list(results="list", annotations="list", meta_results="list"))
+setClass("meta_results", slots=list(meta_results="list"))
 
 
 

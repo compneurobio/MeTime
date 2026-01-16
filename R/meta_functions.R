@@ -414,13 +414,11 @@ meta_build_regression_comparisons_across <- function(results1, results2) {
 }
 
 meta_make_analyser <- function(analyzers, results, out, calc_type, calc_info, name, function_name, params) {
-  base <- analyzers[[1]]
   if (!isClass("meta_results")) {
     methods::setClass("meta_results",
-                      slots=list(results="list", annotations="list", meta_results="list"),
+                      slots=list(meta_results="list"),
                       where=globalenv())
   }
-  source_results <- meta_merge_source_results(results)
   meta_results <- list()
   meta_results[[name]] <- list(
     plot_data=out,
@@ -428,28 +426,8 @@ meta_make_analyser <- function(analyzers, results, out, calc_type, calc_info, na
     plots=list()
   )
   meta_object <- new("meta_results",
-                     annotations=base@annotations,
-                     results=source_results,
                      meta_results=meta_results)
   return(meta_object)
-}
-
-meta_merge_source_results <- function(results) {
-  if (length(results) == 1) {
-    return(results[[1]])
-  }
-  names1 <- names(results[[1]])
-  names2 <- names(results[[2]])
-  if (any(names1 %in% names2)) {
-    names(results[[1]]) <- paste0("analyzer1_", names1)
-    names(results[[2]]) <- paste0("analyzer2_", names2)
-  }
-  c(results[[1]], results[[2]])
-}
-
-meta_format_function_info <- function(function_name, params) {
-  param_str <- paste0(names(params), "=", params, collapse=", ")
-  paste0(function_name, "(", param_str, ")")
 }
 
 meta_build_conservation_comparisons <- function(results) {
