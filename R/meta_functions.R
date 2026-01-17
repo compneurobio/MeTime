@@ -44,7 +44,7 @@ meta_matrix_similarity_impl <- function(object, result_index=NULL, name="meta_ma
   analyzers <- meta_unpack_analyzers(object, function_name="meta_matrix_similarity")
   results <- meta_collect_results(analyzers, result_index, allowed_calc_types=c("pairwise_distance", "pairwise_correlation"),
                                   function_name="meta_matrix_similarity")
-  comparisons <- meta_build_comparisons(results, compare_label="matrix_similarity")
+  comparisons <- meta_get_comparison_builder()(results, compare_label="matrix_similarity")
   out <- lapply(seq_along(comparisons), function(i) meta_compare_matrix_similarity(comparisons[[i]])) %>%
     setNames(names(comparisons))
   return(meta_make_analyser(analyzers, results, out, calc_type="meta_matrix_similarity",
@@ -108,7 +108,7 @@ meta_network_overlap_impl <- function(object, result_index=NULL, name="meta_netw
   analyzers <- meta_unpack_analyzers(object, function_name="meta_network_overlap")
   results <- meta_collect_results(analyzers, result_index, allowed_calc_types=c("genenet_ggm", "multibipartite_ggm", "temporal_network"),
                                   function_name="meta_network_overlap")
-  comparisons <- meta_build_comparisons(results, compare_label="network_overlap", allow_network_mismatch=TRUE)
+  comparisons <- meta_get_comparison_builder()(results, compare_label="network_overlap", allow_network_mismatch=TRUE)
   out <- lapply(seq_along(comparisons), function(i) meta_compare_network(comparisons[[i]])) %>%
     setNames(names(comparisons))
   return(meta_make_analyser(analyzers, results, out, calc_type="meta_network_overlap",
@@ -135,7 +135,7 @@ setGeneric("meta_feature_overlap", function(object, result_index=NULL, name="met
 meta_feature_overlap_impl <- function(object, result_index=NULL, name="meta_feature_overlap_1") {
   analyzers <- meta_unpack_analyzers(object, function_name="meta_feature_overlap")
   results <- meta_collect_results(analyzers, result_index, allowed_calc_types="feature_selection", function_name="meta_feature_overlap")
-  comparisons <- meta_build_comparisons(results, compare_label="feature_overlap")
+  comparisons <- meta_get_comparison_builder()(results, compare_label="feature_overlap")
   out <- lapply(seq_along(comparisons), function(i) meta_compare_feature_overlap(comparisons[[i]])) %>%
     setNames(names(comparisons))
   return(meta_make_analyser(analyzers, results, out, calc_type="meta_feature_overlap",
@@ -431,7 +431,7 @@ meta_make_analyser <- function(analyzers, results, out, calc_type, calc_info, na
 }
 
 meta_build_conservation_comparisons <- function(results) {
-  meta_build_comparisons(results, compare_label="conservation")
+  meta_get_comparison_builder()(results, compare_label="conservation")
 }
 
 meta_normalize_result_names <- function(results) {
@@ -700,6 +700,16 @@ meta_prefix_comparison_names <- function(comparisons, prefix) {
   }
   names(comparisons) <- paste(prefix, names(comparisons), sep="__")
   comparisons
+}
+
+meta_get_comparison_builder <- function() {
+  if (exists("meta_build_comparisons", mode="function")) {
+    return(meta_build_comparisons)
+  }
+  if (requireNamespace("MeTime", quietly=TRUE)) {
+    return(get("meta_build_comparisons", envir=asNamespace("MeTime")))
+  }
+  stop("meta_build_comparisons is not available; ensure the MeTime package is loaded.")
 }
 
 meta_group_results_by_calc_type <- function(results) {
