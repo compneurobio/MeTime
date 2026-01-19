@@ -21,14 +21,10 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
           name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
       }
       my_combn <- combn(names(object@list_of_data[[which_data]]),2) %>% t() %>% as.data.frame() # setup combinations for later pairwise calculation
-      if(length(stratifications)>=1) {
-        data <- object@list_of_data[[which_data]]
-        row_data <- object@list_of_row_data[[which_data]]
-        stratifications <- lapply(names(stratifications), function(x) {
-              row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
-              return(stratifications[[x]]) 
-          })
-        data <- data[rownames(data) %in% rownames(row_data), ]
+      if(!is.null(stratifications) && length(stratifications) >= 1) {
+        data_list <- get_stratified_data(object=object, which_data=which_data, stratifications=stratifications)
+        data <- data_list[["data"]]
+        row_data <- data_list[["row_data"]]
       } else {
         data <- object@list_of_data[[which_data]]
         row_data <- object@list_of_row_data[[which_data]]
@@ -91,5 +87,4 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
           }
       }
   })
-
 
