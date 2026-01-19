@@ -45,8 +45,23 @@ meta_matrix_similarity_impl <- function(object, result_index=NULL, name="meta_ma
   results <- meta_collect_results(analyzers, result_index, allowed_calc_types=c("pairwise_distance", "pairwise_correlation"),
                                   function_name="meta_matrix_similarity")
   comparisons <- meta_get_comparison_builder()(results, compare_label="matrix_similarity")
-  out <- lapply(seq_along(comparisons), function(i) meta_compare_matrix_similarity(comparisons[[i]])) %>%
-    setNames(names(comparisons))
+  out <- list()
+  for (i in seq_along(comparisons)) {
+    comp <- comparisons[[i]]
+    comp_out <- tryCatch(
+      meta_compare_matrix_similarity(comp),
+      error = function(e) {
+        if (grepl("no overlapping matrix pairs", conditionMessage(e), fixed=TRUE)) {
+          warning("meta_matrix_similarity(): no overlapping matrix pairs for comparison ", names(comparisons)[i])
+          return(NULL)
+        }
+        stop(e)
+      }
+    )
+    if (!is.null(comp_out)) {
+      out[[names(comparisons)[i]]] <- comp_out
+    }
+  }
   return(meta_make_analyser(analyzers, results, out, calc_type="meta_matrix_similarity",
                             calc_info=names(out), name=name, function_name="meta_matrix_similarity",
                             params=list(result_index=result_index)))
