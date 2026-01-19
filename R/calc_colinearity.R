@@ -20,31 +20,28 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
           index <- c(0:9)[grep(index, 0:9)+1]
           name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
       }
-      my_combn <- combn(names(object@list_of_data[[which_data]]),2) %>% t() %>% as.data.frame() # setup combinations for later pairwise calculation
       if(!is.null(stratifications) && length(stratifications) >= 1) {
         data_list <- get_stratified_data(object=object, which_data=which_data, stratifications=stratifications)
         data <- data_list[["data"]]
-        row_data <- data_list[["row_data"]]
       } else {
         data <- object@list_of_data[[which_data]]
-        row_data <- object@list_of_row_data[[which_data]]
       }
-      out <- lapply(1:nrow(my_combn), function(i) {
-          my_x=as.numeric(data[,my_combn$V1[i]])
-          my_y=as.numeric(data[,my_combn$V2[i]])
-          chi_test = stats::chisq.test(x = my_x, 
-                                 y = my_y, 
-                                 correct=FALSE)
-          out = data.frame(
-            med_class_1=my_combn$V1[i],
-            med_class_2= my_combn$V2[i],
-            chi_statistic=chi_test$statistic,
-            Cramers_V= chi_test$statistic / (length(my_x) * (min(length(unique(my_x)),length(unique(my_y))) - 1)),
-            stringsAsFactors = F
-          )
-      }) %>%
-      do.call(what=rbind.data.frame) %>% 
-      dplyr::mutate(colinear=ifelse(Cramers_V>.5, T,F))
+      numeric_cols <- names(data)[sapply(data, is.numeric) | sapply(data, is.integer)]
+      if(length(numeric_cols) < 2) {
+          warning("calc_colinearity(): need at least two numeric features for colinearity checks")
+          return(object)
+      }
+      cor_mat <- stats::cor(data[, numeric_cols, drop=FALSE], use="pairwise.complete.obs", method="spearman")
+      ut <- upper.tri(cor_mat)
+      out <- data.frame(
+        med_class_1=rownames(cor_mat)[row(cor_mat)[ut]],
+        med_class_2=rownames(cor_mat)[col(cor_mat)[ut]],
+        chi_statistic=NA_real_,
+        Cramers_V=abs(cor_mat[ut]),
+        cor=cor_mat[ut],
+        stringsAsFactors=FALSE
+      ) %>%
+        dplyr::mutate(colinear=ifelse(Cramers_V > .5, TRUE, FALSE))
       if(is.null(cols_for_meta)) {
         metadata <- NULL
       } else {
@@ -87,4 +84,3 @@ setMethod("calc_colinearity", "metime_analyser", function(object, which_data, co
           }
       }
   })
-
