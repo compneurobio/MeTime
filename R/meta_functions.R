@@ -306,45 +306,107 @@ meta_build_comparisons_within <- function(result, compare_label) {
 
 meta_build_comparisons_across <- function(results1, results2, allow_network_mismatch=FALSE) {
   shared_results <- intersect(names(results1), names(results2))
-  if (length(shared_results) == 0) {
-    stop("These results are not comparable: no shared result names.")
-  }
   comparisons <- list()
-  for (res_name in shared_results) {
-    res1 <- meta_normalize_plot_names(results1[[res_name]])
-    res2 <- meta_normalize_plot_names(results2[[res_name]])
+  build_comparison_block <- function(res1, res2, label1, label2, res_name1, res_name2, strict) {
+    res1 <- meta_normalize_plot_names(res1)
+    res2 <- meta_normalize_plot_names(res2)
     if (length(unique(res1$information$calc_type)) > 1 || length(unique(res2$information$calc_type)) > 1) {
-      stop("Across result comparison is not feasible because calc_type contains multiple values.")
+      if (strict) {
+        stop("Across result comparison is not feasible because calc_type contains multiple values.")
+      }
+      return(NULL)
     }
     if (!allow_network_mismatch && length(unique(c(res1$information$calc_type, res2$information$calc_type))) > 1) {
-      stop("Across result comparison is not feasible because calc_type differs.")
+      if (strict) {
+        stop("Across result comparison is not feasible because calc_type differs.")
+      }
+      return(NULL)
     }
     if (allow_network_mismatch) {
       mismatch <- length(unique(c(res1$information$calc_type, res2$information$calc_type))) > 1
       if (mismatch && all(c("genenet_ggm", "multibipartite_ggm") %in% unique(c(res1$information$calc_type, res2$information$calc_type)))) {
         warning("Comparing genenet_ggm to multibipartite_ggm results; interpret overlaps with caution.")
       } else if (mismatch) {
-        stop("Across result comparison is not feasible because calc_type differs.")
+        if (strict) {
+          stop("Across result comparison is not feasible because calc_type differs.")
+        }
+        return(NULL)
       }
     }
     meta_warn_stratification_mismatch(res1, res2)
     shared <- intersect(names(res1$plot_data), names(res2$plot_data))
     if (length(shared) == 0) {
-      stop("These results are not comparable: no shared plot_data names.")
+      return(NULL)
     }
+    pair_comparisons <- list()
     for (name in shared) {
-      comparisons[[paste(res_name, name, sep="__")]] <- list(
+      pair_comparisons[[paste(res_name1, res_name2, name, sep="__")]] <- list(
         result1=res1,
         result2=res2,
-        label1=res_name,
-        label2=res_name,
+        label1=label1,
+        label2=label2,
         plot1=res1$plot_data[[name]],
         plot2=res2$plot_data[[name]]
       )
     }
+    pair_comparisons
   }
-  if (length(comparisons) == 0) {
-    stop("These results are not comparable: no shared calc_type entries.")
+
+  if (length(shared_results) == 0) {
+    pairs <- expand.grid(res1=names(results1), res2=names(results2), stringsAsFactors=FALSE)
+    for (row in seq_len(nrow(pairs))) {
+      res_name1 <- pairs$res1[row]
+      res_name2 <- pairs$res2[row]
+      pair_comparisons <- build_comparison_block(
+        results1[[res_name1]],
+        results2[[res_name2]],
+        res_name1,
+        res_name2,
+        res_name1,
+        res_name2,
+        strict=FALSE
+      )
+      if (!is.null(pair_comparisons)) {
+        comparisons <- c(comparisons, pair_comparisons)
+      }
+    }
+  } else {
+    for (res_name in shared_results) {
+      pair_comparisons <- build_comparison_block(
+        results1[[res_name]],
+        results2[[res_name]],
+        res_name,
+        res_name,
+        res_name,
+        res_name,
+        strict=TRUE
+      )
+      if (!is.null(pair_comparisons)) {
+        comparisons <- c(comparisons, pair_comparisons)
+      }
+    }
+    if (length(comparisons) == 0) {
+      pairs <- expand.grid(res1=names(results1), res2=names(results2), stringsAsFactors=FALSE)
+      for (row in seq_len(nrow(pairs))) {
+        res_name1 <- pairs$res1[row]
+        res_name2 <- pairs$res2[row]
+        pair_comparisons <- build_comparison_block(
+          results1[[res_name1]],
+          results2[[res_name2]],
+          res_name1,
+          res_name2,
+          res_name1,
+          res_name2,
+          strict=FALSE
+        )
+        if (!is.null(pair_comparisons)) {
+          comparisons <- c(comparisons, pair_comparisons)
+        }
+      }
+    }
+    if (length(comparisons) == 0) {
+      stop("These results are not comparable: no shared plot_data names.")
+    }
   }
   comparisons
 }
