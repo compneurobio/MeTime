@@ -15,8 +15,10 @@ meta_conservation_impl <- function(object, result_index=NULL, top_k=50, name="me
   out <- list()
   for (i in seq_along(comparisons)) {
     comp_out <- meta_compare_conservation(comparisons[[i]], top_k=top_k)
-    comp_names <- paste(names(comparisons)[i], names(comp_out), sep="__")
-    out[comp_names] <- comp_out
+    if (!is.null(comp_out)) {
+      comp_names <- paste(names(comparisons)[i], names(comp_out), sep="__")
+      out[comp_names] <- comp_out
+    }
   }
   names(out) <- make.unique(names(out))
   return(meta_make_analyser(analyzers, results, out, calc_type="meta_conservation",
@@ -48,16 +50,7 @@ meta_matrix_similarity_impl <- function(object, result_index=NULL, name="meta_ma
   out <- list()
   for (i in seq_along(comparisons)) {
     comp <- comparisons[[i]]
-    comp_out <- tryCatch(
-      meta_compare_matrix_similarity(comp),
-      error = function(e) {
-        if (grepl("no overlapping matrix pairs", conditionMessage(e), fixed=TRUE)) {
-          warning("meta_matrix_similarity(): no overlapping matrix pairs for comparison ", names(comparisons)[i])
-          return(NULL)
-        }
-        stop(e)
-      }
-    )
+    comp_out <- meta_compare_matrix_similarity(comp)
     if (!is.null(comp_out)) {
       out[[names(comparisons)[i]]] <- comp_out
     }
@@ -124,8 +117,9 @@ meta_network_overlap_impl <- function(object, result_index=NULL, name="meta_netw
   results <- meta_collect_results(analyzers, result_index, allowed_calc_types=c("genenet_ggm", "multibipartite_ggm", "temporal_network"),
                                   function_name="meta_network_overlap")
   comparisons <- meta_get_comparison_builder()(results, compare_label="network_overlap", allow_network_mismatch=TRUE)
-  out <- lapply(seq_along(comparisons), function(i) meta_compare_network(comparisons[[i]])) %>%
-    setNames(names(comparisons))
+  out <- lapply(seq_along(comparisons), function(i) meta_compare_network(comparisons[[i]]))
+  names(out) <- names(comparisons)
+  out <- out[!vapply(out, is.null, logical(1))]
   return(meta_make_analyser(analyzers, results, out, calc_type="meta_network_overlap",
                             calc_info=names(out), name=name, function_name="meta_network_overlap",
                             params=list(result_index=result_index)))
@@ -151,8 +145,9 @@ meta_feature_overlap_impl <- function(object, result_index=NULL, name="meta_feat
   analyzers <- meta_unpack_analyzers(object, function_name="meta_feature_overlap")
   results <- meta_collect_results(analyzers, result_index, allowed_calc_types="feature_selection", function_name="meta_feature_overlap")
   comparisons <- meta_get_comparison_builder()(results, compare_label="feature_overlap")
-  out <- lapply(seq_along(comparisons), function(i) meta_compare_feature_overlap(comparisons[[i]])) %>%
-    setNames(names(comparisons))
+  out <- lapply(seq_along(comparisons), function(i) meta_compare_feature_overlap(comparisons[[i]]))
+  names(out) <- names(comparisons)
+  out <- out[!vapply(out, is.null, logical(1))]
   return(meta_make_analyser(analyzers, results, out, calc_type="meta_feature_overlap",
                             calc_info=names(out), name=name, function_name="meta_feature_overlap",
                             params=list(result_index=result_index)))
@@ -259,16 +254,20 @@ meta_build_comparisons_single_analyzer <- function(results, compare_label, allow
     }
     if (length(group) == 1) {
       res_name <- names(group)[1]
-      comparisons <- c(comparisons,
-                       meta_prefix_comparison_names(
-                         meta_build_comparisons_within(group[[1]], compare_label),
-                         paste(group_name, res_name, sep="__")))
-    } else {
-      for (res_name in names(group)) {
+      if (!compare_label %in% c("matrix_similarity", "feature_overlap")) {
         comparisons <- c(comparisons,
                          meta_prefix_comparison_names(
-                           meta_build_comparisons_within(group[[res_name]], compare_label),
+                           meta_build_comparisons_within(group[[1]], compare_label),
                            paste(group_name, res_name, sep="__")))
+      }
+    } else {
+      if (!compare_label %in% c("matrix_similarity", "feature_overlap")) {
+        for (res_name in names(group)) {
+          comparisons <- c(comparisons,
+                           meta_prefix_comparison_names(
+                             meta_build_comparisons_within(group[[res_name]], compare_label),
+                             paste(group_name, res_name, sep="__")))
+        }
       }
       comparisons <- c(comparisons, meta_build_comparisons_across_results(group, allow_network_mismatch))
     }
@@ -282,7 +281,8 @@ meta_build_comparisons_single_analyzer <- function(results, compare_label, allow
 meta_build_comparisons_within <- function(result, compare_label) {
   result <- meta_normalize_plot_names(result)
   if (length(result$plot_data) <= 1) {
-    stop(paste0("Within result comparison is not possible for ", compare_label, ": only one plot_data entry."))
+    warning(paste0("Within result comparison is not possible for ", compare_label, ": only one plot_data entry."))
+    return(list())
   }
   plot_names <- names(result$plot_data)
   if (is.null(plot_names) || any(plot_names == "")) {
@@ -473,14 +473,16 @@ meta_compare_conservation <- function(comp, top_k=50) {
   key2 <- if ("id" %in% names(df2)) df2$id else rownames(df2)
   common <- intersect(key1, key2)
   if (length(common) == 0) {
-    stop("These results are not comparable: no overlapping metabolites for conservation.")
+    warning("meta_conservation(): no overlapping metabolites for comparison")
+    return(NULL)
   }
   df1 <- df1[key1 %in% common, , drop=FALSE]
   df2 <- df2[key2 %in% common, , drop=FALSE]
   df1 <- df1[match(common, key1), , drop=FALSE]
   df2 <- df2[match(common, key2), , drop=FALSE]
   if (!all(c("ci") %in% names(df1)) || !all(c("ci") %in% names(df2))) {
-    stop("Conservation comparison requires a 'ci' column.")
+    warning("meta_conservation(): comparison requires a 'ci' column")
+    return(NULL)
   }
   if (!"id" %in% names(df1)) {
     df1$id <- key1
@@ -552,7 +554,8 @@ meta_compare_matrix_similarity <- function(comp) {
   df2$key <- paste(df2$row, df2$column, sep="__")
   common <- intersect(df1$key, df2$key)
   if (length(common) == 0) {
-    stop("These results are not comparable: no overlapping matrix pairs.")
+    warning("meta_matrix_similarity(): no overlapping matrix pairs for comparison")
+    return(NULL)
   }
   df1 <- df1[df1$key %in% common, , drop=FALSE]
   df2 <- df2[df2$key %in% common, , drop=FALSE]
@@ -678,7 +681,8 @@ meta_compare_feature_overlap <- function(comp) {
   selected2 <- df2$met[df2$selected %in% TRUE]
   common <- intersect(selected1, selected2)
   if (length(common) == 0) {
-    stop("These results are not comparable: no overlapping selected features.")
+    warning("meta_feature_overlap(): no overlapping selected features for comparison")
+    return(NULL)
   }
   union_features <- length(unique(c(selected1, selected2)))
   data.frame(
