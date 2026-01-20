@@ -462,28 +462,64 @@ meta_build_regression_single_analyzer <- function(results) {
 
 meta_build_regression_comparisons_across <- function(results1, results2) {
   shared_results <- intersect(names(results1), names(results2))
-  if (length(shared_results) == 0) {
-    stop("These regression results are not comparable: no shared result names.")
-  }
   comparisons <- list()
-  for (res_name in shared_results) {
-    res1 <- meta_normalize_plot_names(results1[[res_name]])
-    res2 <- meta_normalize_plot_names(results2[[res_name]])
+  build_plot_name_comparisons <- function(res1, res2, label1, label2, res_name1, res_name2) {
+    res1 <- meta_normalize_plot_names(res1)
+    res2 <- meta_normalize_plot_names(res2)
     meta_warn_stratification_mismatch(res1, res2)
     shared <- intersect(names(res1$plot_data), names(res2$plot_data))
     if (length(shared) == 0) {
-      stop("These regression results are not comparable: no shared plot_data names.")
+      return(NULL)
     }
+    pair_comparisons <- list()
     for (info in shared) {
-      comparisons[[paste(res_name, info, sep="__")]] <- list(
+      pair_comparisons[[paste(res_name1, res_name2, info, sep="__")]] <- list(
         result1=res1,
         result2=res2,
-        label1=res_name,
-        label2=res_name,
+        label1=label1,
+        label2=label2,
         plot1=res1$plot_data[[info]],
         plot2=res2$plot_data[[info]]
       )
     }
+    pair_comparisons
+  }
+
+  if (length(shared_results) > 0) {
+    for (res_name in shared_results) {
+      pair_comparisons <- build_plot_name_comparisons(
+        results1[[res_name]],
+        results2[[res_name]],
+        res_name,
+        res_name,
+        res_name,
+        res_name
+      )
+      if (!is.null(pair_comparisons)) {
+        comparisons <- c(comparisons, pair_comparisons)
+      }
+    }
+  }
+  if (length(comparisons) == 0) {
+    pairs <- expand.grid(res1=names(results1), res2=names(results2), stringsAsFactors=FALSE)
+    for (row in seq_len(nrow(pairs))) {
+      res_name1 <- pairs$res1[row]
+      res_name2 <- pairs$res2[row]
+      pair_comparisons <- build_plot_name_comparisons(
+        results1[[res_name1]],
+        results2[[res_name2]],
+        res_name1,
+        res_name2,
+        res_name1,
+        res_name2
+      )
+      if (!is.null(pair_comparisons)) {
+        comparisons <- c(comparisons, pair_comparisons)
+      }
+    }
+  }
+  if (length(comparisons) == 0) {
+    stop("These regression results are not comparable: no shared plot_data names.")
   }
   comparisons
 }
