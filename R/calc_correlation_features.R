@@ -13,8 +13,8 @@
 #' @param stratifications List to stratify data into a subset. Usage list(name=value)
 #' @return data.frame with pairwise results
 #' @export
-setGeneric("calc_correlation_pairwise", function(object, which_data, method, name="calc_correlation_pairwise_1", stratifications) standardGeneric("calc_correlation_pairwise"))
-setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which_data, method="pearson", name="calc_correlation_pairwise_1", stratifications){
+setGeneric("calc_correlation_features", function(object, which_data, method, name="calc_correlation_pairwise_1", stratifications) standardGeneric("calc_correlation_features"))
+setMethod("calc_correlation_features", "metime_analyser", function(object, which_data, method="pearson", name="calc_correlation_pairwise_1", stratifications){
   stopifnot(all(which_data %in% names(object@list_of_data)))
   if(grep(name, names(object@results)) %>% length() >=1) {
     warning("name of the results was previously used, using a different name")
@@ -32,20 +32,21 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
     ))
   }
     
-  my_data <-  lapply(which_data, function(x) object@list_of_data[[x]] %>% 
-                         dplyr::mutate(id=rownames(.[]))) %>% 
-      plyr::join_all(by="id", type="inner") %>% 
-      `rownames<-`(.[,"id"]) %>% 
-      dplyr::select(-id)
-  if(length(stratifications)>=1) {
-        dummy_data <- object@list_of_data[[which_data[1]]]
-        row_data <- object@list_of_row_data[[which_data[1]]]
-        stratifications <- lapply(names(stratifications), function(x) {
-              row_data <- row_data[row_data[,x] %in% stratifications[[x]], ]
-              return(stratifications[[x]]) 
-          })
-        my_data <- my_data[rownames(my_data) %in% rownames(row_data), ]
+if(!is.null(stratifications) && length(stratifications) >= 1) {
+    data_list <- get_stratified_data(object=object, which_data=which_data, stratifications=stratifications)
+    my_data <- data_list[["data"]]
+  } else {
+    my_data <-  lapply(which_data, function(x) object@list_of_data[[x]] %>% 
+                           dplyr::mutate(id=rownames(.[]))) %>% 
+        plyr::join_all(by="id", type="inner") %>% 
+        `rownames<-`(.[,"id"]) %>% 
+        dplyr::select(-id)
   }
+    # calculate correlation matrix and pvalues
+    if (nrow(my_data) < 2 || ncol(my_data) < 2) {
+      warning("calc_correlation_features(): need at least 2 samples and 2 features after filtering")
+      return(object)
+    }
     # calculate correlation matrix and pvalues
     cor_mat <- my_data %>% 
       as.matrix() %>% 
@@ -55,9 +56,9 @@ setMethod("calc_correlation_pairwise", "metime_analyser", function(object, which
       dplyr::rename("dist"="cor", "cut_p"="p")
 
     out <- get_make_results(object=object, data=list(pairwise_correlation=out), metadata=NULL, calc_type="pairwise_correlation", 
-                      calc_info = paste(which_data, "_and_" , method, "_pairwise_correlation", sep=""), 
+                      calc_info = paste(which_data, "_and_" , method, "_pairwise_correlation_features", sep=""), 
                       name=name) %>%
-          add_function_info(function_name="calc_correlation_pairwise",
+          add_function_info(function_name="calc_correlation_features",
                 params=list(which_data=which_data, method=method))
     return(out)
 })

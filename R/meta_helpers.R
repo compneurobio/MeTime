@@ -85,22 +85,26 @@ meta_build_comparisons_single_analyzer <- function(results, compare_label, allow
         comparisons <- c(comparisons,
                          meta_prefix_comparison_names(
                            meta_build_comparisons_within(group[[res_name]], compare_label),
-                           res_name))
+                           paste(group_name, res_name, sep="__")))
       }
       next
     }
     if (length(group) == 1) {
       res_name <- names(group)[1]
-      comparisons <- c(comparisons,
-                       meta_prefix_comparison_names(
-                         meta_build_comparisons_within(group[[1]], compare_label),
-                         res_name))
-    } else {
-      for (res_name in names(group)) {
+      if (!compare_label %in% c("matrix_similarity", "feature_overlap")) {
         comparisons <- c(comparisons,
                          meta_prefix_comparison_names(
-                           meta_build_comparisons_within(group[[res_name]], compare_label),
-                           res_name))
+                           meta_build_comparisons_within(group[[1]], compare_label),
+                           paste(group_name, res_name, sep="__")))
+      }
+    } else {
+      if (!compare_label %in% c("matrix_similarity", "feature_overlap")) {
+        for (res_name in names(group)) {
+          comparisons <- c(comparisons,
+                           meta_prefix_comparison_names(
+                             meta_build_comparisons_within(group[[res_name]], compare_label),
+                             paste(group_name, res_name, sep="__")))
+        }
       }
       comparisons <- c(comparisons, meta_build_comparisons_across_results(group, allow_network_mismatch))
     }
@@ -114,7 +118,8 @@ meta_build_comparisons_single_analyzer <- function(results, compare_label, allow
 meta_build_comparisons_within <- function(result, compare_label) {
   result <- meta_normalize_plot_names(result)
   if (length(result$plot_data) <= 1) {
-    stop(paste0("Within result comparison is not possible for ", compare_label, ": only one plot_data entry."))
+    warning(paste0("Within result comparison is not possible for ", compare_label, ": only one plot_data entry."))
+    return(list())
   }
   plot_names <- names(result$plot_data)
   if (is.null(plot_names) || any(plot_names == "")) {
@@ -138,45 +143,107 @@ meta_build_comparisons_within <- function(result, compare_label) {
 
 meta_build_comparisons_across <- function(results1, results2, allow_network_mismatch=FALSE) {
   shared_results <- intersect(names(results1), names(results2))
-  if (length(shared_results) == 0) {
-    stop("These results are not comparable: no shared result names.")
-  }
   comparisons <- list()
-  for (res_name in shared_results) {
-    res1 <- meta_normalize_plot_names(results1[[res_name]])
-    res2 <- meta_normalize_plot_names(results2[[res_name]])
+  build_comparison_block <- function(res1, res2, label1, label2, res_name1, res_name2, strict) {
+    res1 <- meta_normalize_plot_names(res1)
+    res2 <- meta_normalize_plot_names(res2)
     if (length(unique(res1$information$calc_type)) > 1 || length(unique(res2$information$calc_type)) > 1) {
-      stop("Across result comparison is not feasible because calc_type contains multiple values.")
+      if (strict) {
+        stop("Across result comparison is not feasible because calc_type contains multiple values.")
+      }
+      return(NULL)
     }
     if (!allow_network_mismatch && length(unique(c(res1$information$calc_type, res2$information$calc_type))) > 1) {
-      stop("Across result comparison is not feasible because calc_type differs.")
+      if (strict) {
+        stop("Across result comparison is not feasible because calc_type differs.")
+      }
+      return(NULL)
     }
     if (allow_network_mismatch) {
       mismatch <- length(unique(c(res1$information$calc_type, res2$information$calc_type))) > 1
       if (mismatch && all(c("genenet_ggm", "multibipartite_ggm") %in% unique(c(res1$information$calc_type, res2$information$calc_type)))) {
         warning("Comparing genenet_ggm to multibipartite_ggm results; interpret overlaps with caution.")
       } else if (mismatch) {
-        stop("Across result comparison is not feasible because calc_type differs.")
+        if (strict) {
+          stop("Across result comparison is not feasible because calc_type differs.")
+        }
+        return(NULL)
       }
     }
     meta_warn_stratification_mismatch(res1, res2)
     shared <- intersect(names(res1$plot_data), names(res2$plot_data))
     if (length(shared) == 0) {
-      stop("These results are not comparable: no shared plot_data names.")
+      return(NULL)
     }
+    pair_comparisons <- list()
     for (name in shared) {
-      comparisons[[paste(res_name, name, sep="__")]] <- list(
+      pair_comparisons[[paste(res_name1, res_name2, name, sep="__")]] <- list(
         result1=res1,
         result2=res2,
-        label1=res_name,
-        label2=res_name,
+        label1=label1,
+        label2=label2,
         plot1=res1$plot_data[[name]],
         plot2=res2$plot_data[[name]]
       )
     }
+    pair_comparisons
   }
-  if (length(comparisons) == 0) {
-    stop("These results are not comparable: no shared calc_type entries.")
+
+  if (length(shared_results) == 0) {
+    pairs <- expand.grid(res1=names(results1), res2=names(results2), stringsAsFactors=FALSE)
+    for (row in seq_len(nrow(pairs))) {
+      res_name1 <- pairs$res1[row]
+      res_name2 <- pairs$res2[row]
+      pair_comparisons <- build_comparison_block(
+        results1[[res_name1]],
+        results2[[res_name2]],
+        res_name1,
+        res_name2,
+        res_name1,
+        res_name2,
+        strict=FALSE
+      )
+      if (!is.null(pair_comparisons)) {
+        comparisons <- c(comparisons, pair_comparisons)
+      }
+    }
+  } else {
+    for (res_name in shared_results) {
+      pair_comparisons <- build_comparison_block(
+        results1[[res_name]],
+        results2[[res_name]],
+        res_name,
+        res_name,
+        res_name,
+        res_name,
+        strict=TRUE
+      )
+      if (!is.null(pair_comparisons)) {
+        comparisons <- c(comparisons, pair_comparisons)
+      }
+    }
+    if (length(comparisons) == 0) {
+      pairs <- expand.grid(res1=names(results1), res2=names(results2), stringsAsFactors=FALSE)
+      for (row in seq_len(nrow(pairs))) {
+        res_name1 <- pairs$res1[row]
+        res_name2 <- pairs$res2[row]
+        pair_comparisons <- build_comparison_block(
+          results1[[res_name1]],
+          results2[[res_name2]],
+          res_name1,
+          res_name2,
+          res_name1,
+          res_name2,
+          strict=FALSE
+        )
+        if (!is.null(pair_comparisons)) {
+          comparisons <- c(comparisons, pair_comparisons)
+        }
+      }
+    }
+    if (length(comparisons) == 0) {
+      stop("These results are not comparable: no shared plot_data names.")
+    }
   }
   comparisons
 }
@@ -201,7 +268,7 @@ meta_build_regression_single_analyzer <- function(results) {
         comparisons <- c(comparisons,
                          meta_prefix_comparison_names(
                            meta_build_comparisons_within(group[[res_name]], "regression"),
-                           res_name))
+                           paste(group_name, res_name, sep="__")))
       }
       next
     }
@@ -210,13 +277,13 @@ meta_build_regression_single_analyzer <- function(results) {
       comparisons <- c(comparisons,
                        meta_prefix_comparison_names(
                          meta_build_comparisons_within(group[[1]], "regression"),
-                         res_name))
+                         paste(group_name, res_name, sep="__")))
     } else {
       for (res_name in names(group)) {
         comparisons <- c(comparisons,
                          meta_prefix_comparison_names(
                            meta_build_comparisons_within(group[[res_name]], "regression"),
-                           res_name))
+                           paste(group_name, res_name, sep="__")))
       }
       comparisons <- c(comparisons, meta_build_regression_comparisons_across(group, group))
     }
@@ -229,79 +296,87 @@ meta_build_regression_single_analyzer <- function(results) {
 
 meta_build_regression_comparisons_across <- function(results1, results2) {
   shared_results <- intersect(names(results1), names(results2))
-  if (length(shared_results) == 0) {
-    stop("These regression results are not comparable: no shared result names.")
-  }
   comparisons <- list()
-  for (res_name in shared_results) {
-    res1 <- results1[[res_name]]
-    res2 <- results2[[res_name]]
+  build_plot_name_comparisons <- function(res1, res2, label1, label2, res_name1, res_name2) {
+    res1 <- meta_normalize_plot_names(res1)
+    res2 <- meta_normalize_plot_names(res2)
     meta_warn_stratification_mismatch(res1, res2)
-    shared <- intersect(res1$information$calc_info, res2$information$calc_info)
+    shared <- intersect(names(res1$plot_data), names(res2$plot_data))
     if (length(shared) == 0) {
-      stop("These regression results are not comparable: no shared calc_info entries.")
+      return(NULL)
     }
+    pair_comparisons <- list()
     for (info in shared) {
-      idx1 <- which(res1$information$calc_info == info)
-      idx2 <- which(res2$information$calc_info == info)
-      if (length(idx1) == 0 || length(idx2) == 0) {
-        next
-      }
-      comparisons[[paste(res_name, info, sep="__")]] <- list(
+      pair_comparisons[[paste(res_name1, res_name2, info, sep="__")]] <- list(
         result1=res1,
         result2=res2,
-        label1=res_name,
-        label2=res_name,
-        plot1=res1$plot_data[[idx1[1]]],
-        plot2=res2$plot_data[[idx2[1]]]
+        label1=label1,
+        label2=label2,
+        plot1=res1$plot_data[[info]],
+        plot2=res2$plot_data[[info]]
       )
     }
+    pair_comparisons
+  }
+
+  if (length(shared_results) > 0) {
+    for (res_name in shared_results) {
+      pair_comparisons <- build_plot_name_comparisons(
+        results1[[res_name]],
+        results2[[res_name]],
+        res_name,
+        res_name,
+        res_name,
+        res_name
+      )
+      if (!is.null(pair_comparisons)) {
+        comparisons <- c(comparisons, pair_comparisons)
+      }
+    }
+  }
+  if (length(comparisons) == 0) {
+    pairs <- expand.grid(res1=names(results1), res2=names(results2), stringsAsFactors=FALSE)
+    for (row in seq_len(nrow(pairs))) {
+      res_name1 <- pairs$res1[row]
+      res_name2 <- pairs$res2[row]
+      pair_comparisons <- build_plot_name_comparisons(
+        results1[[res_name1]],
+        results2[[res_name2]],
+        res_name1,
+        res_name2,
+        res_name1,
+        res_name2
+      )
+      if (!is.null(pair_comparisons)) {
+        comparisons <- c(comparisons, pair_comparisons)
+      }
+    }
+  }
+  if (length(comparisons) == 0) {
+    stop("These regression results are not comparable: no shared plot_data names.")
   }
   comparisons
 }
 
 meta_make_analyser <- function(analyzers, results, out, calc_type, calc_info, name, function_name, params) {
-  base <- analyzers[[1]]
-  if (!isClass("meta_analyser")) {
-    methods::setClass("meta_analyser",
-                      slots=list(results="list", annotations="list", meta_results="list"),
+  if (!isClass("meta_results")) {
+    methods::setClass("meta_results",
+                      slots=list(meta_results="list"),
                       where=globalenv())
   }
-  source_results <- meta_merge_source_results(results)
   meta_results <- list()
   meta_results[[name]] <- list(
-    functions_applied=list(meta_format_function_info(function_name, params)),
     plot_data=out,
     information=list(calc_type=rep(calc_type, each=length(out)), calc_info=calc_info),
     plots=list()
   )
-  meta_object <- new("meta_analyser",
-                     annotations=base@annotations,
-                     results=source_results,
+  meta_object <- new("meta_results",
                      meta_results=meta_results)
   return(meta_object)
 }
 
-meta_merge_source_results <- function(results) {
-  if (length(results) == 1) {
-    return(results[[1]])
-  }
-  names1 <- names(results[[1]])
-  names2 <- names(results[[2]])
-  if (any(names1 %in% names2)) {
-    names(results[[1]]) <- paste0("analyzer1_", names1)
-    names(results[[2]]) <- paste0("analyzer2_", names2)
-  }
-  c(results[[1]], results[[2]])
-}
-
-meta_format_function_info <- function(function_name, params) {
-  param_str <- paste0(names(params), "=", params, collapse=", ")
-  paste0(function_name, "(", param_str, ")")
-}
-
 meta_build_conservation_comparisons <- function(results) {
-  meta_build_comparisons(results, compare_label="conservation")
+  meta_get_comparison_builder()(results, compare_label="conservation")
 }
 
 meta_normalize_result_names <- function(results) {
@@ -328,14 +403,16 @@ meta_compare_conservation <- function(comp, top_k=50) {
   key2 <- if ("id" %in% names(df2)) df2$id else rownames(df2)
   common <- intersect(key1, key2)
   if (length(common) == 0) {
-    stop("These results are not comparable: no overlapping metabolites for conservation.")
+    warning("meta_conservation(): no overlapping metabolites for comparison")
+    return(NULL)
   }
   df1 <- df1[key1 %in% common, , drop=FALSE]
   df2 <- df2[key2 %in% common, , drop=FALSE]
   df1 <- df1[match(common, key1), , drop=FALSE]
   df2 <- df2[match(common, key2), , drop=FALSE]
   if (!all(c("ci") %in% names(df1)) || !all(c("ci") %in% names(df2))) {
-    stop("Conservation comparison requires a 'ci' column.")
+    warning("meta_conservation(): comparison requires a 'ci' column")
+    return(NULL)
   }
   if (!"id" %in% names(df1)) {
     df1$id <- key1
@@ -407,7 +484,8 @@ meta_compare_matrix_similarity <- function(comp) {
   df2$key <- paste(df2$row, df2$column, sep="__")
   common <- intersect(df1$key, df2$key)
   if (length(common) == 0) {
-    stop("These results are not comparable: no overlapping matrix pairs.")
+    warning("meta_matrix_similarity(): no overlapping matrix pairs for comparison")
+    return(NULL)
   }
   df1 <- df1[df1$key %in% common, , drop=FALSE]
   df2 <- df2[df2$key %in% common, , drop=FALSE]
@@ -426,18 +504,17 @@ meta_compare_matrix_similarity <- function(comp) {
 meta_compare_regression <- function(comp, method) {
   df1 <- comp$plot1
   df2 <- comp$plot2
-  keys <- intersect(names(df1), names(df2))
-  join_cols <- intersect(keys, c("met", "trait"))
-  if (length(join_cols) == 0) {
+  if ("met" %in% names(df1) && "met" %in% names(df2)) {
+    df1$key <- df1$met
+    df2$key <- df2$met
+  } else {
     df1$key <- rownames(df1)
     df2$key <- rownames(df2)
-  } else {
-    df1$key <- apply(df1[, join_cols, drop=FALSE], 1, paste, collapse="__")
-    df2$key <- apply(df2[, join_cols, drop=FALSE], 1, paste, collapse="__")
   }
   common <- intersect(df1$key, df2$key)
   if (length(common) == 0) {
-    stop("These regression results are not comparable: no overlapping rows.")
+    warning("meta_regression(): no overlapping rows for comparison")
+    return(NULL)
   }
   df1 <- df1[df1$key %in% common, , drop=FALSE]
   df2 <- df2[df2$key %in% common, , drop=FALSE]
@@ -471,21 +548,28 @@ meta_compare_regression <- function(comp, method) {
     diff_t <- (df1$beta - df2$beta) / sqrt(df1$se^2 + df2$se^2)
     diff_p <- 2 * stats::pnorm(-abs(diff_t))
     i_sq <- ifelse(abs(diff_t) > 1, ((abs(diff_t) - 1) / abs(diff_t)) * 100, 0)
-    sig <- ifelse(diff_p <= 0.05 / length(common), "significant", "non_significant")
-    het_df <- data.frame(significant=sig, stringsAsFactors=FALSE) %>%
-      dplyr::count(significant) %>%
-      tidyr::spread(key=significant, value=n)
-    out[["het"]] <- cbind.data.frame(
+    out[["het"]] <- data.frame(
       result1=comp$label1,
       result2=comp$label2,
-      n_common=length(common),
-      i_sq_mean=mean(i_sq, na.rm=TRUE),
-      het_df,
+      met=df1$key,
+      beta1=df1$beta,
+      beta2=df2$beta,
+      se1=df1$se,
+      se2=df2$se,
+      diff_t=diff_t,
+      diff_p=diff_p,
+      i_sq=i_sq,
       stringsAsFactors=FALSE
     )
   }
   if ("cor" %in% method) {
-    cor_beta <- stats::cor(df1$beta, df2$beta, use="complete.obs")
+    complete_idx <- stats::complete.cases(df1$beta, df2$beta)
+    if (sum(complete_idx) < 2) {
+      warning("meta_regression(): no complete beta pairs for correlation")
+      cor_beta <- NA_real_
+    } else {
+      cor_beta <- stats::cor(df1$beta, df2$beta, use="complete.obs")
+    }
     out[["cor"]] <- data.frame(
       result1=comp$label1,
       result2=comp$label2,
@@ -532,7 +616,8 @@ meta_compare_feature_overlap <- function(comp) {
   selected2 <- df2$met[df2$selected %in% TRUE]
   common <- intersect(selected1, selected2)
   if (length(common) == 0) {
-    stop("These results are not comparable: no overlapping selected features.")
+    warning("meta_feature_overlap(): no overlapping selected features for comparison")
+    return(NULL)
   }
   union_features <- length(unique(c(selected1, selected2)))
   data.frame(
@@ -569,6 +654,16 @@ meta_prefix_comparison_names <- function(comparisons, prefix) {
   }
   names(comparisons) <- paste(prefix, names(comparisons), sep="__")
   comparisons
+}
+
+meta_get_comparison_builder <- function() {
+  if (exists("meta_build_comparisons", mode="function")) {
+    return(meta_build_comparisons)
+  }
+  if (requireNamespace("MeTime", quietly=TRUE)) {
+    return(get("meta_build_comparisons", envir=asNamespace("MeTime")))
+  }
+  stop("meta_build_comparisons is not available; ensure the MeTime package is loaded.")
 }
 
 meta_group_results_by_calc_type <- function(results) {
