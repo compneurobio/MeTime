@@ -88,6 +88,9 @@ meta_regression_impl <- function(object, method=c("sign", "cor", "het"), result_
   out <- list()
   for (i in seq_along(comparisons)) {
     comp_out <- meta_compare_regression(comparisons[[i]], method)
+    if (is.null(comp_out)) {
+      next
+    }
     comp_names <- paste(names(comparisons)[i], names(comp_out), sep="__")
     out[comp_names] <- comp_out
   }
@@ -647,7 +650,8 @@ meta_compare_regression <- function(comp, method) {
   }
   common <- intersect(df1$key, df2$key)
   if (length(common) == 0) {
-    stop("These regression results are not comparable: no overlapping rows.")
+    warning("meta_regression(): no overlapping rows for comparison")
+    return(NULL)
   }
   df1 <- df1[df1$key %in% common, , drop=FALSE]
   df2 <- df2[df2$key %in% common, , drop=FALSE]
