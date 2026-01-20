@@ -693,7 +693,13 @@ meta_compare_regression <- function(comp, method) {
     )
   }
   if ("cor" %in% method) {
-    cor_beta <- stats::cor(df1$beta, df2$beta, use="complete.obs")
+    complete_idx <- stats::complete.cases(df1$beta, df2$beta)
+    if (sum(complete_idx) < 2) {
+      warning("meta_regression(): no complete beta pairs for correlation")
+      cor_beta <- NA_real_
+    } else {
+      cor_beta <- stats::cor(df1$beta, df2$beta, use="complete.obs")
+    }
     out[["cor"]] <- data.frame(
       result1=comp$label1,
       result2=comp$label2,
