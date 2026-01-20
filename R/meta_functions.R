@@ -467,26 +467,21 @@ meta_build_regression_comparisons_across <- function(results1, results2) {
   }
   comparisons <- list()
   for (res_name in shared_results) {
-    res1 <- results1[[res_name]]
-    res2 <- results2[[res_name]]
+    res1 <- meta_normalize_plot_names(results1[[res_name]])
+    res2 <- meta_normalize_plot_names(results2[[res_name]])
     meta_warn_stratification_mismatch(res1, res2)
-    shared <- intersect(res1$information$calc_info, res2$information$calc_info)
+    shared <- intersect(names(res1$plot_data), names(res2$plot_data))
     if (length(shared) == 0) {
-      stop("These regression results are not comparable: no shared calc_info entries.")
+      stop("These regression results are not comparable: no shared plot_data names.")
     }
     for (info in shared) {
-      idx1 <- which(res1$information$calc_info == info)
-      idx2 <- which(res2$information$calc_info == info)
-      if (length(idx1) == 0 || length(idx2) == 0) {
-        next
-      }
       comparisons[[paste(res_name, info, sep="__")]] <- list(
         result1=res1,
         result2=res2,
         label1=res_name,
         label2=res_name,
-        plot1=res1$plot_data[[idx1[1]]],
-        plot2=res2$plot_data[[idx2[1]]]
+        plot1=res1$plot_data[[info]],
+        plot2=res2$plot_data[[info]]
       )
     }
   }
@@ -639,14 +634,12 @@ meta_compare_matrix_similarity <- function(comp) {
 meta_compare_regression <- function(comp, method) {
   df1 <- comp$plot1
   df2 <- comp$plot2
-  keys <- intersect(names(df1), names(df2))
-  join_cols <- intersect(keys, c("met", "trait"))
-  if (length(join_cols) == 0) {
+  if ("met" %in% names(df1) && "met" %in% names(df2)) {
+    df1$key <- df1$met
+    df2$key <- df2$met
+  } else {
     df1$key <- rownames(df1)
     df2$key <- rownames(df2)
-  } else {
-    df1$key <- apply(df1[, join_cols, drop=FALSE], 1, paste, collapse="__")
-    df2$key <- apply(df2[, join_cols, drop=FALSE], 1, paste, collapse="__")
   }
   common <- intersect(df1$key, df2$key)
   if (length(common) == 0) {
