@@ -11,15 +11,23 @@ meta_matrix_similarity_impl <- function(object, result_index=NULL, name="meta_ma
   results <- meta_collect_results(analyzers, result_index, allowed_calc_types=c("pairwise_distance", "pairwise_correlation"),
                                   function_name="meta_matrix_similarity")
   comparisons <- meta_get_comparison_builder()(results, compare_label="matrix_similarity")
-  out <- list()
+  out <- list(matrix_similarity=list(distance_correlation=list()))
+  plots <- list(matrix_similarity=list(distance_correlation=list()))
   for (i in seq_along(comparisons)) {
     comp <- comparisons[[i]]
     comp_out <- meta_compare_matrix_similarity(comp)
     if (!is.null(comp_out)) {
-      out[[names(comparisons)[i]]] <- comp_out
+      comp_name <- names(comparisons)[i]
+      out$matrix_similarity$distance_correlation[[comp_name]] <- comp_out
+      plot_out <- meta_plot_matrix_similarity(comp, comp_out)
+      if (!is.null(plot_out)) {
+        plots$matrix_similarity$distance_correlation[[comp_name]] <- plot_out
+      }
     }
   }
-  return(meta_make_analyser(analyzers, results, out, calc_type="meta_matrix_similarity",
+  out <- out[vapply(out, function(x) length(x) > 0, logical(1))]
+  plots <- plots[names(out)]
+  return(meta_make_analyser(analyzers, results, out, plots=plots, calc_type="meta_matrix_similarity",
                             calc_info=names(out), name=name, function_name="meta_matrix_similarity",
                             params=list(result_index=result_index)))
 }

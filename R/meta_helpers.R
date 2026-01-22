@@ -1,3 +1,6 @@
+
+setClass("meta_results", slots=list(meta_results="list"))
+
 meta_unpack_analyzers <- function(object, function_name) {
   if (inherits(object, "metime_analyser")) {
     return(list(object))
@@ -358,17 +361,20 @@ meta_build_regression_comparisons_across <- function(results1, results2) {
   comparisons
 }
 
-meta_make_analyser <- function(analyzers, results, out, calc_type, calc_info, name, function_name, params) {
+meta_make_analyser <- function(analyzers, results, out, plots=list(), calc_type, calc_info, name, function_name, params) {
   if (!isClass("meta_results")) {
     methods::setClass("meta_results",
                       slots=list(meta_results="list"),
                       where=globalenv())
   }
+  if (length(calc_info) == 0 && length(out) > 0) {
+    calc_info <- names(out)
+  }
   meta_results <- list()
   meta_results[[name]] <- list(
     plot_data=out,
-    information=list(calc_type=rep(calc_type, each=length(out)), calc_info=calc_info),
-    plots=list()
+    information=list(calc_type=rep(calc_type, length(out)), calc_info=calc_info),
+    plots=plots
   )
   meta_object <- new("meta_results",
                      meta_results=meta_results)
@@ -377,6 +383,16 @@ meta_make_analyser <- function(analyzers, results, out, calc_type, calc_info, na
 
 meta_build_conservation_comparisons <- function(results) {
   meta_get_comparison_builder()(results, compare_label="conservation")
+}
+
+meta_conservation_group_name <- function(comp) {
+  type1 <- unique(comp$result1$information$calc_type)
+  type2 <- unique(comp$result2$information$calc_type)
+  types <- unique(c(type1, type2))
+  if (any(types %in% "CI_metabotype")) {
+    return("conservation_metabotype")
+  }
+  "conservation_metabolite"
 }
 
 meta_normalize_result_names <- function(results) {
@@ -626,6 +642,308 @@ meta_compare_feature_overlap <- function(comp) {
     n_common=length(common),
     jaccard=length(common) / union_features,
     stringsAsFactors=FALSE
+  )
+}
+
+meta_plot_scatter_plotly <- function(df, x_col, y_col, title=NULL, subtitle=NULL, x_lab=NULL, y_lab=NULL, add_line=TRUE) {
+  plot <- plotly::plot_ly(
+    x=df[[x_col]],
+    y=df[[y_col]],
+    type="scatter",
+    mode="markers"
+  )
+  if (add_line) {
+    complete_idx <- stats::complete.cases(df[[x_col]], df[[y_col]])
+    if (sum(complete_idx) > 1) {
+      fit_df <- data.frame(
+        x=df[[x_col]][complete_idx],
+        y=df[[y_col]][complete_idx]
+      )
+      fit <- stats::lm(y ~ x, data=fit_df)
+      x_vals <- seq(min(fit_df$x, na.rm=TRUE), max(fit_df$x, na.rm=TRUE), length.out=50)
+      y_vals <- stats::predict(fit, newdata=data.frame(x=x_vals))
+      plot <- plotly::add_lines(plot, x=x_vals, y=y_vals, inherit=FALSE, name="fit")
+    }
+  }
+  title_text <- title
+  if (!is.null(subtitle)) {
+    title_text <- paste0(title_text, "<br><sup>", subtitle, "</sup>")
+  }
+  plotly::layout(
+    plot,
+    title=list(text=title_text),
+    xaxis=list(title=x_lab),
+    yaxis=list(title=y_lab)
+  )
+}
+
+meta_plot_venn2_plotly <- function(label1, label2, n1_only, n2_only, n_overlap, title=NULL, subtitle=NULL) {
+  plot <- plotly::plot_ly()
+  title_text <- title
+  if (!is.null(subtitle)) {
+    title_text <- paste0(title_text, "<br><sup>", subtitle, "</sup>")
+  }
+  plotly::layout(
+    plot,
+    title=list(text=title_text),
+    xaxis=list(visible=FALSE, range=c(0, 1)),
+    yaxis=list(visible=FALSE, range=c(0, 1)),
+    shapes=list(
+      list(type="circle", xref="x", yref="y", x0=0.2, x1=0.6, y0=0.25, y1=0.75,
+           fillcolor="rgba(51,102,187,0.3)", line=list(color="steelblue")),
+      list(type="circle", xref="x", yref="y", x0=0.4, x1=0.8, y0=0.25, y1=0.75,
+           fillcolor="rgba(204,102,51,0.3)", line=list(color="chocolate"))
+    ),
+    annotations=list(
+      list(x=0.3, y=0.8, text=label1, showarrow=FALSE),
+      list(x=0.7, y=0.8, text=label2, showarrow=FALSE),
+      list(x=0.3, y=0.5, text=as.character(n1_only), showarrow=FALSE),
+      list(x=0.7, y=0.5, text=as.character(n2_only), showarrow=FALSE),
+      list(x=0.5, y=0.5, text=as.character(n_overlap), showarrow=FALSE)
+    )
+  )
+}
+
+meta_plot_sign_heatmap <- function(counts, title=NULL, subtitle=NULL) {
+  z <- matrix(
+    c(counts[["++"]], counts[["+-"]], counts[["-+"]], counts[["--"]]),
+    nrow=2,
+    byrow=TRUE,
+    dimnames=list(c("+", "-"), c("+", "-"))
+  )
+  title_text <- title
+  if (!is.null(subtitle)) {
+    title_text <- paste0(title_text, "<br><sup>", subtitle, "</sup>")
+  }
+  plotly::plot_ly(
+    x=colnames(z),
+    y=rownames(z),
+    z=z,
+    type="heatmap"
+  ) %>%
+    plotly::layout(
+      title=list(text=title_text),
+      xaxis=list(title="Result 2 sign"),
+      yaxis=list(title="Result 1 sign")
+    )
+}
+
+meta_plot_conservation <- function(comp, comp_out) {
+  df1 <- comp$plot1
+  df2 <- comp$plot2
+  key1 <- if ("id" %in% names(df1)) df1$id else rownames(df1)
+  key2 <- if ("id" %in% names(df2)) df2$id else rownames(df2)
+  common <- intersect(key1, key2)
+  if (length(common) == 0 || !"ci" %in% names(df1) || !"ci" %in% names(df2)) {
+    return(list())
+  }
+  df1 <- df1[key1 %in% common, , drop=FALSE]
+  df2 <- df2[key2 %in% common, , drop=FALSE]
+  df1 <- df1[match(common, key1), , drop=FALSE]
+  df2 <- df2[match(common, key2), , drop=FALSE]
+  scatter_df <- data.frame(ci1=df1$ci, ci2=df2$ci)
+  rank_df <- data.frame(rank1=rank(-df1$ci, ties.method="average"),
+                        rank2=rank(-df2$ci, ties.method="average"))
+  out <- list()
+  if (!is.null(comp_out[["score_cor_pearson"]])) {
+    pearson_val <- comp_out[["score_cor_pearson"]]$score_correlation[1]
+    out[["score_cor_pearson"]] <- meta_plot_scatter_plotly(
+      scatter_df,
+      "ci1",
+      "ci2",
+      title="Conservation score comparison",
+      subtitle=paste0("Pearson r = ", round(pearson_val, 3)),
+      x_lab=comp$label1,
+      y_lab=comp$label2,
+      add_line=TRUE
+    )
+  }
+  if (!is.null(comp_out[["score_cor_spearman"]])) {
+    spearman_val <- comp_out[["score_cor_spearman"]]$score_correlation[1]
+    out[["score_cor_spearman"]] <- meta_plot_scatter_plotly(
+      scatter_df,
+      "ci1",
+      "ci2",
+      title="Conservation score comparison",
+      subtitle=paste0("Spearman rho = ", round(spearman_val, 3)),
+      x_lab=comp$label1,
+      y_lab=comp$label2,
+      add_line=TRUE
+    )
+  }
+  if (!is.null(comp_out[["rank_kendall"]])) {
+    kendall_val <- comp_out[["rank_kendall"]]$rank_similarity[1]
+    out[["rank_kendall"]] <- meta_plot_scatter_plotly(
+      rank_df,
+      "rank1",
+      "rank2",
+      title="Conservation rank comparison",
+      subtitle=paste0("Kendall tau = ", round(kendall_val, 3)),
+      x_lab=comp$label1,
+      y_lab=comp$label2,
+      add_line=TRUE
+    )
+  }
+  if (!is.null(comp_out[["rank_spearman"]])) {
+    spearman_val <- comp_out[["rank_spearman"]]$rank_similarity[1]
+    out[["rank_spearman"]] <- meta_plot_scatter_plotly(
+      rank_df,
+      "rank1",
+      "rank2",
+      title="Conservation rank comparison",
+      subtitle=paste0("Spearman rho = ", round(spearman_val, 3)),
+      x_lab=comp$label1,
+      y_lab=comp$label2,
+      add_line=TRUE
+    )
+  }
+  if (!is.null(comp_out[["topk_jaccard"]])) {
+    top_k <- comp_out[["topk_jaccard"]]$top_k[1]
+    overlap <- comp_out[["topk_jaccard"]]$n_overlap[1]
+    out[["topk_jaccard"]] <- meta_plot_venn2_plotly(
+      label1=comp$label1,
+      label2=comp$label2,
+      n1_only=max(0, top_k - overlap),
+      n2_only=max(0, top_k - overlap),
+      n_overlap=overlap,
+      title="Top-K overlap",
+      subtitle=paste0("K = ", top_k, ", Jaccard = ", round(comp_out[["topk_jaccard"]]$jaccard[1], 3))
+    )
+  }
+  out
+}
+
+meta_plot_matrix_similarity <- function(comp, comp_out) {
+  df1 <- comp$plot1
+  df2 <- comp$plot2
+  required <- c("row", "column", "dist")
+  if (!all(required %in% names(df1)) || !all(required %in% names(df2))) {
+    return(NULL)
+  }
+  df1$key <- paste(df1$row, df1$column, sep="__")
+  df2$key <- paste(df2$row, df2$column, sep="__")
+  common <- intersect(df1$key, df2$key)
+  if (length(common) == 0) {
+    return(NULL)
+  }
+  df1 <- df1[df1$key %in% common, , drop=FALSE]
+  df2 <- df2[df2$key %in% common, , drop=FALSE]
+  df1 <- df1[match(common, df1$key), , drop=FALSE]
+  df2 <- df2[match(common, df2$key), , drop=FALSE]
+  scatter_df <- data.frame(dist1=df1$dist, dist2=df2$dist)
+  subtitle <- NULL
+  if (!is.null(comp_out$dist_correlation)) {
+    subtitle <- paste0("Correlation = ", round(comp_out$dist_correlation[1], 3))
+  }
+  meta_plot_scatter_plotly(
+    scatter_df,
+    "dist1",
+    "dist2",
+    title="Matrix similarity",
+    subtitle=subtitle,
+    x_lab=comp$label1,
+    y_lab=comp$label2,
+    add_line=TRUE
+  )
+}
+
+meta_plot_regression <- function(comp, comp_out) {
+  aligned <- meta_regression_align(comp, warn=FALSE)
+  if (is.null(aligned)) {
+    return(list())
+  }
+  df1 <- aligned$df1
+  df2 <- aligned$df2
+  scatter_df <- data.frame(beta1=df1$beta, beta2=df2$beta)
+  out <- list()
+  if (!is.null(comp_out[["cor"]])) {
+    cor_val <- comp_out[["cor"]]$beta_correlation[1]
+    subtitle <- if (is.na(cor_val)) {
+      "Correlation unavailable"
+    } else {
+      paste0("Correlation = ", round(cor_val, 3))
+    }
+    out[["cor"]] <- meta_plot_scatter_plotly(
+      scatter_df,
+      "beta1",
+      "beta2",
+      title="Regression beta correlation",
+      subtitle=subtitle,
+      x_lab=comp$label1,
+      y_lab=comp$label2,
+      add_line=TRUE
+    )
+  }
+  if (!is.null(comp_out[["het"]])) {
+    out[["het"]] <- meta_plot_scatter_plotly(
+      scatter_df,
+      "beta1",
+      "beta2",
+      title="Regression heterogeneity",
+      subtitle="Beta comparison",
+      x_lab=comp$label1,
+      y_lab=comp$label2,
+      add_line=FALSE
+    )
+  }
+  if (!is.null(comp_out[["sign"]])) {
+    sign_df <- comp_out[["sign"]]
+    get_count <- function(col) if (col %in% names(sign_df)) sign_df[[col]][1] else 0
+    counts <- list(
+      "++"=get_count("++"),
+      "+-"=get_count("+-"),
+      "-+"=get_count("-+"),
+      "--"=get_count("--")
+    )
+    out[["sign"]] <- meta_plot_sign_heatmap(
+      counts,
+      title="Regression sign agreement",
+      subtitle=paste0("n = ", sign_df$n_common[1])
+    )
+  }
+  out
+}
+
+meta_plot_network_overlap <- function(comp) {
+  edge1 <- meta_extract_edges(comp$plot1)
+  edge2 <- meta_extract_edges(comp$plot2)
+  if (!all(c("node1", "node2") %in% names(edge1)) || !all(c("node1", "node2") %in% names(edge2))) {
+    return(NULL)
+  }
+  type1 <- unique(comp$result1$information$calc_type)
+  type2 <- unique(comp$result2$information$calc_type)
+  directed <- length(intersect(c(type1, type2), "temporal_network")) >= 1
+  edge_id1 <- meta_make_edge_ids(edge1, directed=directed)
+  edge_id2 <- meta_make_edge_ids(edge2, directed=directed)
+  overlap <- intersect(edge_id1, edge_id2)
+  meta_plot_venn2_plotly(
+    label1=comp$label1,
+    label2=comp$label2,
+    n1_only=length(setdiff(edge_id1, edge_id2)),
+    n2_only=length(setdiff(edge_id2, edge_id1)),
+    n_overlap=length(overlap),
+    title="Network overlap",
+    subtitle=paste0("Jaccard = ", round(length(overlap) / length(unique(c(edge_id1, edge_id2))), 3))
+  )
+}
+
+meta_plot_feature_overlap <- function(comp) {
+  df1 <- comp$plot1
+  df2 <- comp$plot2
+  if (!all(c("met", "selected") %in% names(df1)) || !all(c("met", "selected") %in% names(df2))) {
+    return(NULL)
+  }
+  selected1 <- df1$met[df1$selected %in% TRUE]
+  selected2 <- df2$met[df2$selected %in% TRUE]
+  overlap <- intersect(selected1, selected2)
+  meta_plot_venn2_plotly(
+    label1=comp$label1,
+    label2=comp$label2,
+    n1_only=length(setdiff(selected1, selected2)),
+    n2_only=length(setdiff(selected2, selected1)),
+    n_overlap=length(overlap),
+    title="Feature overlap",
+    subtitle=paste0("Jaccard = ", round(length(overlap) / length(unique(c(selected1, selected2))), 3))
   )
 }
 
