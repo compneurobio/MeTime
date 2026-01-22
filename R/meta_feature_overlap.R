@@ -22,6 +22,8 @@ meta_feature_overlap_impl <- function(object, result_index=NULL, name="meta_feat
       plots$feature_overlap$jaccard[[comp_name]] <- meta_plot_feature_overlap(comparisons[[i]])
     }
   }
+  out$feature_overlap <- out$feature_overlap[vapply(out$feature_overlap, function(x) length(x) > 0, logical(1))]
+  plots$feature_overlap <- plots$feature_overlap[names(out$feature_overlap)]
   out <- out[vapply(out, function(x) length(x) > 0, logical(1))]
   plots <- plots[names(out)]
   return(meta_make_analyser(analyzers, results, out, plots=plots, calc_type="meta_feature_overlap",

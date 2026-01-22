@@ -517,7 +517,7 @@ meta_compare_matrix_similarity <- function(comp) {
   )
 }
 
-meta_compare_regression <- function(comp, method) {
+meta_regression_align <- function(comp, warn=TRUE) {
   df1 <- comp$plot1
   df2 <- comp$plot2
   if ("met" %in% names(df1) && "met" %in% names(df2)) {
@@ -529,7 +529,9 @@ meta_compare_regression <- function(comp, method) {
   }
   common <- intersect(df1$key, df2$key)
   if (length(common) == 0) {
-    warning("meta_regression(): no overlapping rows for comparison")
+    if (warn) {
+      warning("meta_regression(): no overlapping rows for comparison")
+    }
     return(NULL)
   }
   df1 <- df1[df1$key %in% common, , drop=FALSE]
@@ -537,8 +539,24 @@ meta_compare_regression <- function(comp, method) {
   df1 <- df1[match(common, df1$key), , drop=FALSE]
   df2 <- df2[match(common, df2$key), , drop=FALSE]
   if (!all(c("beta") %in% names(df1)) || !all(c("beta") %in% names(df2))) {
-    stop("Regression comparison requires a 'beta' column.")
+    if (warn) {
+      warning("Regression comparison requires a 'beta' column.")
+    }
+    return(NULL)
   }
+  list(df1=df1, df2=df2, common=common)
+}
+
+meta_compare_regression <- function(comp, method) {
+  df1 <- comp$plot1
+  df2 <- comp$plot2
+  aligned <- meta_regression_align(comp, warn=TRUE)
+  if (is.null(aligned)) {
+    return(NULL)
+  }
+  df1 <- aligned$df1
+  df2 <- aligned$df2
+  common <- aligned$common
   out <- list()
   if ("sign" %in% method) {
     sign_df <- data.frame(
