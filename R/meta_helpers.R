@@ -17,13 +17,14 @@ meta_collect_results <- function(analyzers, result_index, allowed_calc_types, fu
     if (is.list(result_index) && length(result_index) == length(analyzers)) {
       this_index <- result_index[[i]]
     }
-    meta_resolve_results(analyzers[[i]], this_index, allowed_calc_types, function_name)
+    allow_partial <- is.null(this_index)
+    meta_resolve_results(analyzers[[i]], this_index, allowed_calc_types, function_name, allow_partial=allow_partial)
   })
   results <- lapply(results, meta_normalize_result_names)
   return(results)
 }
 
-meta_resolve_results <- function(analyzer, result_index, allowed_calc_types, function_name) {
+meta_resolve_results <- function(analyzer, result_index, allowed_calc_types, function_name, allow_partial=FALSE) {
   results <- analyzer@results
   if (length(results) == 0) {
     stop(paste0(function_name, "(): no results available"))
@@ -42,7 +43,39 @@ meta_resolve_results <- function(analyzer, result_index, allowed_calc_types, fun
       !all(res$information$calc_type %in% allowed_calc_types)
     }, logical(1))
     if (any(invalid)) {
-      stop(paste0(function_name, "(): result calc_type does not match required types"))
+      invalid_names <- names(selected[invalid])
+      if (is.null(invalid_names) || any(invalid_names == "")) {
+        invalid_names <- paste0("result_", seq_along(selected[invalid]))
+      }
+      if (allow_partial) {
+        invalid_types <- vapply(selected[invalid], function(res) {
+          paste(res$information$calc_type, collapse=", ")
+        }, character(1))
+        warning(paste0(
+          function_name,
+          "(): dropping results with calc_type ",
+          paste(sprintf("%s (%s)", invalid_names, invalid_types), collapse="; "),
+          " (allowed: ",
+          paste(allowed_calc_types, collapse=", "),
+          ")"
+        ))
+        selected <- selected[!invalid]
+        if (length(selected) == 0) {
+          stop(paste0(function_name, "(): no results match required types"))
+        }
+      } else {
+        invalid_types <- vapply(selected[invalid], function(res) {
+          paste(res$information$calc_type, collapse=", ")
+        }, character(1))
+        stop(paste0(
+          function_name,
+          "(): result calc_type does not match required types: ",
+          paste(sprintf("%s (%s)", invalid_names, invalid_types), collapse="; "),
+          " (allowed: ",
+          paste(allowed_calc_types, collapse=", "),
+          ")"
+        ))
+      }
     }
   }
   return(selected)
@@ -649,16 +682,17 @@ meta_compare_feature_overlap <- function(comp) {
   selected1 <- df1$met[df1$selected %in% TRUE]
   selected2 <- df2$met[df2$selected %in% TRUE]
   common <- intersect(selected1, selected2)
-  if (length(common) == 0) {
-    warning("meta_feature_overlap(): no overlapping selected features for comparison")
-    return(NULL)
-  }
   union_features <- length(unique(c(selected1, selected2)))
+  if (union_features == 0) {
+    warning("meta_feature_overlap(): no selected features for comparison")
+  } else if (length(common) == 0) {
+    warning("meta_feature_overlap(): no overlapping selected features for comparison")
+  }
   data.frame(
     result1=comp$label1,
     result2=comp$label2,
     n_common=length(common),
-    jaccard=length(common) / union_features,
+    jaccard=ifelse(union_features == 0, NA_real_, length(common) / union_features),
     stringsAsFactors=FALSE
   )
 }
@@ -954,6 +988,12 @@ meta_plot_feature_overlap <- function(comp) {
   selected1 <- df1$met[df1$selected %in% TRUE]
   selected2 <- df2$met[df2$selected %in% TRUE]
   overlap <- intersect(selected1, selected2)
+  union_features <- length(unique(c(selected1, selected2)))
+  subtitle <- if (union_features == 0) {
+    "Jaccard unavailable"
+  } else {
+    paste0("Jaccard = ", round(length(overlap) / union_features, 3))
+  }
   meta_plot_venn2_plotly(
     label1=comp$label1,
     label2=comp$label2,
@@ -961,7 +1001,7 @@ meta_plot_feature_overlap <- function(comp) {
     n2_only=length(setdiff(selected2, selected1)),
     n_overlap=length(overlap),
     title="Feature overlap",
-    subtitle=paste0("Jaccard = ", round(length(overlap) / length(unique(c(selected1, selected2))), 3))
+    subtitle=subtitle
   )
 }
 
