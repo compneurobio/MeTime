@@ -605,7 +605,8 @@ meta_compare_regression <- function(comp, method) {
       result2=comp$label2,
       n_common=length(common),
       sign_df,
-      stringsAsFactors=FALSE
+      stringsAsFactors=FALSE,
+      check.names=FALSE
     )
   }
   if ("het" %in% method) {
@@ -702,7 +703,14 @@ meta_plot_scatter_plotly <- function(df, x_col, y_col, title=NULL, subtitle=NULL
     x=df[[x_col]],
     y=df[[y_col]],
     type="scatter",
-    mode="markers"
+    mode="markers",
+    hovertemplate=paste0(
+      "x: %{x}<br>",
+      "y: %{y}<br>",
+      "column_for_x: ", x_col, "<br>",
+      "column_for_y: ", y_col,
+      "<extra></extra>"
+    )
   )
   if (add_line) {
     complete_idx <- stats::complete.cases(df[[x_col]], df[[y_col]])
