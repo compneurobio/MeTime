@@ -140,25 +140,27 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
 
   ### write plot into the rmd file
   write_report_plot <- function(plot_location, title=NULL, caption=NULL, type="html", interactive=F) {
-    if(type == "html" & interactive) {
-      out <- c(ifelse(!is.null(title), paste0('\n', title, ' \n'), ""),
-               "```{r,echo=F, warning=FALSE, message=FALSE}\n",
-               "plotly::ggplotly(",
-               plot_location,
-               ")",
-               "\n```",
-               ifelse(!is.null(caption), paste0('\n', caption, ' \n'), "")
-      )
-    } else if(type == "html" & !interactive) {
+    if(type == "html") {
       out <- c(ifelse(!is.null(title), paste0('\n', title, ' \n'), ""),
                "```{r,echo=F, warning=FALSE, message=FALSE}\n",
                "plot_obj <- ",
                plot_location,
                "\n",
-               "if (inherits(plot_obj, \"htmlwidget\")) {\n",
+               "interactive_plot <- ", ifelse(interactive, "TRUE", "FALSE"), "\n",
+               "if (inherits(plot_obj, \"ggplot\")) {\n",
+               "  if (interactive_plot) {\n",
+               "    plotly::ggplotly(plot_obj)\n",
+               "  } else {\n",
+               "    plot_obj\n",
+               "  }\n",
+               "} else if (inherits(plot_obj, \"plotly\") || inherits(plot_obj, \"htmlwidget\")) {\n",
                "  plot_obj\n",
                "} else if (is.list(plot_obj) && length(plot_obj) == 1 && inherits(plot_obj[[1]], \"htmlwidget\")) {\n",
                "  plot_obj[[1]]\n",
+               "} else if (is.list(plot_obj) && !is.null(plot_obj$nodes) && !is.null(plot_obj$edges)) {\n",
+               "  visNetwork::visNetwork(nodes = plot_obj$nodes, edges = plot_obj$edges)\n",
+               "} else if (is.list(plot_obj) && !is.null(plot_obj$x) && !is.null(plot_obj$x$nodes) && !is.null(plot_obj$x$edges)) {\n",
+               "  visNetwork::visNetwork(nodes = plot_obj$x$nodes, edges = plot_obj$x$edges)\n",
                "} else {\n",
                "  plot_obj\n",
                "}\n",
@@ -202,15 +204,18 @@ setMethod("write_report", "metime_analyser", function(object, title=NULL, file=N
       get_db <- tools::Rd_db(package = get_package)
       if(length(grep(pattern=fun, names(get_db), value=T)) > 0) {
         my_fun_db <- get_db[[grep(pattern=paste0(fun, ".Rd"), names(get_db), value=T)]]
-        out <- capture.output(tools::Rd2txt(my_fun_db))
-      } else {
-        out <- "function not found"
-      }
+      out <- capture.output(tools::Rd2txt(my_fun_db))
+    } else {
+      out <- "function not found"
+    }
 
       out <- out %>%
         gsub(pattern=fun, fixed=T, replacement = "\n         ")
     }
-    out <- out %>% gsub(pattern='"', replacement = "'", fixed = T)
+    out <- out %>%
+      gsub(pattern="_\b", replacement = "", fixed = TRUE) %>%
+      gsub(pattern="\b", replacement = "", fixed = TRUE) %>%
+      gsub(pattern='"', replacement = "'", fixed = TRUE)
     out <- paste0(out, collapse = "\n")
     out <- gsub("\n", "\\\\n", out, fixed = TRUE)
     return(out)
