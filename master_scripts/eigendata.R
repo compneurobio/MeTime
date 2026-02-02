@@ -1,23 +1,22 @@
 require(MeTime)
 
 #loading the imputed analyser object
-
-load("adni_nmr_data")
+load("adni_q500_data")
 # Dataset of interest
-which_data <- "nmr_data"
+which_data <- "biocrates_data"
 
 
-my_analyzer <- adni_nmr_data %>%
+my_analyzer <- adni_q500_data %>%
   add_screening_vars(vars=c("APOEGrp", "DXGrp_longi", "PTGENDER", "PTEDUCAT")) %>% 
   add_distribution_vars_to_rows(screening_vars=NULL, 
-                                distribution_vars=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp",  "DXGrp_longi", "PTGENDER", "Age", "BMI", "PTEDUCAT"), 
+                                distribution_vars=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", "APOEGrp",  "DXGrp_long", "PTGENDER", "Age", "BMI", "PTEDUCAT"), 
                                 which_data=which_data) %>%
   mod_mutate(which_data = which_data, type="row_data", 
              APOEGrp=as.factor(APOEGrp),
              PTGENDER=as.factor(PTGENDER),
              PTEDUCAT=as.factor(PTEDUCAT),
-             DXGrp_longi = ifelse(DXGrp_longi == "CN_AD_convert", "AD_converter", DXGrp_longi),
-             DXGrp_longi = ifelse(DXGrp_longi == "MCI_AD_convert", "AD_converter",DXGrp_longi)) %>%
+             DXGrp_long = ifelse(DXGrp_long == "CN_AD_convert", "AD_converter", DXGrp_longi),
+             DXGrp_long = ifelse(DXGrp_long == "MCI_AD_convert", "AD_converter",DXGrp_long)) %>%
   mod_filter(which_data = which_data,
              type="row_data",
              !DXGrp_longi %in% c("CN_MCI_convert","MCI_CN_revert","mix_AD_stable","mix_CN_stable","mix_MCI_stable")) %>%

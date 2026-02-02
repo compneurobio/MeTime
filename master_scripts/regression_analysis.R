@@ -1,7 +1,7 @@
 require(MeTime)
 
 #loading the imputed analyser object
-load("adni_nmr_data")
+load("adni_q500_data")
 # load covariate sheets
 load("covariate_sheets")
 
@@ -11,11 +11,11 @@ linear_models <- covariate_sheets$lm
 gamm <- covariate_sheets$lmm
 
 
-which_data <- "nmr_data"
-object <- adni_nmr_data
+which_data <- "biocrates_data"
+object <- adni_q500_data
 # in this example we show you different kinds of regressions you can perform in R:
 
-adni_nmr_data <- adni_nmr_data %>%
+regressions <- adni_q500_data %>%
   	add_distribution_vars_to_rows(screening_vars=NULL, 
                                 distribution_vars=c("APOEGrp", "PTGENDER", "Age", "BMI", "PTEDUCAT", "DXGrp_long"), 
                                 which_data=which_data) %>%
@@ -26,17 +26,16 @@ adni_nmr_data <- adni_nmr_data %>%
     mod_filter_timepoints(which_data=which_data, timepoints=c("t0", "t12", "t24")) %>%
     mod_trans_zscore(which_data=which_data) %>%
     mod_merge_data_and_row_data(which_data=which_data, 
-        cols_list=list(data=NULL, row_data=c("APOEGrp", "PTGENDER", "Age", "BMI", "PTEDUCAT", "DXGrp_long")),
-        name="nmr_data_merged") %>%
-    mod_merge_data(which_data=c("phenotype_data","medication_data", "nmr_data_merged"), 
-                 filter_sample="biocrates_data", name="regression", append=TRUE,
-                 cols_list=list(nmr_data=names(object@list_of_data[["nmr_data_merged"]]), 
+        cols_list=list(data=NULL, row_data=c("APOEGrp", "PTGENDER", "Age", "BMI", "PTEDUCAT", "DXGrp_long", "TOTAL_C", "HDL_C")),
+        name="biocrates_data_merged") %>%
+    mod_merge_data(which_data=c("phenotype_data","medication_data", "biocrates_data_merged"), 
+                 filter_sample="biocrates_data_merged", name="regression", append=TRUE,
+                 cols_list=list(nmr_data=names(object@list_of_data[["biocrates_data_merged"]]), 
                                 phenotype_data=c("CSF_Roche_Abeta42", "LEntCtx_vol", "LEntCtx_Thick", "REntCtx_vol", "REntCtx_Thick", 
                                 				 "CSF_Roche_Tau", "CSF_Roche_PTau", "ADAS13", "ADNI_MEM", "ADNI_EF", "ADNI_LAN", "HippVol", 
                                 				 "GlobalCtx_Thick", "Global_vol", "FDG_Cing_Mean", "FDG_LAng_Mean", "FDG_RAng_Mean", 
                                 				 "FDG_LTemp_Mean", "FDG_RTemp_Mean", "DXGrp")
-                                medication_data=names(object@list_of_data$medication_data),
-                                nmr_data=c("TOTAL_C", "HDL_C"))) %>% 
+                                medication_data=names(object@list_of_data$medication_data))) %>% 
     mod_mutate(which_data="regression", 
              "diagnostic_group" = factor(DXGrp_long, levels=c("CN", "CN_MCI_convert","MCI_stable", "AD_converter", "AD")),
              "abeta42" =  CSF_Roche_Abeta42 %>% as.numeric() %>% scale(),
@@ -57,7 +56,7 @@ adni_nmr_data <- adni_nmr_data %>%
 
 # running regression analysis in different objects otherwise the objects would blow up in size
 # multi-timepoint meta analysis here
-std_meta <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",x=meta, id="id") %>%
+std_meta <- regressions %>% add_data(which_data="regression", type="col_data",x=meta, id="id") %>%
     calc_lmm(which_data="regression", 
             name="adni_nmr_meta", 
             stratifications=NULL, 
@@ -67,7 +66,7 @@ std_meta <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",
 
 # Time-interaction analysis
 
-std_lmm <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",x=lmm, id="id") %>%
+std_lmm <- regressions %>% add_data(which_data="regression", type="col_data",x=lmm, id="id") %>%
     calc_lmm(which_data="regression", 
             name="biocrates_time_interaction", 
             stratifications=NULL, 
@@ -77,7 +76,7 @@ std_lmm <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",x
 
 # GAMM analysis here - all continuous covariates are smoothed
 
-std_gamm <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",x=lmm, id="id") %>%
+std_gamm <- regressions %>% add_data(which_data="regression", type="col_data",x=lmm, id="id") %>%
     calc_gamm(which_data="regression", 
             name="biocrates_time_interaction", 
             stratifications=NULL, 
@@ -87,7 +86,7 @@ std_gamm <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",
 
 # linear models for cross-sectional analysis - example shown for baseline
 
-std_lm0 <- adni_nmr_data %>% add_data(which_data="regression", type="col_data",x=lm_model, id="id") %>%
+std_lm0 <- regressions %>% add_data(which_data="regression", type="col_data",x=lm_model, id="id") %>%
     calc_lm(which_data="regression", 
              name="biocrates_lm0", 
              stratifications=NULL, 

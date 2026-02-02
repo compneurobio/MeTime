@@ -1,21 +1,20 @@
 require(MeTime)
 
 #loading the imputed analyser object
-load("adni_nmr_data")
+load("adni_q500_data")
 # Dataset of interest
-dataset_name <- "nmr_data"
+dataset_name <- "biocrates_data"
 medication_name <- "medication_data"
 exclude_meds <-  c("N06DX","N06DA") # exclude anti-dementia drugs
 
-feature_selection <- adni_nmr_data %>% 
+feature_selection <- adni_q500_data %>% 
 				 	add_distribution_vars_to_rows(screening_vars=NULL, 
 							distribution_vars=c("ADNI_MEM", "ADNI_LAN", "ADNI_EF", 
 								"APOEGrp",  "DXGrp_longi", "PTGENDER", "Age", "BMI"), 
 							which_data=which_data) %>% 
 				 	mod_mutate(which_data=which_data, type="row_data", 
 				 		PTGENDER=as.factor(PTGENDER), APOEGrp=as.factor(APOEGrp)) %>% 
-          mod_rename(which_data = which_data, type="col_data", super_pathway="Group", sub_pathway="Subgroup") %>% 
-          mod_select(which_data= which_data, type="data", !contains("pct|PCT")) 
+          mod_rename(which_data = which_data, type="col_data", sub_pathway="Class")
 
 # In this example we showcase selection of medication for later using them as covariates
 # DO NOT RUN this locally it is commented out
