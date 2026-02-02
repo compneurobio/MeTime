@@ -1,0 +1,58 @@
+---
+title: "Networks"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Networks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette shows how to build longitudinal Gaussian graphical model (GGM) networks.
+
+## Prerequisites
+
+```{r setup, eval=FALSE}
+library(MeTime)
+library(magrittr)
+```
+
+## Workflow
+
+```{r, eval=FALSE}
+# Load the imputed analyser object.
+load("adni_nmr_data")
+which_data <- "nmr_data"
+
+networks_object <- adni_nmr_data %>%
+  add_distribution_vars_to_rows(
+    screening_vars=NULL,
+    distribution_vars=c("APOEGrp", "PTGENDER", "Age", "BMI", "PTEDUCAT", "DXGrp_long"),
+    which_data=which_data
+  ) %>%
+  mod_merge_row_data_and_data(
+    which_data=which_data,
+    cols_list=list(data=NULL, row_data=c("APOEGrp", "PTGENDER", "Age", "BMI", "PTEDUCAT")),
+    append=T,
+    name="ggm_data"
+  ) %>%
+  mod_mutate(
+    which_data="ggm_data",
+    type="data",
+    APOEGrp=as.numeric(APOEGrp),
+    PTGENDER=as.numeric(PTGENDER),
+    PTEDUCAT=as.numeric(PTEDUCAT)
+  ) %>%
+  calc_ggm_genenet(
+    which_data="ggm_data",
+    threshold="li",
+    all=FALSE,
+    cols_for_meta=list(nmr_data=c(sub_pathway="Group")),
+    covariates=c("Age", "BMI", "APOEGrp", "PTGENDER", "PTEDUCAT", "TOTAL_C", "HDL_C"),
+    stratifications=list(time=c("t0", "t12", "t24")),
+    name="genenet_ggm_results"
+  ) %>%
+  mod_generate_plots(type="ggm_longitudinal")
+
+networks_object %>%
+  write_report(title="ADNI NMR networks", file="networks.html")
+```

@@ -15,7 +15,7 @@
 #' Eg: results_index=1:2, sub_results=list(c(3,4), c(5,6)), then groups <- c("name_1_3", "name_1_4", "name_2_5", "name_2_6")
 #' @param name character to name the new merged results
 #' @returns metime_analyser object with merged results 
-#' @seealso [mod_merge_data]  
+#' @seealso [mod_merge_data], [mod_merge_row_data_and_data]  
 #' @export
 mod_merge_results <- function(object, results_index, sub_results=1, groups, name) {
 		if(length(results_index)==0) {

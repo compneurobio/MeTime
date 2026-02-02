@@ -5,7 +5,7 @@
 #' @param method a character defining the method for imputation. See details for more information. Default set to 'rf'
 #' @param thresh a numeric defining at which missingness level metabolites will be excluded. Default set to 0.3 (30% missingness)
 #' @param path_to_diagnostics a character defining the path to where a diagnostic file is being written.
-#' @details TBD 
+#' @details additional methods are currently not implemented such as knn, pmm, norm etc. 
 #' @returns S4 object of the class "metime_analyser" with mutated col_data and row_data.
 #' @export
 setGeneric("mod_impute", function(object, which_data, method="rf",thresh=0.3,path_to_diagnostics=NULL) standardGeneric("mod_impute"))

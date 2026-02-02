@@ -9,9 +9,32 @@
 #' @export
 validity <- function(object) {
 		out <- TRUE
-		if(!check_rownames_and_colnames(object)) out <- FALSE 
-		if(!check_ids_and_classes(object)) out <- FALSE
-		if(!check_results(object)) out <- FALSE
+		if(!validate_metime_analyser(object)$ok) out <- FALSE
+		if(!length(object@results)==0) {
+			test <- lapply(seq_along(object@results), function(x) {
+					if(length(grep("calc_", object@results[[x]][["functions"]]))>=1) {
+						tryCatch(object@results[[x]][["plot"]] %>% is_ggplot() |
+							all(class(object@results[[x]][["plot"]]) %in% c("plotly", "htmlwidget")) |
+							  all(class(object@results[[x]][["plot"]]) %in% c("visNetwork", "htmlwidget")), 
+							  	error=function(e) {
+							  			message("plot of the results in", names(object@results)[x], " is missing")
+							  			out <<- FALSE
+							  		})
+						if(class(object@results[[x]][["plot_data"]]) %in% "data.frame") {
+							tryCatch(dim(object@results[[x]][["plot_data"]])[1] != 0, 
+								error= function(e) {
+									message("plot_data is wrong in ", names(object@results)[x])
+								})
+						} else if(class(object@results[[x]][["plot_data"]]) %in% "list") {
+							tryCatch(dim(object@results[[x]][["plot_data"]][["node"]])[1] != 0 && 
+										dim(object@results[[x]][["plot_data"]][["edge"]])[1] != 0, 
+								error= function(e) {
+									message("plot_data is wrong in ", names(object@results)[x])
+								})
+						}
+					}
+				})
+		}
 		return(out) 
 	}
 
@@ -29,7 +52,7 @@ validity <- function(object) {
 setClass("metime_analyser", slots=list(list_of_data="list", list_of_col_data="list", list_of_row_data="list", 
 								 annotations="list", results="list"), validity=validity) 
 
-
+setClass("meta_results", slots=list(meta_results="list"))
 
 
 #' Setting a plotting method for the metime_analyser class
@@ -50,11 +73,14 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 		}
 		results <- x@results[[results_index]]
 		get_text_for_plot <- function(data, colnames) {	
+						if (nrow(data) == 0 || length(colnames) == 0) {
+							return(character(0))
+						}
 						out <- c()
 						count <- 1
 						text <- c()
-						for(l in 1:length(rownames(data))) {
-							for(m in 1:length(colnames)) {
+						for(l in seq_len(nrow(data))) {
+							for(m in seq_along(colnames)) {
 								if(m==1) {
 									text <- paste("<br /> ", colnames[m], " : ", data[l, colnames[m]], sep="")
 								} else {
@@ -74,8 +100,9 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 							x <- plot$x$data[[i]]$x
 							data <- .results$plot_data[[j]]
 							data <- data[data[ ,col] %in% x, ] 
-							plot$x$data[[i]]$text <- get_text_for_plot(data=data, 
+							text <- get_text_for_plot(data=data, 
 										colnames=colnames(data))
+							if(!length(text)==0) plot$x$data[[i]]$text <- text
 						}
 					}
 					return(plot)

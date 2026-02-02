@@ -30,9 +30,9 @@ setMethod("validate_metime_analyser", "metime_analyser", function(object, which_
 
     if(!is.null(data) && !is.null(col_data)) {
       if("id" %in% names(col_data)) {
-        if(!all(colnames(data) %in% col_data$id)) dataset_issues <- c(dataset_issues, "col_data ids do not match colnames")
+        if(!all(col_data$id %in% colnames(data))) dataset_issues <- c(dataset_issues, "col_data ids do not match colnames")
       }
-      if(ncol(data) != nrow(col_data)) dataset_issues <- c(dataset_issues, "col_data rows do not match data columns")
+      if(ncol(data) < nrow(col_data)) dataset_issues <- c(dataset_issues, "All col_data rows are not in data columns")
     }
 
     dataset_issues
@@ -193,7 +193,7 @@ setMethod("mod_filter_features_by_missingness", "metime_analyser", function(obje
 
     col_data <- object@list_of_col_data[[dataset]]
     if(!is.null(col_data)) {
-      col_ids <- if("id" %in% names(col_data)) col_data$id else rownames(col_data)
+      col_ids <- object@list_of_data[[dataset]] %>% colnames()
       object@list_of_col_data[[dataset]] <- col_data[col_ids %in% colnames(data), , drop=FALSE]
     }
   }

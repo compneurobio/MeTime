@@ -27,8 +27,11 @@ setMethod("add_screening_vars", "metime_analyser", function(object, vars) {
 						as.data.frame()
 		return(new_data)
 		}) %>% do.call(what=rbind.data.frame)
-	new_phenotype <- new_phenotype[order(rownames(new_phenotype)), ] 
+	new_phenotype <- new_phenotype[order(rownames(new_phenotype)), ]
+	new_phenotype$subject <- NULL 
+	keep_ids <- rownames(new_phenotype)
 	object@list_of_data[[phenotype_name]] <- new_phenotype
+	object@list_of_row_data[[phenotype_name]] <- object@list_of_row_data[[phenotype_name]][object@list_of_row_data[[phenotype_name]]$id %in% keep_ids, ]
 	out <- object
 	out <- add_function_info(object=out, function_name="add_screening_vars", params=list(vars=vars))
 	return(out)

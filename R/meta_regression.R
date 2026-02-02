@@ -1,144 +1,50 @@
 
-
-# write down the top significant hits for each trait
-
-#' Comparison of regression analysis
-#' @description A function to compare results from regression analysis (LM, LMM, GAMM)
-#' @param object a S4 object of class metime_analyser.
-#' @param method a character vector of methods 'sign' (sign of beta), 'het' (heterogeneity), 'cor' (correlation). See details for more information. 
-#' @param result_index a character vector of results to compare. Default set to NULL. If set to NULL all results from regression are used.
-#' @param name a character containing the name of the new result element appended to the analyzer object. Default set to 'comp_regression_1'.
-#' @param update_table a logical whether the results should be added to the plotting section. If true tables will be printed in the report. 
-#' @details Multiple options are available to compare betas and betas + se from regression analysis. \n sign: comparison of beta signs. \n het (heterogeneity): Significance of heterogeneity across two models as described by \href{<https://doi.org/10.1111/j.1745-9125.1998.tb01268.x>}{Paternoster, 1998} and \href{<https://doi.org/10.1371/journal.pgen.1002215>}{Mittelstrass, 2011} . \n cor (correlation): Similarity of betas based on Pearson correlation
-#' @return a S4 object of class metime_analyser object with function output appended to results
-#' @seealso [meta_parametric_test], [meta_nonparametric_test], [meta_network]
-#' @export  
-setGeneric("meta_regression", function(object,  method=c("sign","cor","het"), result_index=NULL, name= "meta_regression_1", update_table = T) standardGeneric("meta_regression"))
-setMethod("meta_regression", "metime_analyser", function(object, method=c("sign","cor","het"), result_index=NULL, name= "meta_regression_1", update_table = T){
-  if(!all(method %in% c("sign", "cor","het"))) {
-    warning('method has to be one of "sign" (sign of beta), "cor" (correlation), and "het" (heterogeneity). Exiting without making any changes')
-    return(object)
-  } else {
-    # save file to be modified
-    out <- list()
+#' Meta comparison for regression outputs
+#' @description Compare regression outputs within or across results.
+#' @param object a S4 object of class metime_analyser or a list of two metime_analyser objects
+#' @param method a character vector of methods 'sign', 'cor', 'het'
+#' @param result_index character/numeric input for results. If NULL, all matching results are used.
+#' @param name a character input to set the name of the results
+#' @return An S4 object of class meta_results with the compared results and meta results
+#' @export
+setGeneric("meta_regression", function(object, method=c("sign", "cor", "het"), result_index=NULL, name="meta_regression_1") standardGeneric("meta_regression"))
+meta_regression_impl <- function(object, method=c("sign", "cor", "het"), result_index=NULL, name="meta_regression_1") {
+  method <- unique(method)
+  if (!all(method %in% c("sign", "cor", "het"))) {
+    stop('meta_regression(): method has to be one of "sign", "cor", or "het".')
   }
-    if(name %in% names(object@results)) {
-      warning("name of the results was previously used, using a different name")
-      index <- name %>% gsub(pattern="meta_regression_", replacement="") %>% as.numeric() +1
-      name <- paste0("meta_regression_",index)
+  analyzers <- meta_unpack_analyzers(object, function_name="meta_regression")
+  results <- meta_collect_results(analyzers, result_index, allowed_calc_types="regression", function_name="meta_regression")
+  comparisons <- meta_build_regression_comparisons(results)
+  out <- list(sign=list(), cor=list(), het=list())
+  plots <- list(sign=list(), cor=list(), het=list())
+  for (i in seq_along(comparisons)) {
+    comp_out <- meta_compare_regression(comparisons[[i]], method)
+    if (is.null(comp_out)) {
+      next
     }
-    
-    # Preprocessing ----
-    ## get all result indices if result_index is null
-    if(is.null(result_index)){
-      result_index <- lapply(names(object@results), function(x) if(all(object@results[[x]]$information$calc_type =="regression")) x) %>% unlist()
+    comp_name <- names(comparisons)[i]
+    for (metric in names(comp_out)) {
+      out[[metric]][[comp_name]] <- comp_out[[metric]]
     }
-    
-    my_data <- sapply(object@results[result_index], "[", "plot_data", simplify = T)  # compile data for comparison
-    names(my_data) <- names(my_data) %>% gsub(pattern=".plot_data", replacement = "") # change model names
-    my_combn <- combn(names(my_data), 2) %>% t() %>% as.data.frame() %>% setNames(c("result1","result2")) # get combinations
-    
-    # Compare by sign ----
-    if("sign" %in% method){  
-      ## calculate result
-      this_out <- lapply(1:nrow(my_combn), function(x){
-        this_result <- lapply(seq_along(my_data[[1]]), function(ind) {
-              full_join(my_data[[my_combn$result1[x]]][[ind]] %>%  # join data by met column
-                                 dplyr::select(met, trait, beta) %>% 
-                                 dplyr::rename(met=met, trait1=trait, beta1=beta) %>% 
-                                 dplyr::mutate(sign1=ifelse(beta1>=0, "+","-")),
-                               my_data[[my_combn$result2[x]]][[ind]] %>% 
-                                 dplyr::select(met, trait, beta) %>% 
-                                 dplyr::rename(met=met, trait2=trait, beta2=beta)%>% 
-                                 dplyr::mutate(sign2=ifelse(beta2>=0, "+","-")),
-                               by="met") %>%
-              dplyr::mutate(model1=my_combn$result1[x], model2=my_combn$result2[x], combined = paste0(sign1," ", sign2)) %>% # add colums needed for later comparison
-              dplyr::count(model1, model2, combined) %>% 
-              tidyr::spread(key = combined, value = n) %>%
-              dplyr::mutate(trait=names(my_data[[1]])[ind])
-          }) %>% plyr::rbind.fill()
-      })
-      names(this_out) <- paste(my_combn$result1, "_", my_combn$result2, sep="")
-      out[["sign"]] <- this_out
+    plot_out <- meta_plot_regression(comparisons[[i]], comp_out)
+    if (length(plot_out) > 0) {
+      for (metric in names(plot_out)) {
+        plots[[metric]][[comp_name]] <- plot_out[[metric]]
+      }
     }
-    
-    # Compare by heterogeneity ----
-    if("het" %in% method){
-      this_out <- lapply(1:nrow(my_combn), function(x){
-        
-          #pval and se have to be in the data frames
-          this_result <- lapply(seq_along(my_data[[1]]), function(ind) {
-            if(all(c("se","pval","beta") %in% names(my_data[[my_combn$result1[x]]][[ind]])) & all(c("se","pval","beta") %in% names(my_data[[my_combn$result2[x]]][[ind]]))) {
-                full_join(my_data[[my_combn$result1[x]]][[ind]] %>% 
-                      dplyr::select(met, trait, beta, se) %>% 
-                      dplyr::rename(met=met, trait1=trait, beta1=beta, se1=se),
-                    my_data[[my_combn$result2[x]]][[ind]] %>% 
-                      dplyr::select(met, trait, beta, se) %>% 
-                      dplyr::rename(met=met, trait2=trait, beta2=beta, se2=se),
-                    by="met") %>% 
-                dplyr::mutate(diff.t =  (beta1 - beta2)/sqrt(se1^2 + se2^2)) %>% 
-                dplyr::mutate(diff.p  = 2*pnorm(- abs(diff.t)), 
-                          i_sq = ifelse(abs(diff.t)>1, ((abs(diff.t) - 1) / abs(diff.t))*100, 0)) %>% 
-                dplyr::mutate(significant = ifelse(diff.p<=0.05/nrow(.[]), "non_significant", "significant"))%>%  
-                dplyr::count(significant) %>%
-                dplyr::mutate(model1=my_combn$result1[x], model2 = my_combn$result2[x])%>% 
-                tidyr::spread(key = significant, value = n) %>%
-                dplyr::mutate(trait=names(my_data[[1]])[ind])
-              } else {
-                return(NULL)
-              }
-            })  %>% 
-              plyr::rbind.fill()   
-      }) 
-      names(this_out) <- paste(my_combn$result1, "_", my_combn$result2, sep="")
-      out[["het"]] <- this_out
-    }
-    
-    # compare by correlation ----
-    if("cor" %in% method){
-      this_out <- lapply(1:nrow(my_combn), function(x){
-        this_data <- lapply(seq_along(my_data[[1]]), function(ind) {
-          gathering <- full_join(my_data[[my_combn$result1[x]]][[ind]] %>% 
-                                 dplyr::select(met, trait, beta, se) %>% 
-                                 dplyr::rename(met=met, beta1=beta, se1=se),
-                               my_data[[my_combn$result2[x]]][[ind]] %>% 
-                                 dplyr::select(met, beta, se) %>% 
-                                 dplyr::rename(met=met, beta2=beta, se2=se),
-                               by="met") 
-        
-          return(data.frame(
-            model1 = my_combn$result1[x],
-            model2 = my_combn$result2[x],
-            cor = cor(x=gathering$beta1,y=gathering$beta2, use = "everything",method="pearson"),
-            trait = unique(gathering$trait),
-            stringsAsFactors = F))
-        }) %>% plyr::rbind.fill()
-      })
-      names(this_out) <- paste(my_combn$result1, "_", my_combn$result2, sep="")
-      out[["cor"]] <- this_out
-    }
-    
-    # add plot_data ----
-    out_object <- get_make_results(object = object, 
-                                   data = out, 
-                                   metadata = NULL, 
-                                   calc_type = rep("meta_regression",length(out)),
-                                   calc_info = paste0("meta_regression analysis of",names(out)),
-                                   name = name) %>%
-      add_function_info(function_name = "meta_regression", 
-                        params = list(result_index=result_index,
-                                      update_table = update_table,
-                                      method=method)
-      )
-    
-    if(update_table){
-      out_object@results[[name]][["plots"]][[1]] <- out
-    }
-    return(out_object)
+  }
+  out <- out[vapply(out, function(x) length(x) > 0, logical(1))]
+  plots <- plots[names(out)]
+  return(meta_make_analyser(analyzers, results, out, plots=plots, calc_type="meta_regression",
+                            calc_info=names(out), name=name, function_name="meta_regression",
+                            params=list(result_index=result_index, method=method)))
+}
+
+setMethod("meta_regression", "metime_analyser", function(object, method=c("sign", "cor", "het"), result_index=NULL, name="meta_regression_1") {
+  meta_regression_impl(object, method, result_index, name)
 })
-        
 
-
-### NMR preprocessing - 
-####ä Sample quality
-## do until here and then see outliers using PCA, tSNE
+setMethod("meta_regression", "list", function(object, method=c("sign", "cor", "het"), result_index=NULL, name="meta_regression_1") {
+  meta_regression_impl(object, method, result_index, name)
+})

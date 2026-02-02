@@ -6,7 +6,7 @@
 #'			distribution_vars=c("var1", "var2", "var3"), which_data="dataset1")
 #' @param object An object of class metime_analyser
 #' @param distribution_vars A character naming the vars of interest
-#' @param screening_vars A character vector to define the vars that are to be updated else set it to NULL(Default)
+#' @param screening_vars A character vector to define the vars that are to be updated as per add_screening_vars() else set it to NULL(Default).
 #' @param which_data dataset to which the information is to be added(only 1 can be used at a time)
 #' @seealso [add_screening_vars]
 #' @return object of class metime_analyser with phenotype data added to row data
