@@ -1,0 +1,266 @@
+---
+title: "distributions"
+date: 2026-01-30
+output:
+ rmdformats::readthedown:
+  highlight: kate
+  code_folding: hide
+--- 
+
+```{css, echo=FALSE}
+     #content{max-width:100%}
+     #sidebar{bacgkround:black}
+     #postamble{border-top:solid 10px black}
+     .container{width:100%}
+     .button_fun{padding: 0 2px; border:transparent; background:transparent; color:#9F2042; }
+     .button_fun:hover{padding: 0 2px; border:transparent; background:transparent; color:#9F2042;font-weight:bold}
+     .body_fun{border-radius: 10px; background:rgb(214, 214, 214); padding:10px; margin:10px 0;position:relative}
+     .button_copy{margin:10px;padding:5px;border-radius:5px;background:white;color:#9F2042;border-color:transparent;position:absolute;top:0;right:0}
+     .button_copy:hover{margin:10px;padding:5px;background:#9F2042;color:white;}
+```
+
+
+# samples_distribution
+
+## Analyzer info
+```{r,echo=F, warning=FALSE, message=FALSE}
+results <- analyzer_list[[1]]@results
+ print(analyzer_list[[1]])
+```
+
+
+```{r, echo=F}
+## Pipe information
+htmltools::HTML("<div class=body_fun> object %>% <br><button class=button_copy onclick='copyToClipboard()'>Copy to Clipboard</button>
+                      <script>
+ function copyToClipboard() {var text = 'mod_trans_log(which_data = 'biocrates_data',base = 2) %>% <br>mod_impute(which_data = 'biocrates_data',method = 'rf') %>% <br>mod_trans_log(which_data = 'lipid_data',base = 2) %>% <br>add_distribution_vars_to_rows(screening_vars = NULL,distribution_vars = c('APOEGrp', 'PTGENDER', 'Age', 'BMI', 'PTEDUCAT', 'DXGrp_long'),which_data = 'biocrates_data') %>% <br>calc_distribution_samples(which_data = 'biocrates_data',cols_for_meta = c('APOEGrp', 'DXGrp_long', 'Age', 'BMI', 'PTEDUCAT'),stratifications = NULL,name = 'samples_distribution')  <br>';
+var tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+    }
+
+  </script>
+<div style= margin-left:5px>   <button class=button_fun data-toggle=modal data-target=#11 >mod_trans_log</button><span>(which_data = 'biocrates_data',base = 2) %>% </span><br>   <button class=button_fun data-toggle=modal data-target=#12 >mod_impute</button><span>(which_data = 'biocrates_data',method = 'rf') %>% </span><br>   <button class=button_fun data-toggle=modal data-target=#13 >mod_trans_log</button><span>(which_data = 'lipid_data',base = 2) %>% </span><br>   <button class=button_fun data-toggle=modal data-target=#14 >add_distribution_vars_to_rows</button><span>(screening_vars = NULL,distribution_vars = c('APOEGrp', 'PTGENDER', 'Age', 'BMI', 'PTEDUCAT', 'DXGrp_long'),which_data = 'biocrates_data') %>% </span><br>   <button class=button_fun data-toggle=modal data-target=#15 >calc_distribution_samples</button><span>(which_data = 'biocrates_data',cols_for_meta = c('APOEGrp', 'DXGrp_long', 'Age', 'BMI', 'PTEDUCAT'),stratifications = NULL,name = 'samples_distribution')  </span><br></div></div>")
+```
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "11",title = "mod_trans_log",size = "large",body = "_F_u_n_c_t_i_o_n _t_o _a_p_p_l_y _l_o_g _t_r_a_n_s_f_o_r_m_a_t_i_o_n\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     Modification(mod) function to log transform dataset/s\\n\\n_U_s_a_g_e:\\n\\n     \\n         (object, which_data, base)\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: An object of class metime_analyser\\n\\nwhich_data: Name/s of the dataset to be used\\n\\n    base: base of logarithm to be used\\n\\n_V_a_l_u_e:\\n\\n     An object of class metime_analyser with log-transformed dataset/s\\n\\n_S_e_e _A_l_s_o:\\n\\n     base::log, mod_trans_zscore\\n\\n_E_x_a_m_p_l_e_s:\\n\\n     # example to apply log transformation\\n     object <- mod_logtrans(object, which_data='name of the dataset', base=2)\\n     ")
+``` 
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "12",title = "mod_impute",size = "large",body = "_I_m_p_u_t_a_t_i_o_n _o_f _m_i_s_s_i_n_g _v_a_l_u_e_s\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     This function imputes missing values using one of the implemented\\n     imputation methods.\\n\\n_U_s_a_g_e:\\n\\n     \\n         (\\n       object,\\n       which_data,\\n       method = 'rf',\\n       thresh = 0.3,\\n       path_to_diagnostics = NULL\\n     )\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: a S4 object of class 'metime_analyser'.\\n\\nwhich_data: a character defining which dataset should be imputed.\\n\\n  method: a character defining the method for imputation. See details\\n          for more information. Default set to 'rf'\\n\\n  thresh: a numeric defining at which missingness level metabolites\\n          will be excluded. Default set to 0.3 (30% missingness)\\n\\npath_to_diagnostics: a character defining the path to where a\\n          diagnostic file is being written.\\n\\n_D_e_t_a_i_l_s:\\n\\n     additional methods are currently not implemented such as knn, pmm,\\n     norm etc.\\n\\n_V_a_l_u_e:\\n\\n     S4 object of the class 'metime_analyser' with mutated col_data and\\n     row_data.\\n")
+``` 
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "13",title = "mod_trans_log",size = "large",body = "_F_u_n_c_t_i_o_n _t_o _a_p_p_l_y _l_o_g _t_r_a_n_s_f_o_r_m_a_t_i_o_n\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     Modification(mod) function to log transform dataset/s\\n\\n_U_s_a_g_e:\\n\\n     \\n         (object, which_data, base)\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: An object of class metime_analyser\\n\\nwhich_data: Name/s of the dataset to be used\\n\\n    base: base of logarithm to be used\\n\\n_V_a_l_u_e:\\n\\n     An object of class metime_analyser with log-transformed dataset/s\\n\\n_S_e_e _A_l_s_o:\\n\\n     base::log, mod_trans_zscore\\n\\n_E_x_a_m_p_l_e_s:\\n\\n     # example to apply log transformation\\n     object <- mod_logtrans(object, which_data='name of the dataset', base=2)\\n     ")
+``` 
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "14",title = "add_distribution_vars_to_rows",size = "large",body = "_A_d_d _p_h_e_n_o_t_y_p_i_c _m_e_a_s_u_r_e_m_e_n_t_s _t_h_a_t _a_r_e _n_o_t _a_d_d_e_d _t_o _t_h_e _r_o_w__d_a_t_a _o_f _t_h_e\\n_d_a_t_a_s_e_t\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     A method applied on the s4 object of class 'metime_analyser' to\\n     add all those datapoints that are present in phenotype dataframe\\n     but not in row_data comes with the feature of updating those data\\n     points measured only at screening to all datapoints and then\\n     adding it to row_data\\n\\n_U_s_a_g_e:\\n\\n     \\n         (\\n       object,\\n       screening_vars,\\n       distribution_vars,\\n       which_data\\n     )\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: An object of class metime_analyser\\n\\nscreening_vars: A character vector to define the vars that are to be\\n          updated as per add_screening_vars() else set it to\\n          NULL(Default).\\n\\ndistribution_vars: A character naming the vars of interest\\n\\nwhich_data: dataset to which the information is to be added(only 1 can\\n          be used at a time)\\n\\n_V_a_l_u_e:\\n\\n     object of class metime_analyser with phenotype data added to row\\n     data\\n\\n_S_e_e _A_l_s_o:\\n\\n     add_screening_vars\\n\\n_E_x_a_m_p_l_e_s:\\n\\n     object <- \\n         (object=data, screening_vars=c('var1', 'var2'), \\n                     distribution_vars=c('var1', 'var2', 'var3'), which_data='dataset1')\\n     ")
+``` 
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "15",title = "calc_distribution_samples",size = "large",body = "_F_u_n_c_t_i_o_n _f_o_r _P_l_o_t_t_i_n_g _d_i_s_t_r_i_b_u_t_i_o_n_s _o_f _p_h_e_n_o_t_y_p_i_c _v_a_r_i_a_b_l_e_s\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     A method to be applied onto s4 object so as to obtain\\n     distributions of various phenotypic variables\\n\\n_U_s_a_g_e:\\n\\n     \\n         (\\n       object,\\n       which_data,\\n       cols,\\n       stratifications,\\n       name = '\\n         _1'\\n     )\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: An object of class metime_analyser\\n\\nwhich_data: Name of the dataset from which the samples will be\\n          extracted\\n\\n    cols: character vector to define the columns whose distributions\\n          are wanted from row_data\\n\\nstratifications: List to define the stratification of interest\\n\\n    name: Character to name the results\\n\\n_V_a_l_u_e:\\n\\n     S4 object with updated plot_data and plots with plots being either\\n     1) density plot 2) bar plot\\n")
+``` 
+
+
+## Plots{.tabset}
+
+
+### samples_distribution
+
+
+Samples distributions dataframe of columns of interest in biocrates_data
+
+
+```{r,echo=F, warning=FALSE, message=FALSE}
+
+plot_obj <- 
+results_list[[1]][[1]]$items[[1]]$plots[[1]]
+
+
+if (inherits(plot_obj, "htmlwidget")) {
+
+  plot_obj
+
+} else if (is.list(plot_obj) && length(plot_obj) == 1 && inherits(plot_obj[[1]], "htmlwidget")) {
+
+  plot_obj[[1]]
+
+} else {
+
+  plot_obj
+
+}
+
+
+```
+
+
+```{r,echo=F, warning=FALSE, message=FALSE}
+
+plot_obj <- 
+results_list[[1]][[1]]$items[[1]]$plots[[2]]
+
+
+if (inherits(plot_obj, "htmlwidget")) {
+
+  plot_obj
+
+} else if (is.list(plot_obj) && length(plot_obj) == 1 && inherits(plot_obj[[1]], "htmlwidget")) {
+
+  plot_obj[[1]]
+
+} else {
+
+  plot_obj
+
+}
+
+
+```
+
+
+```{r,echo=F, warning=FALSE, message=FALSE}
+
+plot_obj <- 
+results_list[[1]][[1]]$items[[1]]$plots[[3]]
+
+
+if (inherits(plot_obj, "htmlwidget")) {
+
+  plot_obj
+
+} else if (is.list(plot_obj) && length(plot_obj) == 1 && inherits(plot_obj[[1]], "htmlwidget")) {
+
+  plot_obj[[1]]
+
+} else {
+
+  plot_obj
+
+}
+
+
+```
+
+
+```{r,echo=F, warning=FALSE, message=FALSE}
+
+plot_obj <- 
+results_list[[1]][[1]]$items[[1]]$plots[[4]]
+
+
+if (inherits(plot_obj, "htmlwidget")) {
+
+  plot_obj
+
+} else if (is.list(plot_obj) && length(plot_obj) == 1 && inherits(plot_obj[[1]], "htmlwidget")) {
+
+  plot_obj[[1]]
+
+} else {
+
+  plot_obj
+
+}
+
+
+```
+
+
+```{r,echo=F, warning=FALSE, message=FALSE}
+
+plot_obj <- 
+results_list[[1]][[1]]$items[[1]]$plots[[5]]
+
+
+if (inherits(plot_obj, "htmlwidget")) {
+
+  plot_obj
+
+} else if (is.list(plot_obj) && length(plot_obj) == 1 && inherits(plot_obj[[1]], "htmlwidget")) {
+
+  plot_obj[[1]]
+
+} else {
+
+  plot_obj
+
+}
+
+
+```
+
+
+# metabs_distribution
+
+## Analyzer info
+```{r,echo=F, warning=FALSE, message=FALSE}
+results <- analyzer_list[[1]]@results
+ print(analyzer_list[[1]])
+```
+
+
+```{r, echo=F}
+## Pipe information
+htmltools::HTML("<div class=body_fun> object %>% <br><button class=button_copy onclick='copyToClipboard()'>Copy to Clipboard</button>
+                      <script>
+ function copyToClipboard() {var text = 'calc_distribution_metabs(which_data = 'biocrates_data',cols_for_meta = 'Class',name = 'metabs_distribution')  <br>';
+var tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+    }
+
+  </script>
+<div style= margin-left:5px>   <button class=button_fun data-toggle=modal data-target=#21 >calc_distribution_metabs</button><span>(which_data = 'biocrates_data',cols_for_meta = 'Class',name = 'metabs_distribution')  </span><br></div></div>")
+```
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "21",title = "calc_distribution_metabs",size = "large",body = "_F_u_n_c_t_i_o_n _f_o_r _P_l_o_t_t_i_n_g _d_i_s_t_r_i_b_u_t_i_o_n_s _o_f _p_h_e_n_o_t_y_p_i_c _v_a_r_i_a_b_l_e_s\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     A method to be applied onto s4 object so as to obtain\\n     distributions of various phenotypic variables\\n\\n_U_s_a_g_e:\\n\\n     \\n         (\\n       object,\\n       which_data,\\n       cols,\\n       name = '\\n         _1'\\n     )\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: An object of class metime_analyser\\n\\nwhich_data: Name of the dataset from which the samples will be\\n          extracted\\n\\n    cols: character vector to define the columns whose distributions\\n          are wanted from col_data\\n\\n    name: Character to name the results\\n\\n_V_a_l_u_e:\\n\\n     S4 object with updated plot_data and plots with plots being either\\n     1) density plot 2) bar plot and a line plot\\n")
+``` 
+
+
+## Plots{.tabset}
+
+
+### metabs_distribution
+
+
+Metabolites distributions dataframe of columns of interest in biocrates_data
+
+
+```{r,echo=F, warning=FALSE, message=FALSE}
+
+plot_obj <- 
+results_list[[1]][[2]]$items[[1]]$plots
+
+
+if (inherits(plot_obj, "htmlwidget")) {
+
+  plot_obj
+
+} else if (is.list(plot_obj) && length(plot_obj) == 1 && inherits(plot_obj[[1]], "htmlwidget")) {
+
+  plot_obj[[1]]
+
+} else {
+
+  plot_obj
+
+}
+
+
+```
+
+# Session info
+```{r session_info,include=T, warning=FALSE, message=FALSE}
+print(sessionInfo())
+```
+

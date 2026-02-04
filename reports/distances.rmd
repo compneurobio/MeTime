@@ -1,0 +1,242 @@
+---
+title: "distances"
+date: 2026-01-30
+output:
+ rmdformats::readthedown:
+  highlight: kate
+  code_folding: hide
+--- 
+
+```{css, echo=FALSE}
+     #content{max-width:100%}
+     #sidebar{bacgkround:black}
+     #postamble{border-top:solid 10px black}
+     .container{width:100%}
+     .button_fun{padding: 0 2px; border:transparent; background:transparent; color:#9F2042; }
+     .button_fun:hover{padding: 0 2px; border:transparent; background:transparent; color:#9F2042;font-weight:bold}
+     .body_fun{border-radius: 10px; background:rgb(214, 214, 214); padding:10px; margin:10px 0;position:relative}
+     .button_copy{margin:10px;padding:5px;border-radius:5px;background:white;color:#9F2042;border-color:transparent;position:absolute;top:0;right:0}
+     .button_copy:hover{margin:10px;padding:5px;background:#9F2042;color:white;}
+```
+
+
+# calc_col_stats_1
+
+## Analyzer info
+```{r,echo=F, warning=FALSE, message=FALSE}
+results <- analyzer_list[[1]]@results
+ print(analyzer_list[[1]])
+```
+
+
+```{r, echo=F}
+## Pipe information
+htmltools::HTML("<div class=body_fun> object %>% <br><button class=button_copy onclick='copyToClipboard()'>Copy to Clipboard</button>
+                      <script>
+ function copyToClipboard() {var text = 'mod_trans_log(which_data = 'biocrates_data',base = 2) %>% <br>mod_impute(which_data = 'biocrates_data',method = 'rf') %>% <br>mod_trans_log(which_data = 'lipid_data',base = 2) %>% <br>calc_col_stats(which_data = 'biocrates_data',method = c('shapiro', 'ks'),cols_for_meta = NULL)  <br>';
+var tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+    }
+
+  </script>
+<div style= margin-left:5px>   <button class=button_fun data-toggle=modal data-target=#11 >mod_trans_log</button><span>(which_data = 'biocrates_data',base = 2) %>% </span><br>   <button class=button_fun data-toggle=modal data-target=#12 >mod_impute</button><span>(which_data = 'biocrates_data',method = 'rf') %>% </span><br>   <button class=button_fun data-toggle=modal data-target=#13 >mod_trans_log</button><span>(which_data = 'lipid_data',base = 2) %>% </span><br>   <button class=button_fun data-toggle=modal data-target=#14 >calc_col_stats</button><span>(which_data = 'biocrates_data',method = c('shapiro', 'ks'),cols_for_meta = NULL)  </span><br></div></div>")
+```
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "11",title = "mod_trans_log",size = "large",body = "_F_u_n_c_t_i_o_n _t_o _a_p_p_l_y _l_o_g _t_r_a_n_s_f_o_r_m_a_t_i_o_n\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     Modification(mod) function to log transform dataset/s\\n\\n_U_s_a_g_e:\\n\\n     \\n         (object, which_data, base)\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: An object of class metime_analyser\\n\\nwhich_data: Name/s of the dataset to be used\\n\\n    base: base of logarithm to be used\\n\\n_V_a_l_u_e:\\n\\n     An object of class metime_analyser with log-transformed dataset/s\\n\\n_S_e_e _A_l_s_o:\\n\\n     base::log, mod_trans_zscore\\n\\n_E_x_a_m_p_l_e_s:\\n\\n     # example to apply log transformation\\n     object <- mod_logtrans(object, which_data='name of the dataset', base=2)\\n     ")
+``` 
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "12",title = "mod_impute",size = "large",body = "_I_m_p_u_t_a_t_i_o_n _o_f _m_i_s_s_i_n_g _v_a_l_u_e_s\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     This function imputes missing values using one of the implemented\\n     imputation methods.\\n\\n_U_s_a_g_e:\\n\\n     \\n         (\\n       object,\\n       which_data,\\n       method = 'rf',\\n       thresh = 0.3,\\n       path_to_diagnostics = NULL\\n     )\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: a S4 object of class 'metime_analyser'.\\n\\nwhich_data: a character defining which dataset should be imputed.\\n\\n  method: a character defining the method for imputation. See details\\n          for more information. Default set to 'rf'\\n\\n  thresh: a numeric defining at which missingness level metabolites\\n          will be excluded. Default set to 0.3 (30% missingness)\\n\\npath_to_diagnostics: a character defining the path to where a\\n          diagnostic file is being written.\\n\\n_D_e_t_a_i_l_s:\\n\\n     additional methods are currently not implemented such as knn, pmm,\\n     norm etc.\\n\\n_V_a_l_u_e:\\n\\n     S4 object of the class 'metime_analyser' with mutated col_data and\\n     row_data.\\n")
+``` 
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "13",title = "mod_trans_log",size = "large",body = "_F_u_n_c_t_i_o_n _t_o _a_p_p_l_y _l_o_g _t_r_a_n_s_f_o_r_m_a_t_i_o_n\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     Modification(mod) function to log transform dataset/s\\n\\n_U_s_a_g_e:\\n\\n     \\n         (object, which_data, base)\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: An object of class metime_analyser\\n\\nwhich_data: Name/s of the dataset to be used\\n\\n    base: base of logarithm to be used\\n\\n_V_a_l_u_e:\\n\\n     An object of class metime_analyser with log-transformed dataset/s\\n\\n_S_e_e _A_l_s_o:\\n\\n     base::log, mod_trans_zscore\\n\\n_E_x_a_m_p_l_e_s:\\n\\n     # example to apply log transformation\\n     object <- mod_logtrans(object, which_data='name of the dataset', base=2)\\n     ")
+``` 
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "14",title = "calc_col_stats",size = "large",body = "_C_h_e_c_k _n_o_r_m_a_l_i_t_y _o_f _m_e_t_a_b_o_l_i_t_e_s _a_n_d _a_p_p_e_n_d _r_e_s_u_l_t_s _t_o _c_o_l__d_a_t_a\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     A method applied to data within the S4 object of class\\n     'metime_analyser' to check normality of the metabolites and\\n     generate a results section for easy visualization,\\n\\n_U_s_a_g_e:\\n\\n     \\n         (\\n       object,\\n       which_data,\\n       method = c('shapiro', 'ks'),\\n       cols_for_meta,\\n       name = '\\n         _1'\\n     )\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: a S4 object of the class 'metime_analyzer'.\\n\\nwhich_data: a character to define which dataset is to be used.\\n\\n  method: a character vector specifying the method to check for\\n          normality. By default all available options are chosen:\\n          c('shapiro', 'ks')'. See details for more information.\\n\\ncols_for_meta: a list of named character vectors for obtaining\\n          metainformation of metabolites\\n\\n    name: name of the results. Default is set to '\\n         _1'\\n\\n_D_e_t_a_i_l_s:\\n\\n     Shapiro: Performs the Shapiro-Wilk test of normality (normal\\n     distribution if shapiro_pval > 0.05). This test is based on\\n     correlation between the data and the corresponding normal scores.\\n     Ks: Performs a one-sample Kolmogorov-Smirnov test (normal\\n     distribution if ks_pval > 0.05). The ks.test compares the\\n     metabolite values against pnorm.\\n\\n_V_a_l_u_e:\\n\\n     a S4 object of class 'metime_analyser' with results appended to\\n     the col_data of which_data\\n\\n_S_e_e _A_l_s_o:\\n\\n     shapiro.test ks.test get_metadata_for_columns\\n")
+``` 
+
+
+## Plots{.tabset}
+
+
+### id
+
+
+Normality statistics of biocrates_data
+
+
+### shapiro_pval
+
+
+NA
+
+
+### shapiro_statistic
+
+
+NA
+
+
+### shapiro_normal
+
+
+NA
+
+
+### ks_pval
+
+
+NA
+
+
+### ks_statistic
+
+
+NA
+
+
+### ks_normal
+
+
+NA
+
+
+# calc_correlation_pairwise_1
+
+## Analyzer info
+```{r,echo=F, warning=FALSE, message=FALSE}
+results <- analyzer_list[[1]]@results
+ print(analyzer_list[[1]])
+```
+
+
+```{r, echo=F}
+## Pipe information
+htmltools::HTML("<div class=body_fun> object %>% <br><button class=button_copy onclick='copyToClipboard()'>Copy to Clipboard</button>
+                      <script>
+ function copyToClipboard() {var text = 'calc_correlation_features(which_data = 'biocrates_data',method = 'spearman')  <br>';
+var tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+    }
+
+  </script>
+<div style= margin-left:5px>   <button class=button_fun data-toggle=modal data-target=#21 >calc_correlation_features</button><span>(which_data = 'biocrates_data',method = 'spearman')  </span><br></div></div>")
+```
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "21",title = "calc_correlation_features",size = "large",body = "_F_u_n_c_t_i_o_n _t_o _c_a_l_c_u_l_a_t_e _c_o_r_r_e_l_a_t_i_o_n\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     calculate pairwise correlations This function creates a dataframe\\n     for plotting from a dataset.\\n\\n_U_s_a_g_e:\\n\\n     \\n         (\\n       object,\\n       which_data,\\n       method,\\n       name = 'calc_correlation_pairwise_1',\\n       stratifications\\n     )\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: S4 Object of class metime_analyser\\n\\nwhich_data: specify datasets to calculate on. One or more possible\\n\\n  method: default setting: method='pearson', Alternative 'spearman'\\n          also possible\\n\\n    name: name of the results should be of length=1\\n\\nstratifications: List to stratify data into a subset. Usage\\n          list(name=value)\\n\\n_V_a_l_u_e:\\n\\n     data.frame with pairwise results\\n\\n_E_x_a_m_p_l_e_s:\\n\\n     # Example to calculate correlations\\n     dist <- calc_correlation(object=metime_analyser_object, which_data='name of the dataset', \\n               method='pearson')\\n     ")
+``` 
+
+
+## Plots{.tabset}
+
+
+### pairwise_correlation
+
+
+biocrates_data_and_spearman_pairwise_correlation_features
+
+
+```{r,echo=F, warning=FALSE, message=FALSE}
+
+plot_obj <- 
+results_list[[1]][[2]]$items[[1]]$plots
+
+
+if (inherits(plot_obj, "htmlwidget")) {
+
+  plot_obj
+
+} else if (is.list(plot_obj) && length(plot_obj) == 1 && inherits(plot_obj[[1]], "htmlwidget")) {
+
+  plot_obj[[1]]
+
+} else {
+
+  plot_obj
+
+}
+
+
+```
+
+
+# calc_distance_pairwise_1
+
+## Analyzer info
+```{r,echo=F, warning=FALSE, message=FALSE}
+results <- analyzer_list[[1]]@results
+ print(analyzer_list[[1]])
+```
+
+
+```{r, echo=F}
+## Pipe information
+htmltools::HTML("<div class=body_fun> object %>% <br><button class=button_copy onclick='copyToClipboard()'>Copy to Clipboard</button>
+                      <script>
+ function copyToClipboard() {var text = 'calc_distance_samples(which_data = 'biocrates_data',method = 'euclidean',stratifications = NULL)  <br>';
+var tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+    }
+
+  </script>
+<div style= margin-left:5px>   <button class=button_fun data-toggle=modal data-target=#31 >calc_distance_samples</button><span>(which_data = 'biocrates_data',method = 'euclidean',stratifications = NULL)  </span><br></div></div>")
+```
+
+```{r ,echo=F}
+bsplus::bs_modal(id = "31",title = "calc_distance_samples",size = "large",body = "_F_u_n_c_t_i_o_n _t_o _c_a_l_c_u_l_a_t_e _d_i_s_s_i_m_i_l_a_r_i_t_y _u_s_i_n_g _d_i_s_t_a_n_c_e _m_e_a_s_u_r_e_s\\n\\n_D_e_s_c_r_i_p_t_i_o_n:\\n\\n     calculate pairwise distances between samples This function creates\\n     a dataframe for plotting from a dataset.\\n\\n_U_s_a_g_e:\\n\\n     \\n         (\\n       object,\\n       which_data,\\n       method,\\n       name = 'calc_distance_pairwise_1',\\n       stratifications\\n     )\\n     \\n_A_r_g_u_m_e_n_t_s:\\n\\n  object: S4 Object of class metime_analyser\\n\\nwhich_data: specify datasets to calculate on. One or more possible\\n\\n  method: default setting: method='euclidean', Alternative\\n          'maximum','minimum', 'manhattan','canberra','minkowski' are\\n          also possible\\n\\n    name: name of the results should be of length=1\\n\\nstratifications: List to stratify data into a subset. Usage\\n          list(name=value)\\n\\n_V_a_l_u_e:\\n\\n     data.frame with pairwise results\\n\\n_E_x_a_m_p_l_e_s:\\n\\n     # Example to calculate pairwise distances\\n     dist <- calc_pairwise_distance(object=metime_analyser_object, which_data='name of the dataset', \\n               method='euclidean')\\n     ")
+``` 
+
+
+## Plots{.tabset}
+
+
+### pairwise_distance
+
+
+biocrates_data and euclidean pairwise_distance_samples
+
+
+```{r,echo=F, warning=FALSE, message=FALSE}
+
+plot_obj <- 
+results_list[[1]][[3]]$items[[1]]$plots
+
+
+if (inherits(plot_obj, "htmlwidget")) {
+
+  plot_obj
+
+} else if (is.list(plot_obj) && length(plot_obj) == 1 && inherits(plot_obj[[1]], "htmlwidget")) {
+
+  plot_obj[[1]]
+
+} else {
+
+  plot_obj
+
+}
+
+
+```
+
+# Session info
+```{r session_info,include=T, warning=FALSE, message=FALSE}
+print(sessionInfo())
+```
+
