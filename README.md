@@ -1,5 +1,11 @@
 # Introduction to MeTime
 
+
+## Documentation improvement roadmap
+
+For a concrete plan to improve onboarding, user guides, method documentation, and developer docs, see [`DOCUMENTATION_STRATEGY.md`](DOCUMENTATION_STRATEGY.md).
+Ready-to-use documentation templates are available in [`docs/`](docs/README.md), and pkgdown website setup instructions are in [`docs/PKGDOWN_INTEGRATION.md`](docs/PKGDOWN_INTEGRATION.md).
+
 The goal of MeTime(Metabolomics Time) is to unburden scientists from developing code to perform statistical analysis on longitudinal metabolomics data. This package enables users to perform different kinds of analysis by building pipelines. Users can browse different vignettes to see the different kinds of analysis that MeTime provides along with example data and analysis. 
 
 To make this package user-friendly and easy to implement we have used a puzzle analogy to build this package. For example, you are trying to understand the mechanistic changes of a disease using longitudinal data. Each individual analysis answers a specific question and can be considered as a unique sub-puzzle. These multiple sub-puzzles collectively give us the full picture of the mechanistic changes thereby completing the puzzle you set out to solve for. These sub-puzzles are inturn made up of puzzle pieces that are the pipeline functions and these puzzle pieces are modular in nature such that they can be removed, changed in position etc based on what the user prefers. See the image below to get visual picture of this analogy.

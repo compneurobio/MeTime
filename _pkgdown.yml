@@ -2,3 +2,36 @@ url: ~
 template:
   bootstrap: 5
 
+navbar:
+  structure:
+    left: [get-started, reference, articles, developer]
+    right: [search, github]
+  components:
+    get-started:
+      text: Get started
+      href: articles/getting-started-quickstart.html
+    developer:
+      text: Developer docs
+      menu:
+      - text: Docs Hub (source)
+        href: https://github.com/<ORG>/<REPO>/tree/main/docs
+      - text: pkgdown integration guide
+        href: articles/pkgdown-integration.html
+
+articles:
+- title: Getting started
+  contents:
+  - starts_with("getting-started-")
+- title: User guides
+  contents:
+  - starts_with("user-guides-")
+- title: Reference guides
+  contents:
+  - starts_with("reference-")
+- title: Case studies
+  contents:
+  - starts_with("case-studies-")
+- title: Developer
+  contents:
+  - starts_with("developer-")
+  - pkgdown-integration
