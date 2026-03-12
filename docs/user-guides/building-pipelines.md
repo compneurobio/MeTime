@@ -7,20 +7,20 @@
 1. Build object
 2. Modify data (`mod_*`)
 3. Calculate (`calc_*`)
+4. Plot/export 
 4. Meta-analysis (`meta_*`, optional)
-5. Plot/export
 
-## Starter pipeline template
+## Starter pipeline template ()
 
 ```r
 library(MeTime)
 
 # obj <- get_make_analyser_object(...)
-# obj <- mod_<step1>(obj, ...)
-# obj <- mod_<step2>(obj, ...)
-# obj <- calc_<analysis>(obj, which_data = "<dataset>", name = "<result_1>")
-# obj <- add_plot(obj, ...)
-# write_results(obj, ...)
+# obj <- mod_<step1>(...) %>%
+#        mod_<step2>(...) %>%
+#        calc_<analysis>(which_data = "<dataset>", name = "<result_1>") %>% 
+#        mod_generate_plots(...) %>%
+#        write_report(...)
 ```
 
 ## Reproducibility checklist

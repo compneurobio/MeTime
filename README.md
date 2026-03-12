@@ -1,9 +1,5 @@
 # Introduction to MeTime
 
-
-## Documentation improvement roadmap
-
-For a concrete plan to improve onboarding, user guides, method documentation, and developer docs, see [`DOCUMENTATION_STRATEGY.md`](DOCUMENTATION_STRATEGY.md).
 Ready-to-use documentation templates are available in [`docs/`](docs/README.md), and pkgdown website setup instructions are in [`docs/PKGDOWN_INTEGRATION.md`](docs/PKGDOWN_INTEGRATION.md).
 
 The goal of MeTime(Metabolomics Time) is to unburden scientists from developing code to perform statistical analysis on longitudinal metabolomics data. This package enables users to perform different kinds of analysis by building pipelines. Users can browse different vignettes to see the different kinds of analysis that MeTime provides along with example data and analysis. 
@@ -58,7 +54,7 @@ The metime_analyser class has 5 slots:
 ### 1.2. Data preparation
 
 This package aims to be a general package that can handle any type of longitudinal dataset and in order to acheive that we expect the users to make a few changes to the dataset. These changes are:
-1. The sample ids should always be in this format: [a-z|A-z][0-9]+_[a-z|A-Z][0-9]+(Example: subject=R1, time=t0, id=R1_t0). The part before the underscore represents the subject and the part after represents the timepoint of measurement. If the timepoints in the data are not a singular value then we suggest the user to create a psuedotime scale to match this format.
+1. The sample ids should always be in this format: [a-z|A-z][0-9]+_[a-z|A-Z][0-9]+(Example: subject=R1, time=t0, id=R1_t0). The part before the underscore represents the subject and the part after represents the timepoint of measurement. If the timepoints in the data are not a singular value then we suggest the user to create a psuedo timescale to match this format.
 2. Every row_data dataframe should contain the columns id, subject and time and every col_data dataframe should contain the column id. And the ids in row_data should match the rownames of the data matrix and the ids in col_data should match the colnames of the data matrix. 
 
 The first step in using this package is to create an S4 object of class metime_analyser with all the data that a user wants to analyse. There are multiple ways in which this S4 object can be created:

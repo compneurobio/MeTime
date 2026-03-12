@@ -5,7 +5,7 @@
 ## Two plotting pathways
 
 1. `plot(<metime_analyser>)` for direct rendering.
-2. `mod_generate_plots()` (or equivalent wrapper) for storing plots in object.
+2. `mod_generate_plots()` for storing all possible plots for a paricular result in object.
 
 ## Plot template
 

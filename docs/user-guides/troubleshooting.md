@@ -10,11 +10,13 @@
 
 ### 2) Plot generation fails
 - **Cause:** incompatible result type or missing metadata.
-- **Fix:** inspect `object@results[[<index>]]$information`.
+- **Fix:** inspect `object@results[[<index>]]$information$calc_type`.
 
 ### 3) Invalid sample IDs
 - **Cause:** IDs not in required format.
 - **Fix:** standardize IDs before object creation.
+
+### 4) See fixed bugs here
 
 ## Debug workflow template
 

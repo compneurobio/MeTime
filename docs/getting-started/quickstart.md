@@ -1,4 +1,4 @@
-# Quickstart (10 minutes)
+# Quickstart
 
 > One-line summary: run your first MeTime pipeline with sample data.
 
@@ -6,36 +6,22 @@
 
 In this guide, you will:
 
-1. Build a `metime_analyser` object.
-2. Apply one `mod_*` transformation.
-3. Run one `calc_*` analysis.
-4. Create one plot.
+1. Run a simple pipleine to perform dimensionality reduction
 
-## Minimal runnable example
+## Minimal runnable example with humet data
 
 ```r
 library(MeTime)
 
-# TODO: replace with real package dataset and function names used in the package
-# data(humet_data)
-# obj <- get_make_analyser_object(...)
-# obj <- mod_<name>(obj, ...)
-# obj <- calc_<name>(obj, ...)
-# p <- plot(obj, results_index = "<result_name>")
-# p
+data(humet_object)
+humet_object <- humet_object %>% 
+        mod_trans_zscore(which_data="humet_subset_data") %>%
+        calc_dimensionality_reduction_samples(which_data = "humet_subset_data", type="PCA", 
+                                        cols_for_meta=c("Factor.Challenge.Value.", "Factor.Challenge.Value.Day."),
+                                        name="PCA_samples") %>%
+        mod_generate_plots(type="PCA", .interactive=T)
 ```
-
-## Expected result
-
-- Output object has at least one named entry in `@results`.
-- A plot is rendered without errors.
-
-## If this failed
-
-- Check sample IDs format.
-- Check required metadata columns exist.
-- Validate dataset names in `which_data`.
 
 ## Next
 
-- Continue to [`sample-data-walkthrough.md`](sample-data-walkthrough.md).
+- Continue to [`data_preparation.md`](data_preparation.md).
