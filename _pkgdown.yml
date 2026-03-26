@@ -1,3 +1,4 @@
+destination: docs/site
 url: https://compneurobio.github.io/MeTime/
 template:
   bootstrap: 5
