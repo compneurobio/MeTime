@@ -1,104 +1,62 @@
-# Introduction to MeTime
+# MeTime
 
-Ready-to-use documentation templates are available in [`docs/`](docs/README.md), and pkgdown website setup instructions are in [`docs/PKGDOWN_INTEGRATION.md`](docs/PKGDOWN_INTEGRATION.md).
+MeTime (**Metabolomics Time**) is an R package for modular, reproducible analysis of longitudinal metabolomics data.
 
-The goal of MeTime(Metabolomics Time) is to unburden scientists from developing code to perform statistical analysis on longitudinal metabolomics data. This package enables users to perform different kinds of analysis by building pipelines. Users can browse different vignettes to see the different kinds of analysis that MeTime provides along with example data and analysis. 
+## What MeTime provides
 
-To make this package user-friendly and easy to implement we have used a puzzle analogy to build this package. For example, you are trying to understand the mechanistic changes of a disease using longitudinal data. Each individual analysis answers a specific question and can be considered as a unique sub-puzzle. These multiple sub-puzzles collectively give us the full picture of the mechanistic changes thereby completing the puzzle you set out to solve for. These sub-puzzles are inturn made up of puzzle pieces that are the pipeline functions and these puzzle pieces are modular in nature such that they can be removed, changed in position etc based on what the user prefers. See the image below to get visual picture of this analogy.
-This developmental approach of this package can be seen in the image below. To understand the modular pieces shown in the image, please refer to section [2. Building pipelines]
+- A central S4 object (`metime_analyser`) to manage multiple datasets and metadata.
+- Pipeline-style functions:
+  - `mod_*` for data preparation/transformation
+  - `calc_*` for analyses
+  - `meta_*` for cross-result aggregation
+- Built-in support for common longitudinal workflows:
+  - distributions and distances
+  - dimensionality reduction
+  - imputation and feature selection
+  - conservation index
+  - regression models
+  - network analysis
 
-<img width="463" alt="puzzle" src="https://user-images.githubusercontent.com/64539275/232745515-a4bfc9fe-d353-402a-92b5-7433b0aed2a4.PNG">
+## Install
 
-There are different methods to analyse longitudinal metabolomics data such that each method has its own unique significance and answers a specific question. These methods are listed below. To better understand the application of each of these methods and to see examples on how to perform such an analysis, please refer to their own specific vignettes.
-<br> 1.  Distributions  
-<br> 2.  Feature selection
-<br> 3.  Imputation
-<br> 4.  Dimensionality reduction
-<br> 5.  Eigendata calculation
-<br> 6.  Conservation index analysis
-<br> 7.  Regressions
-<br> 8.  Data-driven networks
-<br> 9.  meta-analyses
+```r
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager", repos = "https://cloud.r-project.org")
+}
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  install.packages("devtools", repos = "https://cloud.r-project.org")
+}
 
-
-This document is divided into four main sections: 
-<br> [1. metime_analyser class and data preparation]
-<br> [2. Building pipelines]
-<br> [3. For Developers]
-
-## 1. metime_analyser class and data preparation
-
-### 1.1. metime_analyser class
-
-This package builds upon the S4 class of metime_analyser which serves as a central object that stores the data, results and the information of functions applied onto this object in a pipeline. The reasons to create such an object is as follows:
-<br> 1. There are often multiple datasets that a user wants to analyse and there is no class in R that can store all the data at once. The closest relative of metime_analyser is summarizedExperiment(SE), which however stores information of only a single dataset that is cross-sectional in nature
-<br> 2. As the metime_analyser object will contatin multiple datasets at once. It is easier to parse this into other functions and modify/analyse all the datasets at once thereby removing the need of duplicating the same analysis for different datasets.
-<br> 3. Moreover, users can now perform analyses which clubs two or more datasets at once.
-<br> 4. To be able to reproduce the results and maintain transparency, information regarding the functions applied onto a metime_analyser object are also stored. See the structure of results below to understand this better. 
-
-The metime_analyser class has 5 slots:
-<br> 1. list_of_data: Consists of a list of data matrices of metabolite concentrations
-<br> 2. list_of_row_data: Consists of a list of row-data information(samples) for the respective data matrices
-<br> 3. list_of_col_data: Consists of a list of col-data information(metabolites) for the respective data matrices
-<br> 4. annotations: This is a list to define how the phenotype data and medication data are named. Can also include other datasets, however, only phenotype and medication data are important as they are different from the other datasets which are actually analysed.
-<br> 5. results: List where the results of the analyses are stored. This list contains upto 4 elements namely:
-<br> &emsp; 1. functions_applied: A named list with names being the functions that were applied onto the object until a particular calculation(analysis) is performed and the values of each list item is a named character vector with parameters as names of the character vector and values are their respective values. If an argument's value is anything other than a character vector then that value is converted into a class of character type. 
- <br> &emsp; 2. plot_data: A list of dataframes which are the results of an analysis.
- <br> &emsp; 3. plots: A list where the plots generated by mod_generate_plots() are stored. For more information see [Building pipelines] section
- <br> &emsp; 4. information: A list with two elements calc_type and calc_info. calc_type is a character vector that defines the type of analysis and calc_info is a more detailed desciption of the calculation performed. calc_type and calc_info are generated automatically after a calculation and is used as key for plotting the results or for performing meta analysis. 
-
-<img width="435" alt="metime_analyser" src="https://user-images.githubusercontent.com/64539275/232745616-7149a04a-a051-4fea-9079-5f5fb2106089.png">
-
-<img width="376" alt="metime_analyser_results" src="https://user-images.githubusercontent.com/64539275/232745659-0c9fcea9-145f-4829-881a-f279d035d79f.png">
-
-### 1.2. Data preparation
-
-This package aims to be a general package that can handle any type of longitudinal dataset and in order to acheive that we expect the users to make a few changes to the dataset. These changes are:
-1. The sample ids should always be in this format: [a-z|A-z][0-9]+_[a-z|A-Z][0-9]+(Example: subject=R1, time=t0, id=R1_t0). The part before the underscore represents the subject and the part after represents the timepoint of measurement. If the timepoints in the data are not a singular value then we suggest the user to create a psuedo timescale to match this format.
-2. Every row_data dataframe should contain the columns id, subject and time and every col_data dataframe should contain the column id. And the ids in row_data should match the rownames of the data matrix and the ids in col_data should match the colnames of the data matrix. 
-
-The first step in using this package is to create an S4 object of class metime_analyser with all the data that a user wants to analyse. There are multiple ways in which this S4 object can be created:
-
-#### 1.2.1. Loading all the data at once from a folder with all files
-
-The user can store all the files that contain the data in a directory and can parse the path to create an object. However, it is important to note that the naming of the files(extension should either be .rds or .RDS) for a particular dataset "test" should be in this pattern:
- data: test_data
- col_data: test_col_data
-arow_data: test_row_data
-
-```{r, eval=FALSE}
-path <- "/path/to/directory"
-annotations=list(phenotype="name_of_the_dataset/file", 
-                      medication="name_of_the_dataset/file")
-object <- get_files_and_names(path, annotations_index=annotations)
-```
-    
-#### 1.2.2 Using data-frames to make your own object 
-
-This option is for users who want to analyse only one dataset at once. 
-
-```{r, eval=FALSE}
-annotations=list(phenotype="name_of_the_dataset/file", 
-                      medication="name_of_the_dataset/file")
-object <- get_make_analyser_object(data=data.frame, # dataframe containing data
-                                  col_data=data.frame, # dataframe containing col_data
-                                  row_data=data.frame, # dataframe containing row_data
-                                  annotations_index=annotations,
-                                  name="name of the dataset")
+options(repos = BiocManager::repositories())
+devtools::install_github("compneurobio/MeTime", dependencies = TRUE)
 ```
 
-#### 1.2.3. Appending a new dataset to a previously created object 
+## Quick example
 
-```{r, eval=FALSE}
-object <- get_append_analyser_object(object, data, col_data, row_data, name)
+```r
+library(MeTime)
+data("humet_object")
+
+humet_object <- humet_object %>%
+  mod_trans_zscore(which_data = "humet_subset_data") %>%
+  calc_dimensionality_reduction_samples(
+    which_data = "humet_subset_data",
+    type = "PCA",
+    cols_for_meta = c("Factor.Challenge.Value.", "Factor.Challenge.Value.Day."),
+    name = "PCA_samples"
+  ) %>%
+  mod_generate_plots(type = "PCA", .interactive = TRUE)
 ```
 
-#### 1.2.4. merge two or more analyser objects
+## Documentation
 
-```{r, eval=FALSE}
-annotations=object1@annotations
-object <- mod_merge_metime_analysers(object1, object2, ...,
-                                      annotations_index=annotations)
-                                      
-```
+- Docs hub: [`docs/README.md`](docs/README.md)
+- Getting started: [`docs/getting-started/`](docs/getting-started)
+- User guides: [`docs/user-guides/`](docs/user-guides)
+- Reference guides: [`docs/reference/`](docs/reference)
+- Case studies: [`docs/case-studies/`](docs/case-studies)
+- Package reference (`?function_name`) and `vignettes/`
 
+## Website
+
+A pkgdown site is built from repository docs/vignettes via CI using `.github/workflows/pkgdown.yaml`.

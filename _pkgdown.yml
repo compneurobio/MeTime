@@ -1,6 +1,10 @@
-url: ~
+url: https://compneurobio.github.io/MeTime/
 template:
   bootstrap: 5
+
+authors:
+  footer:
+    roles: [aut, cre]
 
 navbar:
   structure:
@@ -13,25 +17,22 @@ navbar:
     developer:
       text: Developer docs
       menu:
-      - text: Docs Hub (source)
-        href: https://github.com/<ORG>/<REPO>/tree/main/docs
-      - text: pkgdown integration guide
-        href: articles/pkgdown-integration.html
+        - text: Docs Hub (source)
+          href: https://github.com/compneurobio/MeTime/tree/main/docs
 
 articles:
-- title: Getting started
-  contents:
-  - starts_with("getting-started-")
-- title: User guides
-  contents:
-  - starts_with("user-guides-")
-- title: Reference guides
-  contents:
-  - starts_with("reference-")
-- title: Case studies
-  contents:
-  - starts_with("case-studies-")
-- title: Developer
-  contents:
-  - starts_with("developer-")
-  - pkgdown-integration
+  - title: Getting started
+    contents:
+      - starts_with("getting-started-")
+  - title: User guides
+    contents:
+      - starts_with("user-guides-")
+  - title: Reference guides
+    contents:
+      - starts_with("reference-")
+  - title: Case studies
+    contents:
+      - starts_with("case-studies-")
+  - title: Developer
+    contents:
+      - starts_with("developer-")
