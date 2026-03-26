@@ -7,8 +7,8 @@
 1. Build object
 2. Modify data (`mod_*`)
 3. Calculate (`calc_*`)
-4. Plot/export 
-4. Meta-analysis (`meta_*`, optional)
+4. Plot/export
+5. Meta-analysis (`meta_*`, optional)
 
 For most of the calculation external data is not needed but for regression analysis an additional dataset has to be appended to col_data. See below for example in humet and in case studies
 
@@ -34,7 +34,7 @@ Here are a few examples for building pipelines see case studies example for more
 
 1. Distribution, distances and correlation
 
-Here is an example of all all possible analysis and visualizations with humet data
+Here is an example workflow covering distributions, correlations, and distances with HuMet data
 
 ```r
 data("humet_object")
@@ -118,7 +118,7 @@ med_metadata <- data.frame(
 feature_selection <- humet_object %>%
     add_dataset(data=med_data, col_data=med_metadata, row_data=get_rowdata(humet_object, which_data="humet_subset_data", name="medication_data")) %>%
     mod_trans_zscore(which_data="humet_subset_data") %>%
-# this part is computationaly expensive so beware
+# this part is computationally expensive so beware
   #  calc_featureselection_boruta(which_x="medication_data", # here we use medication but you can use any other dataset
 #                                       which_y="humet_subset_data",
 #                                       verbose=T,
@@ -192,10 +192,10 @@ lmm_data <- plyr::rbind.fill(lmm_data, traits)
 
 # the goal is to have a dataframe with id, covs, type, interaction and random in case of linear mixed models and generalized additive models whereas for linear model interaction and random are not needed.
 # For cases where you need more than one covariate or random effect or interaction effect just add the variable names with ### separating them for example: ###Age###BMI. Same logic can be applied to cov column as well
-# In this example we created a dataframe but we recommed to use an excel sheet
+# In this example we created a dataframe but we recommend to use an excel sheet
 # An example excel sheet can be found in the case-studies folder
 
-linear_mixed_   model <- humet_object %>%
+linear_mixed_model <- humet_object %>%
     mod_merge_row_data_and_data(which_data=which_data, 
         cols_list=list(data=NULL, row_data=c("Factor.Value.Challenge.")),
         name="lmm_data", append=T) %>%
