@@ -13,7 +13,7 @@ In this guide, you will:
 ```r
 library(MeTime)
 
-data(humet_object)
+data("humet_object")
 humet_object <- humet_object %>% 
         mod_trans_zscore(which_data="humet_subset_data") %>%
         calc_dimensionality_reduction_samples(which_data = "humet_subset_data", type="PCA", 

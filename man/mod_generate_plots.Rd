@@ -11,7 +11,9 @@ mod_generate_plots(object, .interactive = FALSE, type, results_index = NULL)
 
 \item{.interactive}{logical to make the plot interactive or not}
 
-\item{type}{character to define the type of calculation used for updating the plot
+\item{type}{character to define the type of calculation used for updating the plot. Allowed arguments are "network", "PCA", "UMAP", "tSNE",
+"CI_metabotype", "CI_metabolite", "regression", "pairwise_distance", "pairwise_correlation", "colinearity", "regression", "distribution_samples,
+"distribution_metabs", "feature_selection", "clusters"
 cols_for_samples, cols_for_metabs, cols_for_meta etc will be used. So make sure you set those correctly
 for better results.
 Allowed inputs are: c("ggm|network", "PCA", "UMAP", "tSNE", "CI_metabotype", "CI_metabolite",

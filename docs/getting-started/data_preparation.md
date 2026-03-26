@@ -64,13 +64,13 @@ object <- object %>% add_dataset(data=data, row_data=row_data, col_data=col_data
 ```r
 # update which_data variable as per your dataset name
 which_data <- "name"
-# Using mod_mutate (wrapper of dplyr::mutate for ease) and running PCA
+# Using mod_mutate (wrapper of dplyr::mutate) and running Conservation index analysis
 object <- object %>% 
             mod_mutate(type="row_data", which_data=which_data,
                     test_col=seq_along(rownames(get_rowdata(object, which_data=which_data)))) %>%
             mod_trans_zscore(which_data=which_data) %>%
             calc_conservation_metabotype(which_data=which_data, 
-                               stratifications=list(time=c("t0", "t12", "t24")),
+                               stratifications=list(time=c("t0", "t12", "t24")), # choose timepoints of interest
                                verbose=F, 
                                cols_for_meta=NULL, 
                                name="Conservation_Metabotype_scaled")
@@ -81,11 +81,25 @@ object <- object %>% mod_generate_plots(type="CI_metabotype", .interactive=T)
 
 # generate report
 
-object %>% write_report(file="dimensionality_reduction.html", title="PCA results")
+object %>% write_report(file="CI_results.html", title="Conservation index analysis")
 
 ```
 
+## Appending a new dataset to a previously created object 
+
+```r
+object <- get_append_analyser_object(object, data, col_data, row_data, name)
+```
+
+## Merge two or more analyser objects
+
+```r
+annotations=object1@annotations
+object <- mod_merge_metime_analysers(object1, object2, ...,
+                                      annotations_index=annotations)
+                                      
+```
 
 ## Next
 
-- Continue to [`sample-data-walkthrough.md`](sample-data-walkthrough.md).
+- Continue to user-guides for more targeted analysis 

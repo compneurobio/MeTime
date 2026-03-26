@@ -27,7 +27,7 @@ The results list is further divided into the following slots:
 ## Inspection helpers
 
 ```r
-load(humet_object)
+load("humet_object")
 show(humet_object)
 validate_metime_anlyser(humet_object) # easy check to see if the object is valid
 data <- get_data(humet_object, which_data = "humet_data") # extract data

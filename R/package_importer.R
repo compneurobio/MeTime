@@ -575,7 +575,9 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
 #' @param .interactive logical to make the plot interactive or not
 #' @param results_index character/numeric input to define the results that you want to plot or replot with our automation.
 #' Default will be set to NULL. Length of results_index should be equal to 1.
-#' @param type character to define the type of calculation used for updating the plot
+#' @param type character to define the type of calculation used for updating the plot. Allowed arguments are "network", "PCA", "UMAP", "tSNE", 
+#' "CI_metabotype", "CI_metabolite", "regression", "pairwise_distance", "pairwise_correlation", "colinearity", "regression", "distribution_samples,
+#'  "distribution_metabs", "feature_selection", "clusters" 
 #' cols_for_samples, cols_for_metabs, cols_for_meta etc will be used. So make sure you set those correctly
 #' for better results. 
 #' Allowed inputs are: c("ggm|network", "PCA", "UMAP", "tSNE", "CI_metabotype", "CI_metabolite", 

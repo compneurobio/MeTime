@@ -4,21 +4,51 @@ Follow the step-by-step guidelines to install MeTime
 
 ## Prerequisites
 
-- R version: `>= 4.3.0`
+- R version: `>= 3.5.0`
 - OS tested: `Linux/macOS/Windows`
-- System dependencies (if any): `<list>`
+- System dependencies (Debian libraries specified): `libhdf5-dev,
+        libcurl4-gnutls-dev,
+        libssl-dev,
+        libxml2-dev,
+        libpng-dev,
+        libxt-dev,
+        zlib1g-dev,
+        libbz2-dev,
+        liblzma-dev,
+        libglpk40,
+        libgit2-dev`
 
 
 ## Install dependencies manually (optional)
 
 ```r
-install.packages(c("tidyverse", "knitr"))
-BiocManager::install()
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager", repos = "https://cloud.r-project.org")
+}
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  install.packages("devtools", repos = "https://cloud.r-project.org")
+}
+
+# Use both CRAN + Bioconductor repositories during dependency resolution
+options(repos = BiocManager::repositories())
 ```
 ## Install from GitHub
 
 ```r
-devtools::install_github("compneurobio/MeTime")
+# Install MeTime and dependencies
+# (set dependencies = TRUE to install Imports/Suggests)
+devtools::install_github("compneurobio/MeTime", dependencies = TRUE)
+```
+
+## Alternative installation
+
+If you prefer automatic dependency solving across CRAN and Bioconductor, `pak` is often the easiest route:
+
+```r
+if (!requireNamespace("pak", quietly = TRUE)) {
+  install.packages("pak", repos = "https://cloud.r-project.org")
+}
+pak::pak("compneurobio/MeTime")
 ```
 
 ## Verify installation
