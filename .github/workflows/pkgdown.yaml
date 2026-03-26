@@ -29,15 +29,13 @@ jobs:
           sudo apt-get install -y \
             libhdf5-dev libcurl4-gnutls-dev libssl-dev libxml2-dev \
             libpng-dev libxt-dev zlib1g-dev libbz2-dev liblzma-dev \
-            libglpk40 libgit2-dev \
-            libharfbuzz-dev libfribidi-dev libfreetype6-dev \
-            libfontconfig1-dev libcairo2-dev
+            libglpk40 libgit2-dev
 
       - name: Install R dependencies
         run: |
           Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")'
-          Rscript -e 'install.packages(c("pkgdown", "rmarkdown", "knitr", "remotes"), repos = "https://cloud.r-project.org")'
-          Rscript -e 'options(repos = BiocManager::repositories()); remotes::install_deps(dependencies = TRUE, upgrade = "never")'
+          Rscript -e 'options(repos = BiocManager::repositories()); install.packages(c("pkgdown", "rmarkdown", "knitr", "devtools"), repos = "https://cloud.r-project.org")'
+          Rscript -e 'devtools::install_deps(dependencies = TRUE)'
 
       - name: Sync docs to vignettes
         run: Rscript tools/sync_docs_to_vignettes.R
