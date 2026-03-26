@@ -29,19 +29,21 @@ jobs:
           sudo apt-get install -y \
             libhdf5-dev libcurl4-gnutls-dev libssl-dev libxml2-dev \
             libpng-dev libxt-dev zlib1g-dev libbz2-dev liblzma-dev \
-            libglpk40 libgit2-dev
+            libglpk40 libgit2-dev \
+            libfontconfig1-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev \
+            libjpeg-dev libtiff5-dev libwebp-dev
 
       - name: Install R dependencies
         run: |
           Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")'
-          Rscript -e 'options(repos = BiocManager::repositories()); install.packages(c("pkgdown", "rmarkdown", "knitr", "devtools"), repos = "https://cloud.r-project.org")'
-          Rscript -e 'devtools::install_deps(dependencies = TRUE)'
+          Rscript -e 'options(repos = BiocManager::repositories()); install.packages(c("pkgdown", "rmarkdown", "knitr", "remotes"), repos = "https://cloud.r-project.org")'
+          Rscript -e 'options(repos = BiocManager::repositories()); remotes::install_deps(dependencies = TRUE)'
 
       - name: Sync docs to vignettes
         run: Rscript tools/sync_docs_to_vignettes.R
 
       - name: Build site
-        run: Rscript -e 'pkgdown::build_site(preview = FALSE, destination = "docs/site")'
+        run: Rscript -e 'pkgdown::build_site(preview = FALSE, examples = FALSE, install = FALSE, new_process = FALSE)'
 
       - name: Upload site artifact
         uses: actions/upload-artifact@v4
