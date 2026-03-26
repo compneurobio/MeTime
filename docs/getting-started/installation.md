@@ -78,8 +78,8 @@ Loading required package: tidyverse
 
 ## Troubleshooting
 
-- **Error:** `<error text>`  
-  **Fix:** `<resolution>`
+- **Error:** package build fails due to missing system libraries.  
+  **Fix:** install OS-level dependencies listed in prerequisites, then reinstall.
 
 ## Next
 
