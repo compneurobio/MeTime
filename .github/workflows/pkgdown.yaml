@@ -42,6 +42,9 @@ jobs:
       - name: Sync docs to vignettes
         run: Rscript tools/sync_docs_to_vignettes.R
 
+      - name: Install MeTime package
+        run: R CMD INSTALL --no-build-vignettes --no-manual .
+
       - name: Build site
         run: Rscript -e 'pkgdown::build_site(preview = FALSE)'
 
