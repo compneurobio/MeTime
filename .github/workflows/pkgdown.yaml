@@ -37,7 +37,7 @@ jobs:
         run: |
           Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")'
           Rscript -e 'options(repos = BiocManager::repositories()); install.packages(c("pkgdown", "rmarkdown", "knitr", "remotes"), repos = "https://cloud.r-project.org")'
-          Rscript -e 'options(repos = BiocManager::repositories()); remotes::install_deps(dependencies = TRUE)'
+          Rscript -e 'remotes::install_deps(dependencies = TRUE)'
 
       - name: Sync docs to vignettes
         run: Rscript tools/sync_docs_to_vignettes.R
@@ -46,17 +46,17 @@ jobs:
         run: R CMD INSTALL --no-build-vignettes --no-manual .
 
       - name: Build site
-        run: Rscript -e 'pkgdown::build_site(preview = FALSE, install = FALSE, new_process = FALSE)'
+        run: Rscript -e 'pkgdown::build_site(preview = FALSE)'
 
       - name: Upload site artifact
         uses: actions/upload-artifact@v4
         with:
           name: pkgdown-site
-          path: docs/site
+          path: docs
 
       - name: Deploy to GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/site
+          publish_dir: ./docs
