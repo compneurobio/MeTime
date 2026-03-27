@@ -34,7 +34,12 @@ jobs:
             libfontconfig1-dev libfreetype6-dev libharfbuzz-dev libfribidi-dev \
             libjpeg-dev libtiff5-dev libwebp-dev
 
-      - name: Install R dependencies
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          needs: website
+          extra-packages: any::pkgdown
+
+      - name: Install Bioconductor dependencies
         run: |
           Rscript -e 'install.packages("BiocManager", repos = "https://cloud.r-project.org")'
           Rscript -e 'options(repos = BiocManager::repositories()); install.packages(c("pkgdown", "rmarkdown", "knitr", "remotes"), repos = "https://cloud.r-project.org")'
