@@ -28,6 +28,7 @@ Imports:
     parallel,
     plotly,
     rlang,
+    reshape2,
     rmarkdown,
     rmdformats,
     rstatix,
