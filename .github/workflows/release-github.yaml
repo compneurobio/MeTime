@@ -1,0 +1,64 @@
+name: release-r-package
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    container:
+      image: rocker/r2u:24.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            git \
+            pandoc \
+            libcurl4-openssl-dev \
+            libssl-dev \
+            libxml2-dev \
+            libfontconfig1-dev \
+            libfreetype6-dev \
+            libharfbuzz-dev \
+            libfribidi-dev \
+            libjpeg-dev \
+            libpng-dev \
+            libtiff5-dev \
+            libgit2-dev \
+            zlib1g-dev \
+            libbz2-dev \
+            liblzma-dev
+
+      - name: Install R build dependencies
+        run: |
+          Rscript -e 'install.packages(c("remotes", "BiocManager"), repos = "https://cloud.r-project.org")'
+          Rscript -e 'BiocManager::install(ask = FALSE, update = FALSE)'
+          Rscript -e 'remotes::install_deps(dependencies = TRUE)'
+
+      - name: Build source package
+        run: |
+          R CMD build .
+          PKG_TAR=$(ls -1t MeTime_*.tar.gz | head -n1)
+          echo "PKG_TAR=$PKG_TAR" >> "$GITHUB_ENV"
+
+      - name: Check package
+        run: R CMD check --no-manual --as-cran "$PKG_TAR"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.PKG_TAR }}
+          generate_release_notes: true
