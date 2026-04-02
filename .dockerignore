@@ -1,0 +1,9 @@
+.git
+.github
+.Rhistory
+.RData
+.Rproj.user
+*.Rproj
+docs
+man
+vignettes

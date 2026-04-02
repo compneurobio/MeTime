@@ -60,3 +60,8 @@ humet_object <- humet_object %>%
 ## Website
 
 A pkgdown site is built from repository docs/vignettes via CI using `.github/workflows/pkgdown.yaml`.
+
+## Container image
+
+A Docker image can be published to GitHub Container Registry (GHCR) via `.github/workflows/docker-publish.yaml` when pushing release tags (for example `v1.0.1`).
+
