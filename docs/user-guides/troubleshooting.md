@@ -2,28 +2,132 @@
 
 > One-line summary: common errors, root causes, and fixes.
 
+This page includes practical checks you can run quickly with the bundled `humet_object` example dataset. Some sections include placeholders that you can later replace with project-specific details.
+
+## Quick diagnostics first
+
+Run this minimal diagnostic block before deep debugging:
+
+```r
+library(MeTime)
+data("humet_object")
+
+# 1) Object validity
+validate_metime_analyser(humet_object)
+
+# 2) Inspect available datasets
+names(humet_object@list_of_data)
+
+# 3) Inspect available results
+names(humet_object@results)
+
+# 4) Basic summary
+summarize_dataset(humet_object, which_data = "humet_subset_data")
+```
+
 ## Top issues
 
 ### 1) Dataset not found in object
-- **Cause:** `which_data` does not match dataset names.
-- **Fix:** check `names(object@list_of_data)`.
+- **Symptom:** `which_data` errors or empty operations.
+- **Likely cause:** typo or missing dataset name.
+- **Quick fix:**
+
+```r
+names(humet_object@list_of_data)
+# then use one of these names in which_data
+```
+
+- **Placeholder (customize later):**
+  - Team-specific naming convention: `<PLACEHOLDER_DATASET_NAMING_RULES>`
 
 ### 2) Plot generation fails
-- **Cause:** incompatible result type or missing metadata.
-- **Fix:** inspect `object@results[[<index>]]$information$calc_type` and choose the relevant result_type or plot_type.
+- **Symptom:** no plot output or plotting error.
+- **Likely cause:** missing required result type / metadata fields.
+- **Quick fix:**
+
+```r
+# inspect result metadata
+humet_object@results[[1]]$information$calc_type
+
+# then pick matching type in mod_generate_plots(...)
+```
+
+- **Placeholder (customize later):**
+  - Expected plot mapping table: `<PLACEHOLDER_RESULTTYPE_TO_PLOTTYPE_TABLE>`
 
 ### 3) Invalid sample IDs
-- **Cause:** IDs not in required format.
-- **Fix:** standardize IDs before object creation.
+- **Symptom:** merge/filter steps produce unexpected row counts.
+- **Likely cause:** inconsistent sample ID format across datasets.
+- **Quick fix:** standardize IDs before building/merging data.
 
-### 4) See fixed bugs
+- **Placeholder (customize later):**
+  - Canonical ID regex: `<PLACEHOLDER_SAMPLE_ID_REGEX>`
 
-- check the closed issue page to see if a similar problem has been previously solved
+### 4) Too many missing values (NAs)
+- **Symptom:** analyses return empty or unstable results.
+- **Likely cause:** high missingness at feature or sample level.
+- **Quick fix:**
 
-## Debug workflow ideas:
+```r
+humet_object %>%
+  mod_filter_features_by_missingness(which_data = "humet_subset_data", threshold = 0.3) %>%
+  mod_filter_samples_by_missingness(which_data = "humet_subset_data", threshold = 0.3)
+```
 
-1. Run the pipeline step by step and run validate_metime_analyser() to check where the issue lies
-2. In case everything works and the result is empty - check if data is has no NAs
-3. Use Codex or similar AI tool to inspect
+- **Placeholder (customize later):**
+  - Missingness threshold by study: `<PLACEHOLDER_MISSINGNESS_THRESHOLDS>`
 
+### 5) Model formula / covariate mismatch
+- **Symptom:** regression functions fail or drop terms.
+- **Likely cause:** covariates not present, wrong type (numeric/factor), or invalid formula columns.
+- **Quick fix:**
 
+```r
+# inspect columns before running model
+colnames(humet_object@list_of_data[["humet_subset_data"]])
+```
+
+- **Placeholder (customize later):**
+  - Required covariates for production models: `<PLACEHOLDER_REQUIRED_COVARIATES>`
+
+### 6) Package/dependency install issues
+- **Symptom:** install fails due to system libraries.
+- **Likely cause:** missing OS dependencies for compiled packages.
+- **Quick fix:** install listed system libraries from `docs/getting-started/installation.md`.
+
+- **Placeholder (customize later):**
+  - Internal install/runbook link: `<PLACEHOLDER_INTERNAL_INSTALL_GUIDE_URL>`
+
+## Recommended debug workflow
+
+1. Reproduce with `humet_object` first to isolate whether issue is data-specific.
+2. Run pipeline one step at a time and inspect intermediate object states.
+3. Use `validate_metime_analyser()` after each major `mod_*` step.
+4. Save intermediate objects with `saveRDS()` to enable reproducible bug reports.
+5. Confirm that transformations match intended scale/log settings.
+
+## Bug report template (placeholder)
+
+Copy/paste this when opening issues:
+
+```text
+### Problem summary
+<PLACEHOLDER_ONE_LINE_SUMMARY>
+
+### Minimal reproducible code
+<PLACEHOLDER_REPREX>
+
+### Error output
+<PLACEHOLDER_ERROR_OUTPUT>
+
+### sessionInfo()
+<PLACEHOLDER_SESSION_INFO>
+
+### Data shape
+Rows: <PLACEHOLDER_N_ROWS>
+Columns: <PLACEHOLDER_N_COLS>
+```
+
+## See fixed bugs
+
+Check closed GitHub issues for solved examples and known edge cases.

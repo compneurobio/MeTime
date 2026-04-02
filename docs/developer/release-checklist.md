@@ -19,3 +19,5 @@
 - [ ] Tag release
 - [ ] Publish GitHub release notes
 - [ ] Deploy pkgdown site
+- [ ] Publish Docker image to GHCR (if tagging a release)
+- [ ] Verify package appears under GitHub Packages
