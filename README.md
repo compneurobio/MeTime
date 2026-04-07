@@ -66,14 +66,3 @@ A pkgdown site is built from repository docs/vignettes via CI using `.github/wor
 
 A Docker image can be published to GitHub Container Registry (GHCR) via `.github/workflows/docker-publish.yaml` when pushing release tags (for example `v1.0.1`).
 
-### Pull and run
-
-```bash
-docker pull ghcr.io/<OWNER>/metime:latest
-docker run --rm ghcr.io/<OWNER>/metime:latest
-```
-
-For a fallback flow that builds locally if needed, see:
-- [`docs/getting-started/docker-fallback.md`](docs/getting-started/docker-fallback.md)
-- [`tools/run_metime_docker_example.sh`](tools/run_metime_docker_example.sh)
-
