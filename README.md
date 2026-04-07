@@ -51,10 +51,11 @@ humet_object <- humet_object %>%
 ## Documentation
 
 - Docs hub: [`docs/README.md`](docs/README.md)
-- Getting started: [`docs/getting-started/`](docs/getting-started)
-- User guides: [`docs/user-guides/`](docs/user-guides)
-- Reference guides: [`docs/reference/`](docs/reference)
-- Case studies: [`docs/case-studies/`](docs/case-studies)
+- Getting started: [`docs/getting-started/README.md`](docs/getting-started/README.md)
+- User guides: [`docs/user-guides/README.md`](docs/user-guides/README.md)
+- Reference guides: [`docs/reference/README.md`](docs/reference/README.md)
+- Case studies: [`docs/case-studies/README.md`](docs/case-studies/README.md)
+- Developer docs: [`docs/developer/README.md`](docs/developer/README.md)
 - Package reference (`?function_name`) and `vignettes/`
 
 ## Website
