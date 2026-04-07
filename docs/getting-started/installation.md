@@ -19,7 +19,7 @@ Follow the step-by-step guidelines to install MeTime
         libgit2-dev`
 
 
-## Install dependencies manually (optional)
+## Install dependencies manually
 
 ```r
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
