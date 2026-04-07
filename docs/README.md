@@ -4,11 +4,11 @@ Use this folder as the single source of truth for user-facing documentation page
 
 ## Sections
 
-- `getting-started/`: first 10-minute onboarding flow.
-- `user-guides/`: task-oriented usage guidance.
-- `reference/`: architecture and API mental model.
-- `case-studies/`: narrative, proof-oriented examples.
-- `developer/`: contribution and extension workflows.
+- `getting-started/`: first 10-minute onboarding flow ([README](getting-started/README.md)).
+- `user-guides/`: task-oriented usage guidance ([README](user-guides/README.md)).
+- `reference/`: architecture and API mental model ([README](reference/README.md)).
+- `case-studies/`: narrative, proof-oriented examples ([README](case-studies/README.md)).
+- `developer/`: contribution and extension workflows ([README](developer/README.md)).
 
 ## Writing guidelines
 
@@ -20,3 +20,7 @@ Use this folder as the single source of truth for user-facing documentation page
 ## Website publishing
 
 The pkgdown website is generated through CI from this repository's documentation and vignettes.
+
+## Installation fallback
+
+If local installation fails, use the container path in [getting-started/docker-fallback.md](getting-started/docker-fallback.md).
