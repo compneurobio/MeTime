@@ -41,7 +41,7 @@ options(repos = BiocManager::repositories())
 devtools::install_github("compneurobio/MeTime", dependencies = TRUE)
 ```
 
-## Alternative installation
+## 3. Alternative installation
 
 If you prefer automatic dependency solving across CRAN and Bioconductor, `pak` is often the easiest route:
 
@@ -52,7 +52,7 @@ if (!requireNamespace("pak", quietly = TRUE)) {
 pak::pak("compneurobio/MeTime")
 ```
 
-## Verify installation
+## 4. Verify installation
 
 ```r
 library(MeTime)
