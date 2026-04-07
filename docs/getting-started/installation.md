@@ -18,8 +18,9 @@ Follow the step-by-step guidelines to install MeTime
         libglpk40,
         libgit2-dev`
 
+- Follow the installation steps below
 
-## Install dependencies manually
+## 1. Install dependencies manually
 
 ```r
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
@@ -32,7 +33,7 @@ if (!requireNamespace("devtools", quietly = TRUE)) {
 # Use both CRAN + Bioconductor repositories during dependency resolution
 options(repos = BiocManager::repositories())
 ```
-## Install from GitHub
+## 2. Install package from GitHub
 
 ```r
 # Install MeTime and dependencies
