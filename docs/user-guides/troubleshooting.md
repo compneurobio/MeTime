@@ -37,9 +37,6 @@ names(humet_object@list_of_data)
 # then use one of these names in which_data
 ```
 
-- **Placeholder (customize later):**
-  - Team-specific naming convention: `<PLACEHOLDER_DATASET_NAMING_RULES>`
-
 ### 2) Plot generation fails
 - **Symptom:** no plot output or plotting error.
 - **Likely cause:** missing required result type / metadata fields.
@@ -52,16 +49,12 @@ humet_object@results[[1]]$information$calc_type
 # then pick matching type in mod_generate_plots(...)
 ```
 
-- **Placeholder (customize later):**
-  - Expected plot mapping table: `<PLACEHOLDER_RESULTTYPE_TO_PLOTTYPE_TABLE>`
-
 ### 3) Invalid sample IDs
 - **Symptom:** merge/filter steps produce unexpected row counts.
 - **Likely cause:** inconsistent sample ID format across datasets.
 - **Quick fix:** standardize IDs before building/merging data.
 
-- **Placeholder (customize later):**
-  - Canonical ID regex: `<PLACEHOLDER_SAMPLE_ID_REGEX>`
+- Canonical ID regex: `[a-z][A-Z][0-9]+_[a-z][A-Z][0-9]+`
 
 ### 4) Too many missing values (NAs)
 - **Symptom:** analyses return empty or unstable results.
@@ -74,9 +67,6 @@ humet_object %>%
   mod_filter_samples_by_missingness(which_data = "humet_subset_data", threshold = 0.3)
 ```
 
-- **Placeholder (customize later):**
-  - Missingness threshold by study: `<PLACEHOLDER_MISSINGNESS_THRESHOLDS>`
-
 ### 5) Model formula / covariate mismatch
 - **Symptom:** regression functions fail or drop terms.
 - **Likely cause:** covariates not present, wrong type (numeric/factor), or invalid formula columns.
@@ -87,16 +77,11 @@ humet_object %>%
 colnames(humet_object@list_of_data[["humet_subset_data"]])
 ```
 
-- **Placeholder (customize later):**
-  - Required covariates for production models: `<PLACEHOLDER_REQUIRED_COVARIATES>`
-
 ### 6) Package/dependency install issues
 - **Symptom:** install fails due to system libraries.
 - **Likely cause:** missing OS dependencies for compiled packages.
 - **Quick fix:** install listed system libraries from `docs/getting-started/installation.md`.
 
-- **Placeholder (customize later):**
-  - Internal install/runbook link: `<PLACEHOLDER_INTERNAL_INSTALL_GUIDE_URL>`
 
 ## Recommended debug workflow
 
@@ -106,27 +91,6 @@ colnames(humet_object@list_of_data[["humet_subset_data"]])
 4. Save intermediate objects with `saveRDS()` to enable reproducible bug reports.
 5. Confirm that transformations match intended scale/log settings.
 
-## Bug report template (placeholder)
-
-Copy/paste this when opening issues:
-
-```text
-### Problem summary
-<PLACEHOLDER_ONE_LINE_SUMMARY>
-
-### Minimal reproducible code
-<PLACEHOLDER_REPREX>
-
-### Error output
-<PLACEHOLDER_ERROR_OUTPUT>
-
-### sessionInfo()
-<PLACEHOLDER_SESSION_INFO>
-
-### Data shape
-Rows: <PLACEHOLDER_N_ROWS>
-Columns: <PLACEHOLDER_N_COLS>
-```
 
 ## See fixed bugs
 
