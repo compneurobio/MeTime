@@ -137,6 +137,7 @@ eigendata <- humet_object %>%
   mod_trans_zscore(which_data=which_data) %>% 
   mod_trans_eigendata(which_data = which_data, append=T, 
                       cols_for_meta=list(humet_subset_data=c(id="id", sub_pathway="sub_pathway")),
+                      baseline="t1",
                       minClusterSize=2,
                       deepSplit=3,
                       pamRespectsDendro=TRUE) 
