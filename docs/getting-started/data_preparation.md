@@ -33,10 +33,10 @@ See regression analysis in user-guides/building-pipelines.md for more informatio
 
 In this extended example for a cohort A, expected file names are:
 - Data files:
-- -  `platform1_data.rds`
-- -  `platform2_data.rds`
-- -  `phenotype_data.rds`
-- -  `medication_data.rds`
+  - `platform1_data.rds`
+  - `platform2_data.rds`
+  - `phenotype_data.rds`
+  - `medication_data.rds`
 - And the respective row_data and col_data files as described above
 
 ```r
