@@ -167,7 +167,7 @@ networks <- humet_object %>%
   calc_ggm_genenet(which_data = "ggm_data", threshold = "li", all=FALSE, 
                      cols_for_meta = list(humet_subset_data=c(sub_pathway="sub_pathway")),
                      covariates = c("Factor.Value.Challenge."),
-                     stratifications = list(time=c("t1", "t11", "t21", "t31", "t41", "t51")),
+                     stratifications = list(time=c("t1", "t2", "t3", "t4", "t5")),
                      name="genenet_ggm_results") %>%
     mod_generate_plots(type="network")
 
