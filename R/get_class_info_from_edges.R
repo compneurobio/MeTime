@@ -14,9 +14,13 @@ get_class_info_from_edges <- function(calc_networks, metadata, phenotypes) {
 								network <- calc_networks[[i]]
 								network$node1 <- metadata[as.character(calc_networks[[i]]$node1) %in% metadata$name, "group"]	
 								network$node2 <- metadata[as.character(calc_networks[[i]]$node2) %in% metadata$name, "group"]
-								
-								network <- network[ ,c("node1", "node2")]
-								network <- data.table::setDT(network)[ ,list(count=.N), names(network)]
+								network <- network[, c("node1", "node2"), drop = FALSE]
+								network <- stats::na.omit(network)
+								network <- aggregate(
+  									x = list(count = rep(1L, nrow(network))),
+  									by = list(node1 = network$node1, node2 = network$node2),
+  									FUN = sum
+								)
 								network <- na.omit(network)
 								out[[i]] <- network
 					}

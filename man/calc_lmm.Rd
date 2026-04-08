@@ -12,7 +12,9 @@ calc_lmm(
   threshold = c("none", "nominal", "li", "fdr", "bonferroni"),
   verbose = T,
   name = "regression_lmm_1",
-  num_cores = NULL
+  num_cores = NULL,
+  cluster_profile = c("auto", "local", "hpc"),
+  hpc_libpaths = NULL
 )
 }
 \arguments{
@@ -33,6 +35,18 @@ allowed inputs are "li", "FDR", "bonferroni" and "nominal"(cutoff p=0.05, set as
 \item{name}{a character vector to define the index within the results. Should be equal to length of which_data. Default set to regression_gamm_1.}
 
 \item{num_cores}{numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.}
+
+\item{cluster_profile}{Character string controlling worker initialization profile.
+One of \code{"auto"}, \code{"local"}, or \code{"hpc"}.
+\itemize{
+\item \code{"auto"}: detects common scheduler environments (e.g. SLURM/PBS/LSF) and chooses \code{"hpc"} when detected.
+\item \code{"local"}: standard local machine setup with default library paths.
+\item \code{"hpc"}: cluster-oriented setup; can prepend worker library paths via \code{hpc_libpaths}.
+}}
+
+\item{hpc_libpaths}{Optional character vector of library paths to prepend on worker nodes
+when \code{cluster_profile = "hpc"}. Use this when compute nodes need explicit \code{.libPaths()}
+(e.g. non-shared user libraries). Ignored for \code{"local"} profile.}
 
 \item{random}{a character vector defining which variables should be treated as random effects. Default set to "subject".}
 

@@ -21,10 +21,7 @@ Imports:
     htmltools,
     lmerTest,
     longitudinal,
-    M3C,
-    MatrixEQTL,
     mgcv,
-    multiway,
     parallel,
     plotly,
     rlang,
@@ -32,13 +29,13 @@ Imports:
     rmarkdown,
     rmdformats,
     rstatix,
-    umap,
     visNetwork,
     WGCNA,
-    xlsx,
     missForest,
-    pbapply,
-    bsplus
+    bsplus,
+    Rtsne,
+    uwot,
+    openxlsx
 Depends: 
     tidyverse
 Suggests: 
