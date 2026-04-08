@@ -164,11 +164,7 @@ networks <- humet_object %>%
   mod_merge_row_data_and_data(which_data=which_data, 
         cols_list=list(data=NULL, row_data=c("Factor.Value.Challenge.")),
         name="ggm_data", append=T) %>%
-  mod_mutate(which_data = "ggm_data", type="data", 
-                                          APOEGrp=as.numeric(APOEGrp), 
-                                          PTGENDER=as.numeric(PTGENDER),
-                                          PTEDUCAT=as.numeric(PTEDUCAT)) %>%
-    calc_ggm_genenet(which_data = "ggm_data", threshold = "li", all=FALSE, 
+  calc_ggm_genenet(which_data = "ggm_data", threshold = "li", all=FALSE, 
                      cols_for_meta = list(humet_subset_data=c(sub_pathway="sub_pathway")),
                      covariates = c("Factor.Value.Challenge."),
                      stratifications = list(time=c("t1", "t11", "t21", "t31", "t41", "t51")),
