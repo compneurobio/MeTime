@@ -28,15 +28,15 @@ For a dataset called `test`, expected file names are:
 - `test_col_data.rds`
 - `test_row_data.rds`
 
-Annotations are currently built for cohort data that is multi-platform. For example if a longitudinal cohort is measured on different metabolomics platforms this would lead to multiple datasets, however the clinical information or the medication intake information remains the same for all. In order to remove duplications (replacing this data is the row_data as this is sample information too) we provide a separate holder for such data and we expect you to annotate them. 
+Annotations are currently built for cohort data that is multi-platform. For example if a longitudinal cohort is measured on different metabolomics platforms this would lead to multiple datasets, however the clinical information or the medication intake information remains the same for all. In order to remove duplications (adding this to each dataset's row_data) we provide a separate holder for such data and we expect you to annotate them. 
 See regression analysis in user-guides/building-pipelines.md for more information on how to handle such data
 
 In this extended example for a cohort A, expected file names are:
 - Data files:
--   `platform1_data.rds`
--   `platform2_data.rds`
--   `phenotype_data.rds`
--   `medication_data.rds`
+- -  `platform1_data.rds`
+- -  `platform2_data.rds`
+- -  `phenotype_data.rds`
+- -  `medication_data.rds`
 - And the respective row_data and col_data files as described above
 
 ```r
