@@ -29,7 +29,7 @@ For a dataset called `test`, expected file names are:
 - `test_row_data.rds`
 
 Annotations are currently built for cohort data that is multi-platform. For example if a longitudinal cohort is measured on different metabolomics platforms this would lead to multiple datasets, however the clinical information or the medication intake information remains the same for all. In order to remove duplications (adding this to each dataset's row_data) we provide a separate holder for such data and we expect you to annotate them. 
-See regression analysis in user-guides/building-pipelines.md for more information on how to handle such data
+See feature selection analysis in user-guides/building-pipelines.md for more information on how to handle such data
 
 In this extended example for a cohort A, expected file names are:
 - Data files:
