@@ -13,10 +13,11 @@ In this guide, you will:
 
 ## Required data conventions
 
-1. Sample IDs should follow `<subject>_<timepoint>` (example: `R1_t0`).
+1. Sample IDs should follow `<subject>_<timepoint>` (example: `R1_t0`) and should be readable by this regex format: "[a-z][A-z][0-9]+_[a-z][A-Z][0-9]+".
 2. Every `row_data` table must include `id`, `subject`, and `time`.
 3. Every `col_data` table must include `id`.
 4. `rownames(data)` must match `row_data$id`, and `colnames(data)` must match `col_data$id`.
+5. All tables should be of data.frame() class
 
 ## Build an analyser object
 
@@ -27,14 +28,24 @@ For a dataset called `test`, expected file names are:
 - `test_col_data.rds`
 - `test_row_data.rds`
 
+Annotations are currently built for cohort data that is multi-platform. For example if a longitudinal cohort is measured on different metabolomics platforms this would lead to multiple datasets, however the clinical information or the medication intake information remains the same for all. In order to remove duplications (replacing this data is the row_data as this is sample information too) we provide a separate holder for such data and we expect you to annotate them. 
+See regression analysis in user-guides/building-pipelines.md for more information on how to handle such data
+
+In this extended example for a cohort A, expected file names are:
+- Data files:
+-   `platform1_data.rds`
+-   `platform2_data.rds`
+-   `phenotype_data.rds`
+-   `medication_data.rds`
+- And the respective row_data and col_data files as described above
+
 ```r
 path <- "/path/to/directory"
 
 annotations <- list(
-  phenotype = "name_of_the_dataset",
-  medication = "name_of_the_dataset"
-)
-
+  phenotype = "phenotype_data", # can be set to NULL if not applicable
+  medication = "medication_data" # can be set to NULL if not applicable
+) 
 object <- get_files_and_names(path, annotations_index = annotations)
 ```
 
@@ -72,7 +83,7 @@ object <- object %>%
   mod_trans_zscore(which_data = which_data) %>%
   calc_conservation_metabotype(
     which_data = which_data,
-    stratifications = list(time = c("t0", "t12", "t24")),
+    stratifications = list(time = c("t0", "t12", "t24")), # change accordingly
     verbose = FALSE,
     cols_for_meta = NULL,
     name = "Conservation_Metabotype_scaled"
