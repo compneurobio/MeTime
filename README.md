@@ -42,7 +42,7 @@ humet_object <- humet_object %>%
   calc_dimensionality_reduction_samples(
     which_data = "humet_subset_data",
     type = "PCA",
-    cols_for_meta = c("Factor.Challenge.Value.", "Factor.Challenge.Value.Day."),
+    cols_for_meta = c("Factor.Value.Challenge.", "Factor.Value.ChallengeDay."),
     name = "PCA_samples"
   ) %>%
   mod_generate_plots(type = "PCA", .interactive = TRUE)
