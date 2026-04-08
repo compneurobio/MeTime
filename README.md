@@ -39,6 +39,8 @@ data("humet_object")
 
 humet_object <- humet_object %>%
   mod_trans_zscore(which_data = "humet_subset_data") %>%
+  mod_mutate(which_data="humet_subset_data", type="row_data", 
+      Factor.Value.Challenge.Day.=factor(Factor.Value.Challenge.Day.)) %>%
   calc_dimensionality_reduction_samples(
     which_data = "humet_subset_data",
     type = "PCA",
