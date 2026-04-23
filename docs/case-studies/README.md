@@ -1,6 +1,6 @@
 # Case Studies
 
-End-to-end examples that demonstrate real analysis scenarios.
+End-to-end examples that demonstrate the main analysis from the manuscript: A seven-year longitudinal study of the Alzheimer's disease blood metabolome.
 
 ## Pages
 
