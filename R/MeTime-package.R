@@ -18,7 +18,6 @@
 #' @import rmdformats
 #' @import htmltools
 #' @import rlang
-#' @import knitr
 #' @importFrom pbapply pblapply pboptions
 #' @importFrom bsplus bs_modal
 #' @importFrom missForest missForest
