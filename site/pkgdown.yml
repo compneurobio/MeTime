@@ -1,0 +1,22 @@
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  case-studies-adni-mxpquant500-analysis: case-studies-adni-mxpquant500-analysis.html
+  developer-extending-modules: developer-extending-modules.html
+  developer-release-checklist: developer-release-checklist.html
+  developer-testing-and-validation: developer-testing-and-validation.html
+  getting-started-data-preparation: getting-started-data-preparation.html
+  getting-started-docker-fallback: getting-started-docker-fallback.html
+  getting-started-installation: getting-started-installation.html
+  getting-started-quickstart: getting-started-quickstart.html
+  reference-function-families: reference-function-families.html
+  reference-metime-analyser-class: reference-metime-analyser-class.html
+  reference-plotting-system: reference-plotting-system.html
+  user-guides-building-pipelines: user-guides-building-pipelines.html
+  user-guides-choosing-methods: user-guides-choosing-methods.html
+  user-guides-troubleshooting: user-guides-troubleshooting.html
+last_built: 2026-04-25T13:37Z
+urls:
+  reference: https://compneurobio.github.io/MeTime/reference
+  article: https://compneurobio.github.io/MeTime/articles
