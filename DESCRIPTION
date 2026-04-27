@@ -24,7 +24,6 @@ Imports:
     mgcv,
     parallel,
     plotly,
-    pbapply,
     rlang,
     reshape2,
     rmarkdown,
