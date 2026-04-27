@@ -183,7 +183,7 @@ networks <- humet_object %>%
 
 Several different kinds of mixed models can be implemented using this
 package we show you the simplest linear mixed model example here. For
-more complicated analysis please look at the case studies
+more complicated analysis please look at the case studies.
 
 ``` r
 data("humet_object")
@@ -209,4 +209,15 @@ linear_mixed_model <- humet_object %>%
              stratifications=NULL, 
             cols_for_meta=list(c(sub_pathway="sub_pathway")), # change column name as per need
              num_cores=12)
+```
+
+If the user is using a windows operating system, PSOCK might create
+overthreading and to prevent that set these environment variables before
+hand in R for a faster performance. In case of linux based operating
+systems this is not needed.
+
+``` r
+Sys.setenv(OMP_NUM_THREADS=1)
+Sys.setenv(MKL_NUM_THREADS=1)
+Sys.setenv(OPENBLAS_NUM_THREADS=1)
 ```
