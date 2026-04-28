@@ -575,7 +575,9 @@ setMethod("get_stratified_data", "metime_analyser", function(object, which_data,
 #' @param .interactive logical to make the plot interactive or not
 #' @param results_index character/numeric input to define the results that you want to plot or replot with our automation.
 #' Default will be set to NULL. Length of results_index should be equal to 1.
-#' @param type character to define the type of calculation used for updating the plot
+#' @param type character to define the type of calculation used for updating the plot. Allowed arguments are "network", "PCA", "UMAP", "tSNE", 
+#' "CI_metabotype", "CI_metabolite", "regression", "pairwise_distance", "pairwise_correlation", "colinearity", "regression", "distribution_samples,
+#'  "distribution_metabs", "feature_selection", "clusters" 
 #' cols_for_samples, cols_for_metabs, cols_for_meta etc will be used. So make sure you set those correctly
 #' for better results. 
 #' Allowed inputs are: c("ggm|network", "PCA", "UMAP", "tSNE", "CI_metabotype", "CI_metabolite", 
@@ -841,3 +843,118 @@ setMethod("mod_generate_plots", "metime_analyser", function(object, .interactive
 		return(object)
 	})
 
+.init_cluster <- function(
+  num_cores = NULL,
+  profile = c("auto", "local", "hpc"),
+  hpc_libpaths = NULL,
+  worker_packages = character(),
+  export_vars = character(),
+  export_env = parent.frame()
+) {
+  profile <- match.arg(profile)
+
+  max_cores <- max(1L, parallel::detectCores(logical = TRUE) - 1L)
+  if (is.null(num_cores)) num_cores <- max_cores
+  num_cores <- max(1L, min(as.integer(num_cores), max_cores))
+
+  if (profile == "auto") {
+    # crude auto-detect; tune to your environment if needed
+    profile <- if (!is.na(Sys.getenv("SLURM_JOB_ID", NA)) ||
+                   !is.na(Sys.getenv("PBS_JOBID", NA)) ||
+                   !is.na(Sys.getenv("LSB_JOBID", NA))) "hpc" else "local"
+  }
+
+  # PSOCK is cross-platform (Windows/Linux/macOS)
+  cl <- parallel::makeCluster(num_cores, type = "PSOCK")
+
+  # profile-specific init
+  if (profile == "hpc") {
+    parallel::clusterEvalQ(cl, {
+      # worker-side default no-op
+      NULL
+    })
+
+    # explicit library paths for HPC nodes
+    if (!is.null(hpc_libpaths) && length(hpc_libpaths) > 0) {
+      parallel::clusterExport(cl, varlist = "hpc_libpaths", envir = environment())
+      parallel::clusterEvalQ(cl, {
+        .libPaths(unique(c(hpc_libpaths, .libPaths())))
+        NULL
+      })
+    }
+  } else {
+    # local profile: usually shared libs, no special .libPaths needed
+    parallel::clusterEvalQ(cl, NULL)
+  }
+
+  # load packages once per worker
+  if (length(worker_packages) > 0) {
+    parallel::clusterExport(cl, varlist = "worker_packages", envir = environment())
+    parallel::clusterEvalQ(cl, {
+      invisible(lapply(worker_packages, function(p) {
+        suppressPackageStartupMessages(library(p, character.only = TRUE))
+      }))
+      NULL
+    })
+  }
+
+  # export objects/functions needed by workers
+  if (length(export_vars) > 0) {
+    parallel::clusterExport(cl, varlist = export_vars, envir = export_env)
+  }
+
+  cl
+}
+
+.stop_cluster <- function(cl) {
+  if (!is.null(cl) && inherits(cl, "cluster")) {
+    try(parallel::stopCluster(cl), silent = TRUE)
+  }
+}
+
+.apply_with_progress <- function(X, FUN, cl = NULL, ...) {
+  n <- length(X)
+  pb <- utils::txtProgressBar(min = 0, max = n, style = 3)
+  on.exit(close(pb), add = TRUE)
+
+  out <- vector("list", n)
+  if (is.null(cl)) {
+    for (i in seq_along(X)) {
+      out[[i]] <- FUN(X[[i]], ...)
+      utils::setTxtProgressBar(pb, i)
+    }
+  } else {
+    for (i in seq_along(X)) {
+      out[[i]] <- parallel::parLapply(cl, list(X[[i]]), FUN, ...)[[1]]
+      utils::setTxtProgressBar(pb, i)
+    }
+  }
+  out
+}
+
+
+
+.cor_with_p <- function(mat, method = "pearson") {
+  mat <- as.matrix(mat)
+  p <- ncol(mat)
+  r <- stats::cor(mat, use = "pairwise.complete.obs", method = method)
+
+  pmat <- matrix(NA_real_, p, p, dimnames = dimnames(r))
+  diag(pmat) <- 0
+
+  for (i in seq_len(p)) {
+    for (j in i:p) {
+      if (i == j) next
+      ok <- stats::complete.cases(mat[, i], mat[, j])
+      n <- sum(ok)
+      if (n < 3 || is.na(r[i, j]) || abs(r[i, j]) >= 1) {
+        pv <- NA_real_
+      } else {
+        tval <- r[i, j] * sqrt((n - 2) / (1 - r[i, j]^2))
+        pv <- 2 * stats::pt(-abs(tval), df = n - 2)
+      }
+      pmat[i, j] <- pmat[j, i] <- pv
+    }
+  }
+  list(r = r, P = pmat)
+}

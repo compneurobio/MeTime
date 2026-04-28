@@ -13,6 +13,15 @@
 ##' @param interaction a character vector defining which interaction terms should be added to the model. Default set to NULL, with no interaction added.
 #' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
 #' @param k numeric input for setting the basis complexity for smoothing in gam. See more on [mgcv::bam]. Default is set to 10 as suggested by mgcv
+#' @param cluster_profile Character string controlling worker initialization profile.
+#'   One of `"auto"`, `"local"`, or `"hpc"`.
+#'   - `"auto"`: detects common scheduler environments (e.g. SLURM/PBS/LSF) and chooses `"hpc"` when detected.
+#'   - `"local"`: standard local machine setup with default library paths.
+#'   - `"hpc"`: cluster-oriented setup; can prepend worker library paths via `hpc_libpaths`.
+#'
+#' @param hpc_libpaths Optional character vector of library paths to prepend on worker nodes
+#'   when `cluster_profile = "hpc"`. Use this when compute nodes need explicit `.libPaths()`
+#'   (e.g. non-shared user libraries). Ignored for `"local"` profile.
 #' @details The calculation function fits multiple generalized additive mixed models (GAMMs) on a longitudinal dataset. Here, one model fits one metabolite vs one trait. The degree of smoothness of a model term is estimated as part of the fitting. 
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
@@ -23,7 +32,8 @@ setGeneric("calc_gamm", function(object, which_data, stratifications = NULL, col
   verbose=T,
   name="regression_gamm_1", 
   num_cores=NULL,
-  k=10) standardGeneric("calc_gamm"))
+  k=10, cluster_profile = c("auto", "local", "hpc"),
+hpc_libpaths = NULL) standardGeneric("calc_gamm"))
 setMethod("calc_gamm", "metime_analyser", function(object,
                                                    which_data,
                                                    stratifications = NULL,
@@ -34,7 +44,8 @@ setMethod("calc_gamm", "metime_analyser", function(object,
                                                    verbose=T,
                                                    name="regression_gamm_1",
                                                    num_cores=NULL,
-                                                   k=10) {
+                                                   k=10, cluster_profile = c("auto", "local", "hpc"),
+hpc_libpaths = NULL) {
   # sanity checks ----
   ## check that covariates (cov) and type are set in the col_data
   if(!all(c("cov","type","interaction","random") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_gamm() needs the columns cov and type to specify the model")
@@ -46,6 +57,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
     name <- name %>% gsub(pattern="_[0-9]", replacement=paste("_", index, sep=""))
   }
   
+  cluster_profile=match.arg(cluster_profile)
   # Data processing ----
   ## stratify data
   gamm_data <- get_stratified_data(which_data=which_data, 
@@ -78,24 +90,21 @@ setMethod("calc_gamm", "metime_analyser", function(object,
 
   # model calculation ----
   # changing mclapply to parLapply
-  if(is.null(num_cores)) {
-    cl <- parallel::makeCluster(spec = parallel::detectCores(all.tests = FALSE, logical = TRUE)-1, type="PSOCK")
-  } else {
-    cl <- parallel::makeCluster(spec = num_cores, type="PSOCK")
-  }
-  
-  parallel::clusterExport(cl=cl, 
-                          varlist=c("my_formula", "gamm_data", "verbose", "k"), # changed lmm_data to gamm_data
-                          envir = environment())
-  opb <- pbapply::pboptions(title="Running calc_gamm(): ", type="timer")
-  on.exit(pbapply::pboptions(opb))
-  results=pbapply::pblapply(cl=cl, 
-                              1:nrow(my_formula),
-                             #mc.cores=parallel::detectCores(all.tests = FALSE, logical = TRUE)-1,
-                             #mc.preschedule = TRUE,
-                             function(x) {
-    if(verbose) cat(x, " , ") # report iteration
-                               require(magrittr)
+  if(is.null(num_cores)) num_cores <- parallel::detectCores(all.tests = FALSE, logical = TRUE)-1
+  cl <- .init_cluster(
+    num_cores = num_cores,
+    profile = cluster_profile,
+    hpc_libpaths = hpc_libpaths,
+    worker_packages = c("dplyr", "stringr", "magrittr", "mgcv"),
+    export_vars = c("my_formula", "gamm_data", "verbose", "k"),
+    export_env = environment()
+  )
+  on.exit(.stop_cluster(cl), add = TRUE)
+
+  idx <- seq_len(nrow(my_formula))
+  results=.apply_with_progress(idx, cl=cl, FUN=function(x) {
+    if(verbose) cat(x, " , ") 
+    # report iteration
     # extract data 
     this_data <-  gamm_data$data %>% 
       dplyr::select(any_of(setdiff(names(gamm_data$data), c("subject","time")))) %>% 
@@ -175,8 +184,6 @@ setMethod("calc_gamm", "metime_analyser", function(object,
     return(out_this_model)
   })
 
-  on.exit(parallel::stopCluster(cl))
-
   annotated_results <- plyr::rbind.fill(results)
   
   ## modify results to for pipeline
@@ -192,10 +199,10 @@ setMethod("calc_gamm", "metime_analyser", function(object,
 
    # calculate the thresholds 
   thresh_bonferroni <- 0.05/length(my_met)
-  eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
-    eigen()
-  thresh_li <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
-  annotated_results <- annotated_results %>% dplyr::mutate(li_thresh=thresh_li, bonferroni_thresh=thresh_bonferroni)
+  #eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
+  #  eigen()
+  #thresh_li <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+  annotated_results <- annotated_results %>% dplyr::mutate(bonferroni_thresh=thresh_bonferroni)
 
   
   # for(i in intersect(c("none","nominal","li","fdr","bonferroni"),threshold)){
@@ -227,7 +234,7 @@ setMethod("calc_gamm", "metime_analyser", function(object,
       dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
       dplyr::mutate(color = ifelse(pval <= 0.05, "nominal","none")) %>% 
       dplyr::mutate(color = ifelse(qval <= 0.05, "fdr",color)) %>% 
-      dplyr::mutate(color = ifelse(pval <= thresh_li, "li",color)) %>% 
+      #dplyr::mutate(color = ifelse(pval <= thresh_li, "li",color)) %>% 
       dplyr::mutate(color = ifelse(pval <= thresh_bonferroni, "bonferroni",color)) %>% 
       `rownames<-`(.[,"met"])
   })

@@ -73,10 +73,11 @@ setMethod("mod_merge_data", "metime_analyser", function(object, which_data, filt
   
   # row_data merge
   row_data <- lapply(which_data, function(x) {
-      object@list_of_row_data[[x]] %>% return()
+      object@list_of_row_data[[x]] %>% 
+      return()
   }) %>% 
     plyr::join_all(by=c("id"),type="full") %>% 
-    dplyr::filter(id %in% rownames(data))
+    dplyr::filter(id %in% rownames(data)) 
   rownames(row_data) <- row_data$id
   
   # col_data merge

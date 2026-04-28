@@ -35,8 +35,8 @@ setMethod("calc_dimensionality_reduction_samples", "metime_analyser", function(o
                     paste(which_data, collapse=" & "), sep=" "),
                 name=ifelse(is.null(name), paste("PCA_samples_", paste(which_data, collapse="_&_"), sep=""), name))
       } else if(type %in% "UMAP") {
-        umap_individuals <- umap::umap(data, ...)
-        dr_data_samples <- as.data.frame(umap_individuals$layout)
+        emb <- uwot::umap(as.matrix(data), ...)
+        dr_data_samples <- as.data.frame(emb)
         colnames(dr_data_samples) <- c("UMAP1", "UMAP2")
         out <- get_make_results(object=object, data=list(umap_samples=dr_data_samples), 
                 metadata=metadata_samples,
@@ -46,8 +46,9 @@ setMethod("calc_dimensionality_reduction_samples", "metime_analyser", function(o
                     paste(which_data, collapse=" & "), sep=" "),
                 name=ifelse(is.null(name), paste("UMAP_samples_", paste(which_data, collapse="_&_"), sep=""), name))
       } else if(type %in% "tSNE") {
-        tsne_samples <- M3C::tsne(t(data), ...)
-        dr_data_samples <- as.data.frame(tsne_samples$data)
+        ts <- Rtsne::Rtsne(as.matrix(data), dims = 2, ...)
+        dr_data_samples <- as.data.frame(ts$Y)
+        colnames(dr_data_samples) <- c("X1", "X2")
         rownames(dr_data_samples) <- rownames(data)
         out <- get_make_results(object=object, data=list(tsne_samples=dr_data_samples), 
                 metadata=metadata_samples,
@@ -102,9 +103,10 @@ setMethod("calc_dimensionality_reduction_metabs", "metime_analyser", function(ob
                     paste(which_data, collapse=" & "), sep=" "),
                 name=ifelse(is.null(name), paste("PCA_metabs_", paste(which_data, collapse="_&_"), sep=""), name))
       } else if(type %in% "UMAP") {
-        umap_metabs <- umap::umap(t(data), ...)
-        dr_data_metabs <- as.data.frame(umap_metabs$layout)
+        emb <- uwot::umap(as.matrix(t(data)), ...)
+        dr_data_metabs <- as.data.frame(emb)
         colnames(dr_data_metabs) <- c("UMAP1", "UMAP2")
+        rownames(dr_data_metabs) <- colnames(data)
         out <- get_make_results(object=object, data=list(umap_metabs=dr_data_metabs), 
                 metadata=metadata_metabs,
                 calc_type="UMAP", 
@@ -113,8 +115,9 @@ setMethod("calc_dimensionality_reduction_metabs", "metime_analyser", function(ob
                     paste(which_data, collapse=" & "), sep=" "),
                 name=ifelse(is.null(name), paste("UMAP_metabs_", paste(which_data, collapse="_&_"), sep=""), name))
       } else if(type %in% "tSNE") {
-        tsne_metabs <- M3C::tsne(data, ...)
-        dr_data_metabs <- as.data.frame(tsne_metabs$data)
+        ts <- Rtsne::Rtsne(as.matrixt(t(data)), dims = 2, ...)
+        dr_data_metabs <- as.data.frame(ts$Y)
+        colnames(dr_data_metabs) <- c("X1", "X2")
         rownames(dr_data_metabs) <- colnames(data)
         out <- get_make_results(object=object, data=list(tsne_metabs=dr_data_metabs), 
                 metadata=metadata_metabs,

@@ -21,25 +21,25 @@ Imports:
     htmltools,
     lmerTest,
     longitudinal,
-    M3C,
-    MatrixEQTL,
     mgcv,
-    multiway,
     parallel,
     plotly,
     rlang,
+    reshape2,
     rmarkdown,
     rmdformats,
     rstatix,
-    umap,
     visNetwork,
     WGCNA,
-    xlsx,
     missForest,
-    pbapply,
-    bsplus
+    bsplus,
+    Rtsne,
+    uwot,
+    openxlsx
 Depends: 
     tidyverse
 Suggests: 
-    knitr
+    knitr,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
 VignetteBuilder: knitr

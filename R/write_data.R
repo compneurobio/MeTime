@@ -23,10 +23,15 @@ setMethod("write_data", "metime_analyser", function(object, which_data, type) {
 					write.table(list_of_data[[i]], file=paste(which_data[i], ".tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)
 					write.table(list_of_col_data[[i]], file=paste(which_data[i], "_col.tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)
 					write.table(list_of_row_data[[i]], file=paste(which_data[i], "_row.tsv", sep=""), quote=FALSE, sep='\t', row.names = FALSE)
-				} else if(type %in% "xlsx") {
-					xlsx::write.xlsx(list_of_data[[i]], file=paste(which_data[i], ".xlsx", sep=""), sheetName="data", row.names = FALSE)
-					xlsx::write.xlsx(list_of_col_data[[i]], file=paste(which_data[i], ".xlsx", sep=""), sheetName="coldata", row.names = FALSE)
-					xlsx::write.xlsx(list_of_row_data[[i]], file=paste(which_data[i], ".xlsx", sep=""), sheetName="rowdata", row.names = FALSE)
+				} else if (type %in% "xlsx") {
+  					wb <- openxlsx::createWorkbook()
+  					openxlsx::addWorksheet(wb, "data")
+  					openxlsx::writeData(wb, "data", list_of_data[[i]])
+  					openxlsx::addWorksheet(wb, "coldata")
+  					openxlsx::writeData(wb, "coldata", list_of_col_data[[i]])
+  					openxlsx::addWorksheet(wb, "rowdata")
+  					openxlsx::writeData(wb, "rowdata", list_of_row_data[[i]])
+  					openxlsx::saveWorkbook(wb, file = paste0(which_data[i], ".xlsx"), overwrite = TRUE)
 				}
 					
 			}

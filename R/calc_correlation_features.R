@@ -48,10 +48,8 @@ if(!is.null(stratifications) && length(stratifications) >= 1) {
       return(object)
     }
     # calculate correlation matrix and pvalues
-    cor_mat <- my_data %>% 
-      as.matrix() %>% 
-      Hmisc::rcorr(type=method)
-    out=flattenCorrMatrix(cor_mat$r, cor_mat$P) %>% 
+    cor_obj <- .cor_with_p(my_data, method = method)
+    out=flattenCorrMatrix(cor_obj$r, cor_obj$P) %>% 
       dplyr::mutate(type="cor") %>% 
       dplyr::rename("dist"="cor", "cut_p"="p")
 

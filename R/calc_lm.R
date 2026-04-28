@@ -11,10 +11,20 @@
 #' @param stratifications list to stratify data into a subset. Usage list(name=value). Default set to NULL, thereby not performing any type of stratification.
 #' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
 #' @param timepoint time input for cross-sectional model should be the same as the value in time column in row_data.
+#' @param cluster_profile Character string controlling worker initialization profile.
+#'   One of `"auto"`, `"local"`, or `"hpc"`.
+#'   - `"auto"`: detects common scheduler environments (e.g. SLURM/PBS/LSF) and chooses `"hpc"` when detected.
+#'   - `"local"`: standard local machine setup with default library paths.
+#'   - `"hpc"`: cluster-oriented setup; can prepend worker library paths via `hpc_libpaths`.
+#'
+#' @param hpc_libpaths Optional character vector of library paths to prepend on worker nodes
+#'   when `cluster_profile = "hpc"`. Use this when compute nodes need explicit `.libPaths()`
+#'   (e.g. non-shared user libraries). Ignored for `"local"` profile.
 #' @details Add details here
 #' @return a S4 object of the class metime_analyzer with analysis results appended to the result section.
 #' @export
-setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold=c("none","nominal","li","fdr","bonferroni"), verbose=T,name="regression_lm_1", timepoint=NULL, num_cores=NULL) standardGeneric("calc_lm"))
+setGeneric("calc_lm", function(object, which_data, stratifications = NULL, cols_for_meta=NULL, threshold=c("none","nominal","li","fdr","bonferroni"), verbose=T,name="regression_lm_1", timepoint=NULL, num_cores=NULL, cluster_profile = c("auto", "local", "hpc"),
+hpc_libpaths = NULL) standardGeneric("calc_lm"))
 setMethod("calc_lm", "metime_analyser", function(object,
                                                   which_data,
                                                   stratifications = NULL,
@@ -23,7 +33,10 @@ setMethod("calc_lm", "metime_analyser", function(object,
                                                   verbose=T,
                                                   name="regression_lm_1", 
                                                   timepoint=NULL,
-                                                  num_cores=NULL) {
+                                                  num_cores=NULL, cluster_profile = c("auto", "local", "hpc"),
+hpc_libpaths = NULL) {
+
+  cluster_profile <- match.arg(cluster_profile)
   #sanity checks
   if(!all(c("cov", "type") %in% names(object@list_of_col_data[[which_data]]))) stop("calc_lm() requires columns with covariates (named 'cov') and type")
 
@@ -90,18 +103,20 @@ setMethod("calc_lm", "metime_analyser", function(object,
   # model calculation ----
   ## add verbose processbar 
   ## changing from mclapply to parLapply
-  if(is.null(num_cores)) {
-    cl <- parallel::makeCluster(spec = parallel::detectCores(all.tests = FALSE, logical = TRUE)-1, type="PSOCK")
-  } else {
-    cl <- parallel::makeCluster(spec = num_cores, type="PSOCK")
-  }
-  parallel::clusterExport(cl=cl, varlist=c("my_formula", "lm_data"), envir=environment())
-  opb <- pbapply::pboptions(title="Running calc_lm(): ", type="timer")
-  on.exit(pbapply::pboptions(opb))
+  if(is.null(num_cores)) num_cores <- parallel::detectCores(all.tests = FALSE, logical = TRUE)-1
+  cl <- .init_cluster(
+    num_cores = num_cores,
+    profile = cluster_profile,
+    hpc_libpaths = hpc_libpaths,
+    worker_packages = c("dplyr", "stringr", "magrittr"),
+    export_vars = c("my_formula", "lm_data"),
+    export_env = environment()
+  )
+  on.exit(.stop_cluster(cl), add = TRUE)
   
-  results=pbapply::pblapply(cl=cl, 1:nrow(my_formula), 
-                 function(x) {
-                               require(magrittr)
+  idx <- seq_along(nrow(my_formula))
+
+  results=.apply_with_progress(idx, cl=cl, FUN=function(x) {
                                # extract data 
                                this_data <-  lm_data$data %>% 
                                  dplyr::select(any_of(setdiff(names(lm_data$data), c("subject","time")))) %>% 
@@ -166,7 +181,6 @@ setMethod("calc_lm", "metime_analyser", function(object,
   # combine all results and do post processing - cancelled idea - now we want the results to be separate
 
   annotated_results <- plyr::rbind.fill(results)
-  on.exit(parallel::stopCluster(cl))
   ## modify results to for pipeline
   annotated_results <- annotated_results %>% 
     dplyr::mutate(x=beta, 
@@ -179,12 +193,12 @@ setMethod("calc_lm", "metime_analyser", function(object,
   #out_results <- lapply(unique(results))
 
   # calculate the thresholds 
-  thresh_bonferroni <- 0.05/length(my_met)
-  eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
-    eigen()
-  thresh_li <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
+  #thresh_bonferroni <- 0.05/length(my_met)
+  #eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
+  #  eigen()
+  #thresh_li <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))
 
-  annotated_results <- annotated_results %>% dplyr::mutate(li_thresh=thresh_li, bonferroni_thresh=thresh_bonferroni)
+  annotated_results <- annotated_results %>% dplyr::mutate(bonferroni_thresh=thresh_bonferroni)
   
   # split into single results files 
   out_results <- lapply(unique(annotated_results$type), function(y){
@@ -192,7 +206,7 @@ setMethod("calc_lm", "metime_analyser", function(object,
       dplyr::mutate(qval = p.adjust(pval, method="BH")) %>% 
       dplyr::mutate(color = ifelse(pval <= 0.05, "nominal","none")) %>% 
       dplyr::mutate(color = ifelse(qval <= 0.05, "fdr",color)) %>% 
-      dplyr::mutate(color = ifelse(pval <= thresh_li, "li",color)) %>% 
+      #dplyr::mutate(color = ifelse(pval <= thresh_li, "li",color)) %>% 
       dplyr::mutate(color = ifelse(pval <= thresh_bonferroni, "bonferroni",color)) %>% 
       `rownames<-`(.[,"met"])
     })

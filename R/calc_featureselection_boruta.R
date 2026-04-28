@@ -10,6 +10,15 @@
 #' @param save_per_run (Experimental) a logical on whether results should be saved in the same directory/tmp as single csv.
 #' @param run_index (Experimental) a vector of runs corresponding the row number of a 
 #' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
+#' @param cluster_profile Character string controlling worker initialization profile.
+#'   One of `"auto"`, `"local"`, or `"hpc"`.
+#'   - `"auto"`: detects common scheduler environments (e.g. SLURM/PBS/LSF) and chooses `"hpc"` when detected.
+#'   - `"local"`: standard local machine setup with default library paths.
+#'   - `"hpc"`: cluster-oriented setup; can prepend worker library paths via `hpc_libpaths`.
+#'
+#' @param hpc_libpaths Optional character vector of library paths to prepend on worker nodes
+#'   when `cluster_profile = "hpc"`. Use this when compute nodes need explicit `.libPaths()`
+#'   (e.g. non-shared user libraries). Ignored for `"local"` profile.
 #' @details 
 #' The Boruta algorithm is a feature selection method that compares the importance of each variable to that of randomly generated shadow variables. It uses an iterative two step approach:
 #' 1. the algorithm creates shadow variables that are random permutations of the original variables. 
@@ -20,8 +29,10 @@
 #' @return List of conservation index results
 #' @export
 #' 
-setGeneric("calc_featureselection_boruta", function(object, which_x,which_y, verbose=TRUE, name="boruta_1", cols_for_meta_x=NULL, cols_for_meta_y=NULL, maxRuns=100, num_cores=NULL,save_per_run=F,run_index=NULL) standardGeneric("calc_featureselection_boruta"))
-setMethod("calc_featureselection_boruta", "metime_analyser", function(object, which_x,which_y, verbose=TRUE, name="boruta_1", cols_for_meta_x=NULL, cols_for_meta_y=NULL, maxRuns=100, num_cores=NULL,save_per_run=F,run_index=NULL){
+setGeneric("calc_featureselection_boruta", function(object, which_x,which_y, verbose=TRUE, name="boruta_1", cols_for_meta_x=NULL, cols_for_meta_y=NULL, maxRuns=100, num_cores=NULL,save_per_run=F,run_index=NULL, cluster_profile = c("auto", "local", "hpc"),
+hpc_libpaths = NULL) standardGeneric("calc_featureselection_boruta"))
+setMethod("calc_featureselection_boruta", "metime_analyser", function(object, which_x,which_y, verbose=TRUE, name="boruta_1", cols_for_meta_x=NULL, cols_for_meta_y=NULL, maxRuns=100, num_cores=NULL,save_per_run=F,run_index=NULL, cluster_profile = c("auto", "local", "hpc"),
+hpc_libpaths = NULL){
   # check variable if analysis should be run
   run=T
   
@@ -61,6 +72,8 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
       out <- object
     }
   }
+
+  cluster_profile = match.arg(cluster_profile)
   
   ## check if a dataset is numeric but should be used as factor (classification)
   my_unique_x <- apply(object@list_of_data[[which_x]], 2, function(x) length(unique(x)))%>% unique()
@@ -85,31 +98,21 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
     out_path = file.path(getwd(), paste0("tmp_", name))
     
     # Set up parallel processing
-    if(Sys.info()["sysname"] == "Windows"){
-      max_cores <- parallel::detectCores() - 1
-      if (is.null(num_cores) || num_cores>max_cores) num_cores <- max_cores # num_cores can only be max number of cores -1 
-      cl <- parallel::makeCluster(num_cores)
-      doParallel::registerDoParallel(cl)
-      ## export data needed in analysis
-      parallel::clusterExport(cl=cl, 
-                              varlist=c("this_data","this_x","this_y","save_per_run","file_path", "out_path"),
-                              envir = environment())
-    }else{
-      max_cores <- parallel::detectCores() - 1
-      if (is.null(num_cores) || num_cores>max_cores) num_cores <- max_cores # num_cores can only be max number of cores -1 
-      cl <- num_cores
-    }
-    
-    
+    cl <- .init_cluster(
+      num_cores = num_cores,
+      profile = cluster_profile,
+      hpc_libpaths = hpc_libpaths,
+      worker_packages = c("Boruta", "dplyr", "magrittr"),
+      export_vars = c("this_data", "this_x", "this_y", "save_per_run", "file_path", "out_path"),
+      export_env = environment()
+    )
+    on.exit(.stop_cluster(cl), add = TRUE)
     all_runs <- 1:ncol(object@list_of_data[[which_y]])
     if(!is.null(run_index)) all_runs <- as.numeric(run_index)
     
-    opb <- pbapply::pboptions(title="Running feature selection: ", type="timer")
-    on.exit(pbapply::pboptions(opb))                   
-    out_boruta <- pbapply::pblapply(all_runs,
+     out_boruta <- pbapply::pblapply(all_runs,
                                     cl=cl,
-                                    function(x){
-                                      require(tidyverse)
+                                    FUN=function(x){
                                       # if files are already existant
                                       if(save_per_run & paste0(this_y[x],".rds") %in% list.files(out_path)) {
                                         my_stats <- readRDS(file=file.path(out_path, paste0(this_y[x],".rds")))
@@ -169,9 +172,6 @@ setMethod("calc_featureselection_boruta", "metime_analyser", function(object, wh
                                       maxRuns=maxRuns,
                                       run_index=run_index))
   }
-  
-  
-  if(Sys.info()["sysname"] == "Windows")  on.exit(parallel::stopCluster(cl))
   
   return(out)
 })

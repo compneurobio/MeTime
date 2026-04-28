@@ -10,6 +10,7 @@ mod_trans_eigendata(
   append,
   results_index = NULL,
   cols_for_meta = NULL,
+  baseline = "t0",
   name = "WGCNA_clusters_1",
   ...
 )
@@ -25,6 +26,8 @@ mod_trans_eigendata(
 
 \item{cols_for_meta}{A list of named character vector to extract col_data to add it for the eigendata. will be parsed to
 get_metadata_for_columns}
+
+\item{baseline}{a character to define the baseline time point which is used for cluster calculation.}
 
 \item{...}{arguments for calc_clusters_wgcna. Make sure to set the correct baseline value if you are using the function directly}
 }

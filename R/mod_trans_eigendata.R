@@ -6,12 +6,13 @@
 #' @param results_index results_index if clusters were previously calculated else set to NULL(default)
 #' @param cols_for_meta A list of named character vector to extract col_data to add it for the eigendata. will be parsed to 
 #' get_metadata_for_columns
+#' @param baseline a character to define the baseline time point which is used for cluster calculation.
 #' @seealso [get_metadata_for_columns], [calc_clusters_wgcna]
 #' @param ... arguments for calc_clusters_wgcna. Make sure to set the correct baseline value if you are using the function directly
 #' @return metime_analyser object with new dataset with eigendata of the metabolites
 #' @export  
-setGeneric("mod_trans_eigendata", function(object, which_data, append, results_index=NULL, cols_for_meta=NULL, name="WGCNA_clusters_1", ...) standardGeneric("mod_trans_eigendata"))
-setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data, append, results_index=NULL, cols_for_meta=NULL, name="WGCNA_clusters_1", ...) {
+setGeneric("mod_trans_eigendata", function(object, which_data, append, results_index=NULL, cols_for_meta=NULL, baseline="t0",name="WGCNA_clusters_1", ...) standardGeneric("mod_trans_eigendata"))
+setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data, append, results_index=NULL, cols_for_meta=NULL, baseline="t0",name="WGCNA_clusters_1", ...) {
 	  if(!length(which_data)==1) {
         warning("mod_trans_eigendata(): This function calculates clusters for only one dataset at a time. Exiting without making any changes.")
         return(object)
@@ -21,7 +22,7 @@ setMethod("mod_trans_eigendata", "metime_analyser", function(object, which_data,
           return(object)
       }
       if(is.null(results_index)) {
-          object <- calc_clusters_wgcna(object=object, which_data=which_data, cols_for_meta=cols_for_meta, baseline="t0", name=name, ...)
+          object <- calc_clusters_wgcna(object=object, which_data=which_data, cols_for_meta=cols_for_meta, baseline=baseline, name=name, ...)
           results_index <- length(object@results)
       }
 	  cluster_info <- object@results[[results_index]]$plot_data[[1]][ ,c("id", "modules")]
