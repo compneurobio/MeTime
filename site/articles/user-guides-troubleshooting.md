@@ -13,6 +13,7 @@ you can later replace with project-specific details.
 Run this minimal diagnostic block before deep debugging:
 
 ``` r
+
 library(MeTime)
 data("humet_object")
 
@@ -38,6 +39,7 @@ summarize_dataset(humet_object, which_data = "humet_subset_data")
 - **Quick fix:**
 
 ``` r
+
 names(humet_object@list_of_data)
 # then use one of these names in which_data
 ```
@@ -49,6 +51,7 @@ names(humet_object@list_of_data)
 - **Quick fix:**
 
 ``` r
+
 # inspect result metadata
 humet_object@results[[1]]$information$calc_type
 
@@ -72,6 +75,7 @@ humet_object@results[[1]]$information$calc_type
 - **Quick fix:**
 
 ``` r
+
 humet_object %>%
   mod_filter_features_by_missingness(which_data = "humet_subset_data", threshold = 0.3) %>%
   mod_filter_samples_by_missingness(which_data = "humet_subset_data", threshold = 0.3)
@@ -85,6 +89,7 @@ humet_object %>%
 - **Quick fix:**
 
 ``` r
+
 # inspect columns before running model
 colnames(humet_object@list_of_data[["humet_subset_data"]])
 ```

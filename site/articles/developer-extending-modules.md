@@ -14,6 +14,7 @@
 
 ``` r
 
+
 setGeneric("[add|mod]_new_name", function(object, ...) standardGeneric("[add|mod]_new_name"))
 
 setMethod("[add|mod]_new_name", "metime_analyser", function(object, ...) {
@@ -36,6 +37,7 @@ setMethod("[add|mod]_new_name", "metime_analyser", function(object, ...) {
 ### Skeleton: `calc_*`
 
 ``` r
+
 setGeneric("calc_new_name", function(object, which_data, cols_for_meta=NULL, name="calc_new_name_1", stratifications=NULL, ...) standardGeneric("calc_new_name"))
 
 setMethod("calc_new_name", "metime_analyser", function(object, which_data, cols_for_meta=NULL, name="calc_new_name_1", stratifications=NULL, ...) {

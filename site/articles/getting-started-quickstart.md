@@ -12,6 +12,7 @@ reduction.
 ### Minimal runnable example with HuMet data
 
 ``` r
+
 library(MeTime)
 
 data("humet_object")

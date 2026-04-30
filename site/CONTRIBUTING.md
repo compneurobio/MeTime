@@ -20,12 +20,14 @@ Thanks for your interest in improving MeTime.
 ## Suggested local setup
 
 ``` r
+
 install.packages(c("devtools", "roxygen2", "testthat"))
 ```
 
 If available in your environment:
 
 ``` r
+
 devtools::document()
 devtools::check()
 ```

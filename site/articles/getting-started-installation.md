@@ -18,6 +18,7 @@ Follow the step-by-step guidelines to install MeTime
 ### 1. Install dependencies manually
 
 ``` r
+
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager", repos = "https://cloud.r-project.org")
 }
@@ -32,6 +33,7 @@ options(repos = BiocManager::repositories())
 ### 2. Install package from GitHub
 
 ``` r
+
 # Install MeTime and dependencies
 # (set dependencies = TRUE to install Imports/Suggests)
 devtools::install_github("compneurobio/MeTime", dependencies = TRUE)
@@ -43,6 +45,7 @@ If you prefer automatic dependency solving across CRAN and Bioconductor,
 `pak` is often the easiest route:
 
 ``` r
+
 if (!requireNamespace("pak", quietly = TRUE)) {
   install.packages("pak", repos = "https://cloud.r-project.org")
 }
@@ -52,6 +55,7 @@ pak::pak("compneurobio/MeTime")
 ### 4. Verify installation
 
 ``` r
+
 library(MeTime)
 packageVersion("MeTime")
 ```

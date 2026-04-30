@@ -30,6 +30,7 @@ Supported `type` values include:
 ### Plot template
 
 ``` r
+
 # p <- plot(obj, results_index = "<result>", ...)
 # obj <- add_plot(obj, name = "<plot_name>", plot = p)
 # obj <- mod_generate_plots(obj, results_index = "<result>", .interactive = FALSE, type = "<type>")

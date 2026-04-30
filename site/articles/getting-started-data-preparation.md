@@ -47,6 +47,7 @@ files: - `platform1_data.rds` - `platform2_data.rds` -
 row_data and col_data files as described above
 
 ``` r
+
 path <- "/path/to/directory"
 
 annotations <- list(
@@ -59,6 +60,7 @@ object <- get_files_and_names(path, annotations_index = annotations)
 #### Create object from in-memory data frames
 
 ``` r
+
 data <- read.csv("your/data/file.csv")
 row_data <- read.csv("your/row_data/file.csv")
 col_data <- read.csv("your/col_data/file.csv")
@@ -79,6 +81,7 @@ object <- object %>%
 ### Example: conservation index pipeline
 
 ``` r
+
 which_data <- "name"
 
 object <- object %>%
@@ -103,6 +106,7 @@ object %>% write_report(file = "CI_results.html", title = "Conservation index an
 ### Merge analyser objects
 
 ``` r
+
 annotations <- object1@annotations
 object <- mod_merge_metime_analysers(
   object1,

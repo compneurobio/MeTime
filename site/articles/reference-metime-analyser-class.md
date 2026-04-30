@@ -6,13 +6,13 @@
 
 ### Slots
 
-| Slot               | Type | Description                                          |
-|--------------------|------|------------------------------------------------------|
-| `list_of_data`     | list | concentration matrices                               |
-| `list_of_row_data` | list | sample metadata                                      |
-| `list_of_col_data` | list | feature metadata                                     |
-| `annotations`      | list | phenotype/medication definitions                     |
-| `results`          | list | functions applied, data, plots, analysis information |
+| Slot | Type | Description |
+|----|----|----|
+| `list_of_data` | list | concentration matrices |
+| `list_of_row_data` | list | sample metadata |
+| `list_of_col_data` | list | feature metadata |
+| `annotations` | list | phenotype/medication definitions |
+| `results` | list | functions applied, data, plots, analysis information |
 
 The results list is further divided into the following slots:  
   1. functions_applied: A named list with names being the functions that
@@ -42,6 +42,7 @@ analysis.
 ### Inspection helpers
 
 ``` r
+
 load("humet_object")
 show(humet_object)
 validate_metime_anlyser(humet_object) # easy check to see if the object is valid

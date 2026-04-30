@@ -6,6 +6,7 @@ package.
 ## In R
 
 ``` r
+
 citation("MeTime")
 ```
 

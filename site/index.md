@@ -22,6 +22,7 @@ analysis of longitudinal metabolomics data.
 ## Install
 
 ``` r
+
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager", repos = "https://cloud.r-project.org")
 }
@@ -36,6 +37,7 @@ devtools::install_github("compneurobio/MeTime", dependencies = TRUE)
 ## Quick example
 
 ``` r
+
 library(MeTime)
 data("humet_object")
 

@@ -44,6 +44,7 @@ Here is an example workflow covering distributions, correlations, and
 distances with HuMet data
 
 ``` r
+
 data("humet_object")
 # data distributions
 which_data <- "humet_subset_data"
@@ -140,6 +141,7 @@ feature_selection <- humet_object %>%
 5.  Calculating clusters and eigendata
 
 ``` r
+
 which_data <- "humet_subset_data"
 eigendata <- humet_object %>%
   mod_trans_zscore(which_data=which_data) %>% 
@@ -166,6 +168,7 @@ eigen_result <- humet_object %>%
 Example for partial correlation based network
 
 ``` r
+
 which_data <- "humet_subset_data"
 networks <- humet_object %>%
   mod_merge_row_data_and_data(which_data=which_data, 
@@ -186,6 +189,7 @@ package we show you the simplest linear mixed model example here. For
 more complicated analysis please look at the case studies.
 
 ``` r
+
 data("humet_object")
 which_data <- "humet_subset_data"
 col_data <- get_coldata(humet_object, which_data=which_data)
@@ -217,6 +221,7 @@ hand in R for a faster performance. In case of linux based operating
 systems this is not needed.
 
 ``` r
+
 Sys.setenv(OMP_NUM_THREADS=1)
 Sys.setenv(MKL_NUM_THREADS=1)
 Sys.setenv(OPENBLAS_NUM_THREADS=1)

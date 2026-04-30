@@ -55,6 +55,7 @@ New docs examples run without manual intervention.
 ### Example smoke test (humet_object)
 
 ``` r
+
 library(testthat)
 library(MeTime)
 
