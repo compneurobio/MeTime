@@ -66,33 +66,33 @@ hpc_libpaths = NULL) {
 
 
   # add time and subject to dataframe
-  lm_data$data <-  lm_data$data %>% 
-    dplyr::select(any_of(setdiff(names(lm_data$data), c("subject","time")))) %>% 
-    dplyr::mutate(id = rownames(.[])) %>%
-    dplyr::left_join(by="id", lm_data$row_data[,c("id","time","subject")]) %>%
-    dplyr::filter(time %in% timepoint)
-  
-  # find list of metabolites
-  my_met <- object@list_of_col_data[[which_data]] %>% 
-    dplyr::filter(type=="met") %>% 
-    dplyr::pull(id)
-  
-  # find list of traits
-  my_trait <- object@list_of_col_data[[which_data]] %>% 
-    dplyr::filter(type=="trait") %>% 
-    dplyr::pull(id)
+    lm_data$data <-  lm_data$data %>% 
+      dplyr::select(any_of(setdiff(names(lm_data$data), c("subject","time")))) %>% 
+      dplyr::mutate(id = rownames(.[])) %>%
+      dplyr::left_join(by="id", lm_data$row_data[,c("id","time","subject")]) %>%
+      dplyr::filter(time %in% timepoint)
+    
+    # find list of metabolites
+    my_met <- object@list_of_col_data[[which_data]] %>% 
+      dplyr::filter(type=="met") %>% 
+      dplyr::pull(id)
+    
+    # find list of traits
+    my_trait <- object@list_of_col_data[[which_data]] %>% 
+      dplyr::filter(type=="trait") %>% 
+      dplyr::pull(id)
 
-  # find all formulas
-  my_formula <- lapply(unique(my_trait),function(x)
-    test <- object@list_of_col_data[[which_data]] %>% 
-      dplyr::select(cov, type, id) %>% 
-      dplyr::filter(id %in% my_met) %>% 
-      dplyr::rename("met"="id") %>% 
-      dplyr::mutate(trait=x,
-                    cov = paste0(ifelse(is.na(cov), "", cov),
-                                 object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
-    do.call(what=rbind.data.frame)
-  
+    # find all formulas
+    my_formula <- lapply(unique(my_trait),function(x)
+      test <- object@list_of_col_data[[which_data]] %>% 
+        dplyr::select(cov, type, id) %>% 
+        dplyr::filter(id %in% my_met) %>% 
+        dplyr::rename("met"="id") %>% 
+        dplyr::mutate(trait=x,
+                      cov = paste0(ifelse(is.na(cov), "", cov),
+                                  object@list_of_col_data[[which_data]]$cov[which(object@list_of_col_data[[which_data]]$id==x)]))) %>% 
+      do.call(what=rbind.data.frame)
+    
   # runs are defined by unique covariates versus time - not needed as only single timepoint
   # my_runs <- lapply(unique(lm_data$data$time),function(x) my_formula %>% 
   #                   dplyr::distinct(cov) %>% 
@@ -114,7 +114,7 @@ hpc_libpaths = NULL) {
   )
   on.exit(.stop_cluster(cl), add = TRUE)
   
-  idx <- seq_along(nrow(my_formula))
+  idx <- seq_len(nrow(my_formula))
 
   results=.apply_with_progress(idx, cl=cl, FUN=function(x) {
                                # extract data 
@@ -193,7 +193,7 @@ hpc_libpaths = NULL) {
   #out_results <- lapply(unique(results))
 
   # calculate the thresholds 
-  #thresh_bonferroni <- 0.05/length(my_met)
+  thresh_bonferroni <- 0.05/length(my_met)
   #eigenvals <- cor(object@list_of_data[[which_data]][,my_met], use="pairwise.complete.obs") %>%
   #  eigen()
   #thresh_li <- 0.05/(sum(as.numeric(eigenvals$values >= 1) + (eigenvals$values - floor(eigenvals$values))))

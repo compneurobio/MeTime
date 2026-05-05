@@ -912,22 +912,31 @@ setMethod("mod_generate_plots", "metime_analyser", function(object, .interactive
   }
 }
 
-.apply_with_progress <- function(X, FUN, cl = NULL, ...) {
+.apply_with_progress <- function(X, FUN, cl = NULL, ..., chunk_size = NULL) {
   n <- length(X)
   pb <- utils::txtProgressBar(min = 0, max = n, style = 3)
   on.exit(close(pb), add = TRUE)
 
-  out <- vector("list", n)
   if (is.null(cl)) {
-    for (i in seq_along(X)) {
-      out[[i]] <- FUN(X[[i]], ...)
+    out <- lapply(seq_along(X), function(i) {
+      res <- FUN(X[[i]], ...)
       utils::setTxtProgressBar(pb, i)
-    }
-  } else {
-    for (i in seq_along(X)) {
-      out[[i]] <- parallel::parLapply(cl, list(X[[i]]), FUN, ...)[[1]]
-      utils::setTxtProgressBar(pb, i)
-    }
+      res
+    })
+    return(out)
+  }
+
+  if (is.null(chunk_size)) chunk_size <- max(1L, ceiling(n / (length(cl) * 4L)))
+  chunks <- split(X, ceiling(seq_along(X) / chunk_size))
+
+  out <- vector("list", n)
+  k <- 0L
+  for (ch in chunks) {
+    ans <- parallel::parLapply(cl, ch, FUN, ...)
+    m <- length(ans)
+    out[(k + 1L):(k + m)] <- ans
+    k <- k + m
+    utils::setTxtProgressBar(pb, k)
   }
   out
 }

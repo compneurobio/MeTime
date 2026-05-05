@@ -26,7 +26,7 @@ setMethod("mod_rename", "metime_analyser", function(object, which_data, type="da
 			new_names <- list(...)
 			old_names <- unname(new_names) %>% unlist()
 			new_names <- names(new_names) %>% as.character()
-			object@list_of_col_data[[which_data]]$id <- ifelse(object@list_of_col_data[[which_data]]$id %>% old_names,
+			object@list_of_col_data[[which_data]]$id <- ifelse(object@list_of_col_data[[which_data]]$id %in% old_names,
 							new_names,
 							object@list_of_col_data[[which_data]]$id)
 			rownames(object@list_of_col_data[[which_data]]) <- object@list_of_col_data[[which_data]]$id
