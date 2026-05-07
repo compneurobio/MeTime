@@ -90,6 +90,9 @@ imputed_object <- humet_object %>%
         mod_impute(method="rf", which_data=which_data)
 
 # for feature selection example, creating a dummy medication dataset for showcase
+# and also using the subset data for ease
+which_data <- "humet_subset_data"
+data <- get_data(humet_object, which_data=which_data)
 n_samples <- nrow(data)
 n_meds <- 50
 # Use sample IDs from your existing dataset
@@ -102,7 +105,7 @@ med_data <- matrix(
   nrow = n_samples,
   ncol = n_meds,
   dimnames = list(sample_ids, med_ids)
-)
+) %>% as.data.frame()
 disease_categories <- c(
   "Hypertension",
   "Diabetes",
@@ -125,13 +128,13 @@ med_metadata <- data.frame(
 )
 
 feature_selection <- humet_object %>%
-    add_dataset(data=med_data, col_data=med_metadata, row_data=get_rowdata(humet_object, which_data="humet_subset_data", name="medication_data")) %>%
+    add_dataset(data=med_data, col_data=med_metadata, row_data=get_rowdata(humet_object, which_data="humet_subset_data"), name="medication_data") %>%
     mod_trans_zscore(which_data="humet_subset_data") %>%
 # this part is computationally expensive so beware
-  #  calc_featureselection_boruta(which_x="medication_data", # here we use medication but you can use any other dataset
+#  calc_featureselection_boruta(which_x="medication_data", # here we use medication but you can use any other metabolomics dataset
 #                                       which_y="humet_subset_data",
 #                                       verbose=T,
-#                                       name=paste0(dataset_name, "_selected_full"),
+#                                       name=paste0(which_data, "_selected_full"),
 #                                       cols_for_meta_x=NULL,
 #                                       cols_for_meta_y=NULL,
 #                                       save_per_run=T,
