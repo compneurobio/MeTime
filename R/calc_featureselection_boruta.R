@@ -110,7 +110,7 @@ hpc_libpaths = NULL){
     all_runs <- 1:ncol(object@list_of_data[[which_y]])
     if(!is.null(run_index)) all_runs <- as.numeric(run_index)
     
-     out_boruta <- pbapply::pblapply(all_runs,
+     out_boruta <- .apply_with_progress(all_runs,
                                     cl=cl,
                                     FUN=function(x){
                                       # if files are already existant
