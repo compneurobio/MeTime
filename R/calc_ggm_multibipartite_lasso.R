@@ -52,51 +52,6 @@ hpc_libpaths = NULL) {
                   return(data_lists[[a]][["data"]] %>% as.matrix())
             })
 
-      #  get_betas_for_multibipartite_lasso <- function(list_of_mats, # list of matrices that are divided based on platform or timepoints
-      #     alpha, # alpha parameter for glmnet
-      #     nfolds, # nfolds parameter for glmnet
-      #     ... ) { # Additional arguments for glmnet::cv.glmnet
-      #    #creating a list to store the data from glmnet
-      #    #code exactly similar to the usual MLP 
-      #    out <- list() # list to store the regression information for each metabolte
-      #    out <- lapply(seq_along(list_of_mats), function(x) {
-      #      each_result <- lapply(seq_along(list_of_mats), function(y) {
-      #          if(x!=y) {
-      #            x_mat <- as.matrix(list_of_mats[[x]])
-      #            y_mat <- as.matrix(list_of_mats[[y]])
-      #            cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
-      #            parallel::clusterExport(cl=cl, varlist=ls(environment()), envir=environment())
-      #            opb <- pbapply::pboptions(title="Running calc_ggm_multibipartite_lasso(): ", type="timer")
-      #            on.exit(pbapply::pboptions(opb))
-      #            on.exit(parallel::stopCluster(cl))
-      #            fit_lists <- pbapply::pblapply(cl=cl, seq_along(y_mat), function(z) {
-      #                  fit_list <- glmnet::cv.glmnet(x=x_mat, y=y_mat[,z], alpha=alpha, nfolds=nfolds, ...)
-      #                  return(fit_list)
-      #              })
-      #            names(fit_lists) <- colnames(y_mat)
-      #          } else {
-      #            mat <- as.matrix(list_of_mats[[x]])
-      #            cl <- parallel::makeCluster(parallel::detectCores(all.tests = FALSE, logical = TRUE)-1)
-      #            parallel::clusterExport(cl=cl, varlist=ls(environment()), envir=environment())
-      #            opb <- pbapply::pboptions(title="Running calc_ggm_multibipartite_lasso(): ", type="timer")
-      #            on.exit(pbapply::pboptions(opb))
-      #            on.exit(parallel::stopCluster(cl))
-      #            fit_lists <- pbapply::pblapply(seq_along(mat), function(z) {
-      #                  y <- as.matrix(mat[,z])
-      #                  x <- as.matrix(mat[,-z])
-      #                  fit_list <- glmnet::cv.glmnet(x=x, y=y, alpha=alpha, nfolds=nfolds, ...)
-      #                  return(fit_list)
-      #              }, cl=cl)
-      #            names(fit_lists) <- colnames(mat)
-      #          }
-      #          return(fit_lists)
-      #        })
-      #        names(each_result) <- paste(names(list_of_mats)[x], names(list_of_mats), sep="-")
-      #        return(each_result)
-      #      })
-      #    return(out)
-      #  }
-
       get_betas_for_multibipartite_lasso <- function(
           list_of_mats,
           alpha,
