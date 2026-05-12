@@ -5,10 +5,11 @@ package.
 
 ## Suggested citation (preprint)
 
-Marella, B.*, Weinisch, P.*, Vehovec, L., Tran V., Bless, J. J.,
-Njipouombe Nsangou, Y. A., Kastenmüller G. & Arnold M. (2026). MeTime:
-An R package for reproducible longitudinal metabolomics data analysis.
-*aRxiv*. \* - Equal contribution
+*Marella, B., Weinisch, P.,*
+
+Vehovec, L., Tran V., Bless, J. J., Njipouombe Nsangou, Y. A.,
+Kastenmüller G. & Arnold M. (2026). MeTime: An R package for
+reproducible longitudinal metabolomics data analysis. *aRxiv*.
 
 ## BibTeX
 
