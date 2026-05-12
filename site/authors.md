@@ -10,12 +10,16 @@
 
 ## Citation
 
-Marella B, Weinisch P, Arnold M (2026). *MeTime: Metabolomics Time*. R
-package version 1.0.0.
+Marella, B., Weinisch, P., Vehovec, L., Tran V., Bless, J. J.,
+Njipouombe Nsangou, Y. A., Kastenmüller G. & Arnold M. (2026) MeTime: An
+R package for reproducible longitudinal metabolomics data analysis.
+arXiv preprint. https://doi.org/10.48550/arXiv.2605.08497
 
-    @Manual{,
-      title = {MeTime: Metabolomics Time},
-      author = {Bharadwaj Marella and Patrick Weinisch and Matthias Arnold},
+    @Misc{,
+      title = {MeTime: An R package for reproducible longitudinal metabolomics data analysis},
+      author = {Bharadwaj Marella and Patrick Weinisch and Lara Vehovec and Vinh Tran and Josef J Bless and Yacoub A. Njipouombe Nsangou and Gabi Kastenmüller and Matthias Arnold},
       year = {2026},
-      note = {R package version 1.0.0},
+      doi = {10.48550/arXiv.2605.08497},
+      url = {https://doi.org/10.48550/arXiv.2605.08497},
+      note = {arXiv preprint},
     }
