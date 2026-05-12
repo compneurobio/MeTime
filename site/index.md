@@ -68,7 +68,18 @@ humet_object <- humet_object %>%
   [`docs/case-studies/README.md`](https://compneurobio.github.io/MeTime/docs/case-studies/README.md)
 - Developer docs:
   [`docs/developer/README.md`](https://compneurobio.github.io/MeTime/docs/developer/README.md)
-- Package reference (`?function_name`) and `vignettes/`
+- Package reference (`?function_name`)
+
+## Citation
+
+If MeTime contributes to your analysis or publication, please cite the
+package: *Marella, B., Weinisch, P.,* Vehovec, L., Tran V., Bless, J.
+J., Njipouombe Nsangou, Y. A., Kastenmüller G. & Arnold M. (2026).
+MeTime: An R package for reproducible longitudinal metabolomics data
+analysis. aRxiv.
+
+For more details and the publication please see:
+[`CITATION.md`](https://compneurobio.github.io/MeTime/CITATION.md)
 
 ## Website
 
