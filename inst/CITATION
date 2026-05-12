@@ -1,0 +1,17 @@
+citHeader("To cite MeTime, please use:")
+
+citEntry(
+  entry    = "Misc",
+  title    = "MeTime: an R package for longitudinal metabolomics workflows",
+  author   = personList(as.person("H. Lefebvre")),
+  year     = "2026",
+  doi      = "10.48550/arXiv.2605.08497",
+  url      = "https://doi.org/10.48550/arXiv.2605.08497",
+  note     = "arXiv preprint",
+  textVersion = paste(
+    "Lefebvre, H. (2026).",
+    "MeTime: an R package for longitudinal metabolomics workflows.",
+    "arXiv preprint.",
+    "https://doi.org/10.48550/arXiv.2605.08497"
+  )
+)
