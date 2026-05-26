@@ -2,6 +2,8 @@
 #' An automated fucntion to calculate GGM from multibipartite lasso approach
 #' @description automated funtion that can be applied on s4 object of class metime_analyser to calculate a network using
 #' multibipartite lasso
+#' Conceptualization & Methodology: Richa Batra and Jan Krumsiek.
+#' Implementation: Richa Batra, Bharadwaj Marella, Patrick Weinisch and Matthias Arnold.
 #' @param object S4 object of cĺass metime_analyser
 #' @param which_data a character or a character vector naming the datasets of interest
 #' @param alpha tuning parameter for lasso + ridge regression in glmnet. Default set to 1 to perform LASSO
