@@ -24,9 +24,9 @@
 #' @returns Analyser object with updated results of this calculation 
 #' @export
 setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"),
-hpc_libpaths = NULL) standardGeneric("calc_ggm_multibipartite_lasso"))
+hpc_libpaths = NULL, ...) standardGeneric("calc_ggm_multibipartite_lasso"))
 setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"),
-hpc_libpaths = NULL) {
+hpc_libpaths = NULL, ...) {
         if(length(which_data)==1) warning("Only one dataset(platform) is being used")
         cluster_profile=match.arg(cluster_profile)
         data_lists <- lapply(which_data, function(a) {
