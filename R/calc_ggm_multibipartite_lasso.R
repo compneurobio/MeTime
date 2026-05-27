@@ -20,12 +20,13 @@
 #' @param hpc_libpaths Optional character vector of library paths to prepend on worker nodes
 #'   when `cluster_profile = "hpc"`. Use this when compute nodes need explicit `.libPaths()`
 #'   (e.g. non-shared user libraries). Ignored for `"local"` profile.
+#' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
 #' @param ... additional arguments for cv.glmnet function
 #' @returns Analyser object with updated results of this calculation 
 #' @export
-setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"),
+setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"), num_cores=NULL,
 hpc_libpaths = NULL, ...) standardGeneric("calc_ggm_multibipartite_lasso"))
-setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"),
+setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"), num_cores=NULL,
 hpc_libpaths = NULL, ...) {
         if(length(which_data)==1) warning("Only one dataset(platform) is being used")
         cluster_profile=match.arg(cluster_profile)
