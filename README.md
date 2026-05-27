@@ -58,7 +58,14 @@ humet_object <- humet_object %>%
 - Reference guides: [`docs/reference/README.md`](docs/reference/README.md)
 - Case studies: [`docs/case-studies/README.md`](docs/case-studies/README.md)
 - Developer docs: [`docs/developer/README.md`](docs/developer/README.md)
-- Package reference (`?function_name`) and `vignettes/`
+- Package reference (`?function_name`)
+
+## Citation
+
+If MeTime contributes to your analysis or publication, please cite the package:
+<ins>Marella, B., Weinisch, P.,</ins> Vehovec, L., Tran V., Bless, J. J., Njipouombe Nsangou, Y. A., Kastenmüller G. & Arnold M. (2026). MeTime: An R package for reproducible longitudinal metabolomics data analysis. aRxiv.
+
+For more details and the publication please see: [`CITATION.md`](CITATION.md)
 
 ## Website
 

@@ -2,6 +2,8 @@
 #' An automated fucntion to calculate GGM from multibipartite lasso approach
 #' @description automated funtion that can be applied on s4 object of class metime_analyser to calculate a network using
 #' multibipartite lasso
+#' Conceptualization & Methodology: Richa Batra and Jan Krumsiek.
+#' Implementation: Richa Batra, Bharadwaj Marella, Patrick Weinisch and Matthias Arnold.
 #' @param object S4 object of cĺass metime_analyser
 #' @param which_data a character or a character vector naming the datasets of interest
 #' @param alpha tuning parameter for lasso + ridge regression in glmnet. Default set to 1 to perform LASSO
@@ -18,13 +20,14 @@
 #' @param hpc_libpaths Optional character vector of library paths to prepend on worker nodes
 #'   when `cluster_profile = "hpc"`. Use this when compute nodes need explicit `.libPaths()`
 #'   (e.g. non-shared user libraries). Ignored for `"local"` profile.
+#' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
 #' @param ... additional arguments for cv.glmnet function
 #' @returns Analyser object with updated results of this calculation 
 #' @export
-setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"),
-hpc_libpaths = NULL) standardGeneric("calc_ggm_multibipartite_lasso"))
-setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"),
-hpc_libpaths = NULL) {
+setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"), num_cores=NULL,
+hpc_libpaths = NULL, ...) standardGeneric("calc_ggm_multibipartite_lasso"))
+setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"), num_cores=NULL,
+hpc_libpaths = NULL, ...) {
         if(length(which_data)==1) warning("Only one dataset(platform) is being used")
         cluster_profile=match.arg(cluster_profile)
         data_lists <- lapply(which_data, function(a) {
