@@ -42,6 +42,9 @@ jobs:
             libbz2-dev \
             liblzma-dev
 
+      - name: Set up Rust toolchain for fru
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Install R build dependencies
         run: |
           Rscript -e 'install.packages(c("remotes", "BiocManager"), repos = "https://cloud.r-project.org")'
