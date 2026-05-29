@@ -18,12 +18,14 @@
 #' @param hpc_libpaths Optional character vector of library paths to prepend on worker nodes
 #'   when `cluster_profile = "hpc"`. Use this when compute nodes need explicit `.libPaths()`
 #'   (e.g. non-shared user libraries). Ignored for `"local"` profile.
+#' @param num_cores numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.
+#' @param ... additional arguments for cv.glmnet function
 #' @returns S4 object with updated temporal network results
 #' @export
-setGeneric("calc_temporal_network", function(object, which_data, lag, stratifications, alpha=1, nfolds=3, cols_for_meta, names, cluster_profile = c("auto", "local", "hpc"),
-hpc_libpaths = NULL) standardGeneric("calc_temporal_network"))
-setMethod("calc_temporal_network", "metime_analyser", function(object, which_data, lag, stratifications, alpha=1, nfolds=3, cols_for_meta, names, cluster_profile = c("auto", "local", "hpc"),
-hpc_libpaths = NULL) {
+setGeneric("calc_temporal_network", function(object, which_data, lag, stratifications, alpha=1, nfolds=3, cols_for_meta, names, cluster_profile = c("auto", "local", "hpc"), num_cores=NULL,
+hpc_libpaths = NULL, ...) standardGeneric("calc_temporal_network"))
+setMethod("calc_temporal_network", "metime_analyser", function(object, which_data, lag, stratifications, alpha=1, nfolds=3, cols_for_meta, names, cluster_profile = c("auto", "local", "hpc"), num_cores=NULL,
+hpc_libpaths = NULL, ...) {
         cluster_profile = match.arg(cluster_profile)
         if(is.null(stratifications)) {
           times <- object@list_of_row_data[[which_data[1]]]$time %>% unique()
@@ -99,7 +101,7 @@ hpc_libpaths = NULL) {
 
                     targets <- colnames(ymat)
                     results <- .apply_with_progress(targets, cl = cl, FUN = function(y) {
-                            fit <- glmnet::cv.glmnet(x = xmat, y = ymat[, y], alpha = alpha, nfolds = nfolds)
+                            fit <- glmnet::cv.glmnet(x = xmat, y = ymat[, y], alpha = alpha, nfolds = nfolds, ...)
                             coeffs <- coef(fit)[, 1]
                             coeffs <- coeffs[coeffs != 0][-1]
                             if (length(coeffs) == 0) return(NULL)
@@ -127,7 +129,7 @@ hpc_libpaths = NULL) {
             object <- add_function_info(object=object, function_name="calc_temporal_network", 
                         params=list(which_data=which_data, lag=lag, 
                         stratifications=stratifications, alpha=alpha, nfolds=nfolds, 
-                        cols_for_meta=cols_for_meta, cores=cores, names=names[i]))
+                        cols_for_meta=cols_for_meta, cores=cores, names=names[i], ...))
         }
         out <- object
         return(out)

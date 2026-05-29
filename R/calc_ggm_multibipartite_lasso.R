@@ -25,9 +25,9 @@
 #' @returns Analyser object with updated results of this calculation 
 #' @export
 setGeneric("calc_ggm_multibipartite_lasso", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"), num_cores=NULL,
-hpc_libpaths = NULL, ...) standardGeneric("calc_ggm_multibipartite_lasso"))
+hpc_libpaths = NULL, name="mbpl_ggm_1", ...) standardGeneric("calc_ggm_multibipartite_lasso"))
 setMethod("calc_ggm_multibipartite_lasso", "metime_analyser", function(object, which_data, alpha=1, nfolds=3, stratifications, cols_for_meta, cluster_profile = c("auto", "local", "hpc"), num_cores=NULL,
-hpc_libpaths = NULL, ...) {
+hpc_libpaths = NULL, name="mbpl_ggm_1", ...) {
         if(length(which_data)==1) warning("Only one dataset(platform) is being used")
         cluster_profile=match.arg(cluster_profile)
         data_lists <- lapply(which_data, function(a) {
@@ -54,6 +54,8 @@ hpc_libpaths = NULL, ...) {
         list_of_mats <- lapply(seq_along(data_lists), function(a) {
                   return(data_lists[[a]][["data"]] %>% as.matrix())
             })
+
+        names(list_of_mats) <- which_data
 
       get_betas_for_multibipartite_lasso <- function(
           list_of_mats,
@@ -172,7 +174,7 @@ hpc_libpaths = NULL, ...) {
         results_list <- get_betas_for_multibipartite_lasso(list_of_mats=list_of_mats, 
           alpha=alpha, nfolds=nfolds,num_cores = num_cores,
           cluster_profile = cluster_profile,
-          hpc_libpaths = hpc_libpaths, ...)
+          hpc_libpaths = hpc_libpaths, ...) %>% unlist(recursive=F)
         
         edge_lists <- lapply(seq_along(results_list), function(a) {
                 edge_list <- lapply(seq_along(results_list[[a]]), function(b) {
@@ -196,20 +198,20 @@ hpc_libpaths = NULL, ...) {
         edge_lists$node2 <- edge_lists$node2 %>% as.character()
         edge_lists$coeffs <- edge_lists$coeffs %>% as.character() %>% as.numeric()
         uids <- apply(edge_lists[ ,c("node1", "node2")], 1, function(x) {
-                uid <- paste(stringr::str_sort(x), collapse="_")
+                uid <- paste(stringr::str_sort(x), collapse="___")
                 return(uid)
           })
-        edge_lists <- edge_lists %>% dplyr::mutate(uid=as.character(uids))
+        edge_lists <- edge_lists %>% dplyr::mutate(uids=as.character(uids))
         edge_lists <- reshape(transform(edge_lists, time=ave(coeffs, uids, FUN=seq_along)), 
-                      idvar="uids", direction="wide")
-        edge_lists$node1 <- gsub(edge_lists$uid, pattern="_[a-z|A-Z|.|0-9]+", replacement="") %>% as.character()
-        edge_lists$node2 <- gsub(edge_lists$uid, pattern="[a-z|A-Z|.|0-9]+_", replacement="") %>% as.character()
+                      idvar="uids", direction="wide") %>% select(-node1.2, -node2.2) %>% rename("node1"="node1.1", "node2"="node2.1")
+        edge_lists$node1 <- gsub(edge_lists$uids, pattern="___[a-z|A-Z|.|_|0-9]+", replacement="") %>% as.character()
+        edge_lists$node2 <- gsub(edge_lists$uids, pattern="[a-z|A-Z|.|_|0-9]+___", replacement="") %>% as.character()
         metadata <- get_metadata_for_columns(object=object, which_data=which_data, 
             columns=cols_for_meta)
         out <- get_make_results(object=object, data=list(mbpl=edge_lists), metadata=metadata, 
                 calc_type="multibipartite_ggm", calc_info=paste("multibipartite_ggm for ", which_data,
-                    "with", ifelse(is.null(stratifications)), "full data", stratifications, sep=" "), 
-                name=name, plot_type=list()) %>%
+                    "with", ifelse(is.null(stratifications), "full data", stratifications), sep=" "), 
+                name=name) %>%
                 add_function_info(function_name="calc_ggm_multibipartite_lasso", 
                         params=list(which_data=which_data, stratifications=stratifications, alpha=alpha, nfolds=nfolds, 
                         cols_for_meta=cols_for_meta, name=name))
