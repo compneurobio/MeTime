@@ -21,7 +21,7 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
 				#Getting node list along with metadata
 				nodes_names <- unique(c(data$node1, data$node2))
     			nodes <- data.frame(id=1:length(nodes_names), label=nodes_names)
-				nodes <- dplyr::left_join(nodes, metadata, by=c("label"="id"))
+				if(!is.null(metadata)) nodes <- dplyr::left_join(nodes, metadata, by=c("label"="id"))
 				nodes$title <- nodes$label
     			#Getting edge list
     			edges <- data %>%
@@ -35,9 +35,11 @@ setMethod("get_make_results", "metime_analyser", function(object, data, metadata
     				edges$title <- paste(edges$node1, "-", 
     								edges$node2, " : ", edges$values, sep="")
    			 	} else if(calc_type %in% "multibipartite_ggm") {
-   			 		dashes <- ifelse(data$coeffs.1 > 0 & data$coeffs.2 > 0, FALSE, TRUE)
+   			 		dashes <- ifelse(!is.na(data$coeffs.1) & is.na(data$coeffs.2), TRUE, 
+								ifelse(data$coeffs.1>0 & data$coeffs.2>0, FALSE, TRUE))
    			 		edges$dashes <- dashes
-    				edges$values <- (data$coeffs.1 + data$coeffs.2)/2 
+    				edges$values <- ifelse(!is.na(data$coeffs.1) & is.na(data$coeffs.2), data$coeffs.1, 
+										(data$coeffs.1 + data$coeffs.2)/2)
     				edges$title <- paste("coeff1: ", 
     					data$coeffs.1, "<br /> coeff2: ", data$coeffs.2, sep=" ")
    			 	} else if(calc_type %in% "temporal_network") {

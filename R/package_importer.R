@@ -449,6 +449,9 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
         				column <- add$color
         			} else {
         				column <- "class"
+						if(!"class" %in% colnames(node_list)) {
+							node_list[[column]] <- rep("metabolites", each=length(node_list$id))
+						}
         			}
             		if(is.numeric(node_list[[column]])){
     					# Create a gradient of colors using colorRampPalette
@@ -600,7 +603,7 @@ setMethod("mod_generate_plots", "metime_analyser", function(object, .interactive
 			# chooses colors as combinations
 			cols_of_int <- colnames(results$plot_data$network$node)
 			cols_of_int <- cols_of_int[!cols_of_int %in% c("id", "label", "title")]
-			if(!"color" %in% cols_of_int) {
+			if(!"color" %in% cols_of_int & !purrr::is_empty(cols_of_int)) {
 				networks <- lapply(cols_of_int, function(a) {	
 					network <- plot(object, results_index=results_index, 
 						interactive=.interactive, plot_type="network", color=a)
