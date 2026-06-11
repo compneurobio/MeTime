@@ -2,26 +2,40 @@
 % Please edit documentation in R/get_convert_to_se.R
 \name{get_convert_to_se}
 \alias{get_convert_to_se}
-\title{Convert analyser datasets to SummarizedExperiment objects}
+\title{Convert analyser datasets to SummarizedExperiment objects with optional time splitting}
 \usage{
 get_convert_to_se(
   object,
   which_data = NULL,
-  exclude = c("phenotype_data", "medication_data")
+  exclude = c("phenotype_data", "medication_data"),
+  split_by_time = TRUE
 )
 }
 \arguments{
-\item{object}{a S4 object of class "metime_analyser".}
+\item{object}{A \code{metime_analyser} object.}
 
-\item{which_data}{character vector of dataset names to convert. If NULL, converts all datasets.}
+\item{which_data}{Character vector of dataset names to convert. If \code{NULL},
+all datasets are converted.}
 
-\item{exclude}{character vector of dataset names to skip. Defaults to phenotype/medication data.}
+\item{exclude}{Character vector of dataset names to skip. Defaults to
+\code{c("phenotype_data", "medication_data")}.}
+
+\item{split_by_time}{Logical indicating whether longitudinal datasets should
+be split by timepoint. If \code{FALSE}, a single \code{SummarizedExperiment} is
+returned per dataset with a \code{time} column in the sample-level metadata.}
 }
 \value{
-A named list of SummarizedExperiment objects.
+A named list of \code{SummarizedExperiment} objects.
 }
 \description{
-Converts each dataset in a metime_analyser into a SummarizedExperiment object.
-Phenotype and medication datasets are skipped. Longitudinal datasets are split into
-separate SummarizedExperiment objects by timepoint with a timepoint suffix.
+Converts each dataset in a \code{metime_analyser} into one or more
+\code{SummarizedExperiment} objects. When \code{split_by_time} is \code{TRUE}, longitudinal
+datasets (those whose row-level metadata include a \code{time} column with more
+than one unique value) are split into separate \code{SummarizedExperiment}s for
+each timepoint. Otherwise, the entire dataset is stored in a single
+\code{SummarizedExperiment} with the \code{time} variable preserved in the
+\code{colData} slot. Feature metadata (\code{rowData}) is not duplicated across
+timepoints; the same \code{DataFrame} is reused for each split.
+
+Phenotype and medication datasets are skipped by default.
 }

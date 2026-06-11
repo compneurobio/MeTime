@@ -194,7 +194,7 @@ setMethod("mod_filter_features_by_missingness", "metime_analyser", function(obje
     col_data <- object@list_of_col_data[[dataset]]
     if(!is.null(col_data)) {
       col_ids <- object@list_of_data[[dataset]] %>% colnames()
-      object@list_of_col_data[[dataset]] <- col_data[col_ids %in% colnames(data), , drop=FALSE]
+      object@list_of_col_data[[dataset]] <- col_data[col_data$id %in% col_ids, , drop=FALSE]
     }
   }
 
