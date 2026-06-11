@@ -16,7 +16,9 @@ calc_temporal_network(
   cols_for_meta,
   names,
   cluster_profile = c("auto", "local", "hpc"),
-  hpc_libpaths = NULL
+  num_cores = NULL,
+  hpc_libpaths = NULL,
+  ...
 )
 ```
 
@@ -69,12 +71,22 @@ calc_temporal_network(
   - `"hpc"`: cluster-oriented setup; can prepend worker library paths
     via `hpc_libpaths`.
 
+- num_cores:
+
+  numeric input to define the number of cores that you want to use for
+  parallel computing. Default is set to NULL which is
+  parallel::detectCores() -1.
+
 - hpc_libpaths:
 
   Optional character vector of library paths to prepend on worker nodes
   when `cluster_profile = "hpc"`. Use this when compute nodes need
   explicit [`.libPaths()`](https://rdrr.io/r/base/libPaths.html) (e.g.
   non-shared user libraries). Ignored for `"local"` profile.
+
+- ...:
+
+  additional arguments for cv.glmnet function
 
 ## Value
 

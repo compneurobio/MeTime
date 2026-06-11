@@ -53,7 +53,9 @@
 <span>  <span class="va">cols_for_meta</span>,</span>
 <span>  <span class="va">names</span>,</span>
 <span>  cluster_profile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"local"</span>, <span class="st">"hpc"</span><span class="op">)</span>,</span>
-<span>  hpc_libpaths <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  num_cores <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  hpc_libpaths <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -101,10 +103,18 @@ One of <code>"auto"</code>, <code>"local"</code>, or <code>"hpc"</code>.</p><ul>
 </ul></dd>
 
 
+<dt id="arg-num-cores">num_cores<a class="anchor" aria-label="anchor" href="#arg-num-cores"></a></dt>
+<dd><p>numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.</p></dd>
+
+
 <dt id="arg-hpc-libpaths">hpc_libpaths<a class="anchor" aria-label="anchor" href="#arg-hpc-libpaths"></a></dt>
 <dd><p>Optional character vector of library paths to prepend on worker nodes
 when <code>cluster_profile = "hpc"</code>. Use this when compute nodes need explicit <code><a href="https://rdrr.io/r/base/libPaths.html" class="external-link">.libPaths()</a></code>
 (e.g. non-shared user libraries). Ignored for <code>"local"</code> profile.</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>additional arguments for cv.glmnet function</p></dd>
 
 </dl></div>
     <div class="section level2">

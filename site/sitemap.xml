@@ -56,6 +56,9 @@
 <url><loc>https://compneurobio.github.io/MeTime/reference/get_class_info_from_edges.html</loc></url>
 <url><loc>https://compneurobio.github.io/MeTime/reference/get_coldata.html</loc></url>
 <url><loc>https://compneurobio.github.io/MeTime/reference/get_common_samples_at_timepoints.html</loc></url>
+<url><loc>https://compneurobio.github.io/MeTime/reference/get_convert_from_mae.html</loc></url>
+<url><loc>https://compneurobio.github.io/MeTime/reference/get_convert_from_se.html</loc></url>
+<url><loc>https://compneurobio.github.io/MeTime/reference/get_convert_to_mae.html</loc></url>
 <url><loc>https://compneurobio.github.io/MeTime/reference/get_convert_to_se.html</loc></url>
 <url><loc>https://compneurobio.github.io/MeTime/reference/get_data.html</loc></url>
 <url><loc>https://compneurobio.github.io/MeTime/reference/get_files_and_names.html</loc></url>

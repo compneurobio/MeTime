@@ -77,8 +77,15 @@
   : Get col_data from a S4 object of the class "metime_analyser"
 - [`get_common_samples_at_timepoints()`](https://compneurobio.github.io/MeTime/reference/get_common_samples_at_timepoints.md)
   : Get common samples at multiple timepoints chosen
+- [`get_convert_from_mae()`](https://compneurobio.github.io/MeTime/reference/get_convert_from_mae.md)
+  : Convert a MultiAssayExperiment into a metime_analyser
+- [`get_convert_from_se()`](https://compneurobio.github.io/MeTime/reference/get_convert_from_se.md)
+  : Convert SummarizedExperiment objects back to metime_analyser
+- [`get_convert_to_mae()`](https://compneurobio.github.io/MeTime/reference/get_convert_to_mae.md)
+  : Convert a metime_analyser into a MultiAssayExperiment
 - [`get_convert_to_se()`](https://compneurobio.github.io/MeTime/reference/get_convert_to_se.md)
-  : Convert analyser datasets to SummarizedExperiment objects
+  : Convert analyser datasets to SummarizedExperiment objects with
+  optional time splitting
 - [`get_data()`](https://compneurobio.github.io/MeTime/reference/get_data.md)
   : Get data from a S4 object of the class "metime_analyser"
 - [`get_files_and_names()`](https://compneurobio.github.io/MeTime/reference/get_files_and_names.md)
