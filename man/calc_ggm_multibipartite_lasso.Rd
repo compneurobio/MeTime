@@ -12,7 +12,10 @@ calc_ggm_multibipartite_lasso(
   stratifications,
   cols_for_meta,
   cluster_profile = c("auto", "local", "hpc"),
-  hpc_libpaths = NULL
+  num_cores = NULL,
+  hpc_libpaths = NULL,
+  name = "mbpl_ggm_1",
+  ...
 )
 }
 \arguments{
@@ -36,6 +39,8 @@ One of \code{"auto"}, \code{"local"}, or \code{"hpc"}.
 \item \code{"hpc"}: cluster-oriented setup; can prepend worker library paths via \code{hpc_libpaths}.
 }}
 
+\item{num_cores}{numeric input to define the number of cores that you want to use for parallel computing. Default is set to NULL which is parallel::detectCores() -1.}
+
 \item{hpc_libpaths}{Optional character vector of library paths to prepend on worker nodes
 when \code{cluster_profile = "hpc"}. Use this when compute nodes need explicit \code{.libPaths()}
 (e.g. non-shared user libraries). Ignored for \code{"local"} profile.}
@@ -50,4 +55,6 @@ Analyser object with updated results of this calculation
 \description{
 automated funtion that can be applied on s4 object of class metime_analyser to calculate a network using
 multibipartite lasso
+Conceptualization & Methodology: Richa Batra and Jan Krumsiek.
+Implementation: Richa Batra, Bharadwaj Marella, Patrick Weinisch and Matthias Arnold.
 }
