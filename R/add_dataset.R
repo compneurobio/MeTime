@@ -8,13 +8,16 @@
 #' @param col_data data.frame containing col_data: id column of col data has to match colnames of data
 #' @param row_data data.frame containing row_data: id column of row data has to match rownames of data
 #' @param name Name of the new dataset
+#' @param force Logical, if set to TRUE will overwrite the dataset with the same name in the analyser object
 #' @return An object of class metime_analyser
 #' @export
-setGeneric("add_dataset", function(object, data, col_data, row_data, name) standardGeneric("add_dataset"))
-setMethod("add_dataset", "metime_analyser",function(object, data, col_data, row_data, name=NULL) {
+setGeneric("add_dataset", function(object, data, col_data, row_data, name, force=TRUE) standardGeneric("add_dataset"))
+setMethod("add_dataset", "metime_analyser",function(object, data, col_data, row_data, name=NULL, force=TRUE) {
   if(is.null(name)) name <- "set1"
   if(!all(rownames(data) %in% row_data$id) | !all(col_data$id %in% colnames(data))) stop("id of col or row data do not match dataframe")
   if(!all(c("id","subject","time") %in% names(row_data))) stop("id, subject or timepoint column missing")
+  if(name %in% names(object@list_of_data) & !force) stop("A dataset with same name is available. Please use force=TRUE to override. Exiting without changes")
+  if(name %in% names(object@list_of_data) & force) warning("A dataset with same name is available and is being replaced")
   
   object@list_of_data[[name]] <- data
   object@list_of_col_data[[name]] <- col_data
