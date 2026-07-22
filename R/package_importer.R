@@ -169,9 +169,43 @@ setMethod("plot", "metime_analyser", function(x, results_index, interactive, plo
 					} else if(results$information$calc_type[ind_data] %in% "pairwise_distance" |
 						results$information$calc_type[ind_data] %in% "pairwise_correlation") {
 						if(plot_type %in% "tile") {
-							plot <- ggplot(results$plot_data[[ind_data]], aes(x=row,y=column)) + 
-							geom_tile(aes(fill=dist)) +
-								facet_wrap(add$strats) + theme_classic()
+
+							df <- results$plot_data[[ind_data]]
+
+							# Recover the original matrix order from the upper-triangle output
+							matrix_levels <- unique(c(as.character(df$row), as.character(df$column)))
+
+							df$row <- factor(df$row, levels = matrix_levels)
+							df$column <- factor(df$column, levels = matrix_levels)
+
+							fill_limit <- max(abs(df$dist), na.rm = TRUE)
+
+							if (!is.finite(fill_limit) || fill_limit == 0) fill_limit <- 1
+
+							show_labels <- length(matrix_levels) <= 30
+
+							plot <- ggplot(df, aes(x = row, y = column, fill = dist)) +
+  										geom_tile() +
+  										facet_wrap(add$strats) +
+  										scale_fill_gradient2(
+											low = "#2166AC",
+											mid = "white",
+											high = "#B2182B",
+											midpoint = 0,
+											limits = c(-fill_limit, fill_limit),
+											oob = scales::squish,
+											name = "Distance"
+										) +
+  										scale_x_discrete(
+    										drop = FALSE,
+    										expand = c(0, 0)
+  										) +
+  										scale_y_discrete(
+    										drop = FALSE,
+    										expand = c(0, 0)
+  										) +
+  										coord_fixed(expand = FALSE) +
+										theme_classic()
 						} else {
 							stop("This type of plot is not available for this calculation")
 						}
