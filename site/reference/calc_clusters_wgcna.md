@@ -12,6 +12,7 @@ calc_clusters_wgcna(
   baseline = "t0",
   cols_for_meta = NULL,
   name = "WGCNA_clusters_1",
+  soft_power = NULL,
   ...
 )
 ```
@@ -40,6 +41,14 @@ calc_clusters_wgcna(
 - name:
 
   Name of the results. Default is set to "WGCNA_clusters_1"
+
+- soft_power:
+
+  Numeric soft-thresholding power to use. When `NULL`, the first
+  candidate power with a truncated R-squared greater than 0.8 is used.
+  If no candidate meets that threshold, the function warns and returns
+  without changing `object`. Supply a numeric value to override the
+  automatic choice.
 
 - ...:
 

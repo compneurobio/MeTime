@@ -14,6 +14,7 @@ mod_trans_eigendata(
   cols_for_meta = NULL,
   baseline = "t0",
   name = "WGCNA_clusters_1",
+  soft_power = NULL,
   ...
 )
 ```
@@ -47,6 +48,12 @@ mod_trans_eigendata(
 
   a character to define the baseline time point which is used for
   cluster calculation.
+
+- soft_power:
+
+  Numeric soft-thresholding power passed to `calc_clusters_wgcna`. When
+  `NULL`, that function selects the first candidate whose truncated
+  R-squared is greater than 0.8.
 
 - ...:
 

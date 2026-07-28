@@ -51,6 +51,7 @@
 <span>  cols_for_meta <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  baseline <span class="op">=</span> <span class="st">"t0"</span>,</span>
 <span>  name <span class="op">=</span> <span class="st">"WGCNA_clusters_1"</span>,</span>
+<span>  soft_power <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -82,6 +83,12 @@ get_metadata_for_columns</p></dd>
 
 <dt id="arg-baseline">baseline<a class="anchor" aria-label="anchor" href="#arg-baseline"></a></dt>
 <dd><p>a character to define the baseline time point which is used for cluster calculation.</p></dd>
+
+
+<dt id="arg-soft-power">soft_power<a class="anchor" aria-label="anchor" href="#arg-soft-power"></a></dt>
+<dd><p>Numeric soft-thresholding power passed to
+<code>calc_clusters_wgcna</code>. When <code>NULL</code>, that function selects the first candidate
+whose truncated R-squared is greater than 0.8.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
