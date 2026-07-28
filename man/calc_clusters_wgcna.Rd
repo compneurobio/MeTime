@@ -10,6 +10,7 @@ calc_clusters_wgcna(
   baseline = "t0",
   cols_for_meta = NULL,
   name = "WGCNA_clusters_1",
+  soft_power = NULL,
   ...
 )
 }
@@ -25,6 +26,11 @@ Example: list(dataset1=c(new_name1="colname", new_name2="colname"))
 Default is set to NULL}
 
 \item{name}{Name of the results. Default is set to "WGCNA_clusters_1"}
+
+\item{soft_power}{Numeric soft-thresholding power to use. When \code{NULL}, the
+first candidate power with a truncated R-squared greater than 0.8 is used.
+If no candidate meets that threshold, the function warns and returns without
+changing \code{object}. Supply a numeric value to override the automatic choice.}
 
 \item{...}{multiple parameters separated by commas passed to cutreeDynamic (R package: dynamicTreeCut).
 Parameters include: minClusterSize, pamDendroRespect ...}
